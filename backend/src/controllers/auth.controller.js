@@ -419,3 +419,128 @@ export const updateProfile = async (req, res) => {
     });
   }
 };
+
+// Forgot password - Send OTP
+export const forgotPassword = async (req, res) => {
+  try {
+    const { error, value } = authValidation.forgotPassword.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: error.details.map(detail => detail.message)
+      });
+    }
+
+    const { email } = value;
+
+    // Check if user exists and is verified
+    const user = await Auth.findOne({ email, isEmailVerified: true });
+    if (!user) {
+      return res.json({
+        success: true,
+        message: 'If an account exists with this email, you will receive a password reset OTP.'
+      });
+    }
+
+    // Check for recent OTP requests
+    const recentOTP = await OTP.findOne({
+      email,
+      type: 'password_reset',
+      createdAt: { $gte: new Date(Date.now() - 60 * 1000) }
+    });
+
+    if (recentOTP) {
+      return res.status(429).json({
+        success: false,
+        message: 'Please wait before requesting a new OTP'
+      });
+    }
+
+    // Generate and save OTP
+    const otp = generateOTP();
+    await OTP.create({
+      email,
+      otp,
+      type: 'password_reset'
+    });
+
+    // Send OTP email
+    await sendOTPEmail(email, otp, 'password_reset');
+
+    res.json({
+      success: true,
+      message: 'Password reset OTP sent to your email'
+    });
+
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+// Reset password - Verify OTP and update password
+export const resetPassword = async (req, res) => {
+  try {
+    const { error, value } = authValidation.resetPassword.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: error.details.map(detail => detail.message)
+      });
+    }
+
+    const { email, otp, password } = value;
+
+    // Verify OTP
+    const otpRecord = await OTP.findOne({
+      email,
+      otp,
+      type: 'password_reset',
+      isUsed: false,
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!otpRecord) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired OTP'
+      });
+    }
+
+    // Find and update user
+    const user = await Auth.findOne({ email, isEmailVerified: true });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Update password
+    user.password = password;
+    // Clear all existing refresh tokens for security on password change
+    user.refreshTokens = [];
+    await user.save();
+
+    // Mark OTP as used
+    otpRecord.isUsed = true;
+    await otpRecord.save();
+
+    res.json({
+      success: true,
+      message: 'Password reset successful. You can now login with your new password.'
+    });
+
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
