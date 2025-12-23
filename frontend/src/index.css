@@ -1,25 +1,65 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import "tailwindcss";
+
+@theme {
+  --color-purple: #3F2965;
+  --color-purple-light: #5A408E;
+  --color-purple-soft: #A294BD;
+  --color-pink: #Dd1764;
+  --color-pink-light: #F44A8C;
+  --color-pink-soft: #F9ACC5;
+  --color-white: #FFFFFF;
+  --color-bg: #FFF5F8;
+
+  --color-primary: var(--color-purple);
+  --color-secondary: var(--color-pink);
+  --color-accent: var(--color-pink-soft);
+  --color-surface: var(--color-white);
+  --background-color: var(--color-bg);
+  
+  --font-sans: 'Inter', 'Outfit', system-ui, -apple-system, sans-serif;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@layer base {
+  body {
+    @apply bg-bg text-primary font-sans antialiased selection:bg-accent selection:text-primary;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
 }
 
-* {
-  box-sizing: border-box;
-}
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-primary text-white rounded-full font-medium transition-all hover:scale-105 hover:shadow-lg active:scale-95 disabled:opacity-50;
+  }
+  
+  .btn-secondary {
+    @apply px-6 py-3 bg-secondary text-white rounded-full font-medium transition-all hover:scale-105 hover:shadow-lg active:scale-95 disabled:opacity-50;
+  }
 
-button {
-  font-family: inherit;
-}
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl rounded-2xl;
+  }
 
-input, textarea {
-  font-family: inherit;
+  .link-underline {
+    position: relative;
+    text-decoration: none;
+  }
+
+  .link-underline::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: currentColor;
+    transition: width 0.3s ease-in-out;
+    border-radius: 999px;
+  }
+
+  .link-underline:hover::after {
+    width: 100%;
+  }
 }
