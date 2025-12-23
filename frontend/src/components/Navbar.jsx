@@ -42,8 +42,8 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 backdrop-blur-lg shadow-md py-3' : 'bg-transparent py-5'}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="fixed top-4 left-4 right-4 z-50">
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 rounded-2xl transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-lg shadow-xl py-2' : 'bg-white/60 backdrop-blur-sm shadow-lg py-3'}`}>
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center">
             <Logo className="h-14" />
@@ -79,14 +79,9 @@ const Navbar = () => {
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-4">
-                  <Link to="/login" className="text-sm font-bold text-primary hover:text-secondary transition-colors px-2">
-                    Login
-                  </Link>
-                  <Link to="/signup" className="btn-primary py-2.5 px-6">
-                    Join Us
-                  </Link>
-                </div>
+                <Link to="/login" className="btn-primary py-2.5 px-6">
+                  Login
+                </Link>
               )}
 
               <Link to="/booking" className="bg-secondary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-secondary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 text-sm">
@@ -115,7 +110,7 @@ const Navbar = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="md:hidden bg-white shadow-xl border-t border-gray-100 overflow-y-auto max-h-[90vh]"
+            className="md:hidden bg-white shadow-xl border-t border-gray-100 overflow-y-auto max-h-[90vh] mx-4 rounded-b-2xl mt-2"
           >
             <div className="px-6 pt-4 pb-10 space-y-2">
               {navLinks.map((link) => (
@@ -153,22 +148,13 @@ const Navbar = () => {
                     </button>
                   </>
                 ) : (
-                  <div className="grid grid-cols-2 gap-4">
-                    <Link
-                      to="/login"
-                      onClick={() => setIsOpen(false)}
-                      className="py-4 text-center font-bold text-primary bg-purple-50 rounded-2xl"
-                    >
-                      Sign In
-                    </Link>
-                    <Link
-                      to="/signup"
-                      onClick={() => setIsOpen(false)}
-                      className="py-4 text-center font-bold text-white bg-primary rounded-2xl"
-                    >
-                      Join Us
-                    </Link>
-                  </div>
+                  <Link
+                    to="/login"
+                    onClick={() => setIsOpen(false)}
+                    className="w-full py-4 text-center font-bold text-white bg-primary rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-lg"
+                  >
+                    Login
+                  </Link>
                 )}
               </div>
             </div>
