@@ -1,83 +1,113 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Circle, Flag } from 'lucide-react';
+import { CheckCircle2, Circle, Flag, Mountain, Waves, Sun, Compass, Sparkles } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import JourneyCanvas from './JourneyScene';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const Journey = () => {
+  const containerRef = useRef(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
   const steps = [
     {
-      title: "Awareness",
-      desc: "Recognizing the need for support and exploring mental health concepts in simple language.",
-      status: "completed"
+      title: "Self-Awareness",
+      desc: "Begin by understanding your emotional landscape and identifying triggers.",
+      status: "completed",
+      icon: <Sun className="text-pink-500" />
     },
     {
-      title: "Taking the First Step",
-      desc: "Booking your 60-minute introductory session to discuss your path ahead.",
-      status: "current"
+      title: "Navigating Growth",
+      desc: "Identify behavioral patterns and build a structured roadmap for change.",
+      status: "current",
+      icon: <Compass className="text-purple-600" />
     },
     {
-      title: "Guided Sessions",
-      desc: "Participating in structured online or offline sessions tailored to your needs.",
-      status: "upcoming"
+      title: "Resilient Mindset",
+      desc: "Implement evidence-based tools to handle life's challenges with clarity.",
+      status: "upcoming",
+      icon: <Mountain className="text-purple-400" />
     },
     {
-      title: "Ongoing Support",
-      desc: "Continuous guidance and resources to maintain your mental well-being.",
-      status: "upcoming"
-    },
-    {
-      title: "Clarity & Growth",
-      desc: "Reaching a state of better understanding and navigated life challenges.",
-      status: "upcoming"
+      title: "Sustainable Peace",
+      desc: "Establish long-term habits for emotional well-being and consistent growth.",
+      status: "upcoming",
+      icon: <Sparkles className="text-pink-400" />
     }
   ];
 
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: containerRef.current,
+        start: "top center",
+        end: "bottom center",
+        scrub: true,
+        onUpdate: (self) => setScrollProgress(self.progress)
+      });
+    });
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section className="py-24 bg-purple-50/50">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold text-primary mb-6">Your Wellness Journey</h2>
-          <p className="text-gray-600 text-lg">We move step-by-step through a structured path toward clarity.</p>
+    <section ref={containerRef} className="relative py-32 bg-purple-50/30 overflow-hidden">
+      {/* Background Section-Specific Canvas */}
+      <JourneyCanvas scrollProgress={scrollProgress} />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-24">
+          <motion.span
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="text-secondary font-bold tracking-widest uppercase text-sm mb-4 block"
+          >
+            The Path Forward
+          </motion.span>
+          <h2 className="text-4xl md:text-6xl font-bold text-primary mb-6">Your Wellness Journey</h2>
+          <p className="text-gray-600 text-xl max-w-2xl mx-auto">
+            A step-by-step transition from confusion to clarity, guided by licensed expertise.
+          </p>
         </div>
 
-        <div className="relative">
-          {/* Vertical Line */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-purple-200 rounded-full" />
-
-          <div className="space-y-12">
-            {steps.map((step, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className={`relative flex items-center justify-between ${index % 2 === 0 ? 'flex-row-reverse' : ''}`}
-              >
-                {/* Content */}
-                <div className="w-[45%]">
-                  <div className={`p-6 rounded-3xl bg-white shadow-xl border border-purple-100 ${step.status === 'current' ? 'ring-2 ring-secondary' : ''}`}>
-                    <h4 className="text-xl font-bold text-primary mb-2">{step.title}</h4>
-                    <p className="text-gray-600 text-sm leading-relaxed">{step.desc}</p>
-                  </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {steps.map((step, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="relative group"
+            >
+              <div className={`p-10 h-full rounded-[2rem] border transition-all duration-500 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-xl hover:-translate-y-2 ${step.status === 'current' ? 'border-secondary ring-1 ring-secondary/20' : 'border-purple-100 hover:border-purple-200'
+                }`}>
+                <div className="mb-8 p-4 w-fit rounded-2xl bg-purple-50 group-hover:bg-purple-100 transition-colors">
+                  {step.icon}
                 </div>
+                <h3 className="text-2xl font-bold text-primary mb-4">{step.title}</h3>
+                <p className="text-gray-600 leading-relaxed mb-8">
+                  {step.desc}
+                </p>
 
-                {/* Dot / Icon */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 z-10">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg ${step.status === 'completed' ? 'bg-primary text-white' :
-                      step.status === 'current' ? 'bg-secondary text-white' :
-                        'bg-white text-purple-300'
-                    }`}>
-                    {step.status === 'completed' ? <CheckCircle2 size={20} /> :
-                      step.status === 'current' ? <Circle size={18} className="animate-pulse fill-current" /> :
-                        <Flag size={18} />}
-                  </div>
+                <div className="flex items-center gap-2">
+                  <div className={`w-3 h-3 rounded-full ${step.status === 'completed' ? 'bg-primary' :
+                      step.status === 'current' ? 'bg-secondary animate-pulse' :
+                        'bg-gray-200'
+                    }`} />
+                  <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                    {step.status}
+                  </span>
                 </div>
+              </div>
 
-                {/* Empty space for balance */}
-                <div className="w-[45%]" />
-              </motion.div>
-            ))}
-          </div>
+              {/* Linking Line for Desktop */}
+              {index < steps.length - 1 && (
+                <div className="hidden lg:block absolute top-[25%] -right-4 w-8 h-px bg-purple-200" />
+              )}
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
