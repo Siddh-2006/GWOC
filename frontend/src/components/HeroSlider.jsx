@@ -15,21 +15,21 @@ const slides = [
     subtitle: "Empathy Comes First",
     desc: "Through structured conversations and compassionate listening, we help you feel heard, understood, and supported.",
     image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1920&auto=format&fit=crop",
-    gradient: "from-teal-900/50 via-blue-900/30 to-transparent",
+    gradient: "from-indigo-900/50 via-purple-900/30 to-transparent",
   },
   {
     title: "Your Journey, Your Pace",
     subtitle: "Personalized Sessions",
     desc: "Each 60-minute session is designed around your needs—offering clarity, awareness, and emotional grounding.",
     image: "https://images.unsplash.com/photo-1507537297725-24a1c029d3ca?q=80&w=1920&auto=format&fit=crop",
-    gradient: "from-slate-900/50 via-indigo-900/30 to-transparent",
+   gradient: "from-indigo-900/50 via-purple-900/30 to-transparent",
   },
   {
     title: "Start With a Conversation",
     subtitle: "No Pressure. No Judgment.",
     desc: "You don’t need to have everything figured out. We’re here to listen and guide you gently forward.",
     image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1920&auto=format&fit=crop",
-    gradient: "from-purple-900/50 via-rose-900/30 to-transparent",
+   gradient: "from-indigo-900/50 via-purple-900/30 to-transparent",
   },
 ];
 
@@ -117,7 +117,7 @@ const HeroSlider = () => {
 
       {/* Content Container */}
       <div className="relative z-10 flex h-full items-center px-6 md:px-16 pointer-events-none">
-        <div className="max-w-3xl pointer-events-auto">
+        <div className="max-w-6xl pointer-events-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
@@ -127,10 +127,10 @@ const HeroSlider = () => {
               transition={{ duration: 0.5 }}
             >
               <header>
-                <p className="text-blue-300 uppercase tracking-widest text-sm font-bold mb-4">
+                <p className="text-purple-300 uppercase tracking-widest text-sm font-bold mb-4">
                   {slides[current].subtitle}
                 </p>
-                <h1 className="text-white font-bold text-4xl md:text-7xl leading-tight mb-6">
+                <h1 className="text-pink-300 font-bold text-4xl md:text-7xl leading-tight mb-6">
                   {slides[current].title}
                 </h1>
               </header>
@@ -191,3 +191,5 @@ const HeroSlider = () => {
 };
 
 export default HeroSlider;
+
+// Note: remove the "arrows" afterwards

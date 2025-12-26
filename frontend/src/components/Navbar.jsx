@@ -35,7 +35,7 @@ const Navbar = () => {
   const navLinks = [
     { name: 'About', path: '/about' },
     { name: 'Psycho-Education', path: '/psycho-education' },
-    { name: 'How It Works', path: '/how-it-works' },
+    // { name: 'How It Works', path: '/how-it-works' },
     { name: 'Corporate', path: '/corporate' },
     { name: 'Resources', path: '/resources' },
     { name: 'Contact', path: '/contact' },

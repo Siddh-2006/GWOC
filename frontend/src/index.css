@@ -16,7 +16,7 @@
   --color-surface: var(--color-white);
   --background-color: var(--color-bg);
   
-  --font-sans: 'Inter', 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Source Serif 4', serif;
 }
 
 @layer base {
