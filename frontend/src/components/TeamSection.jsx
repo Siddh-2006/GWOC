@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, ChevronRight, MessageSquare } from 'lucide-react';
+import { ArrowUpRight, ChevronRight, MessageSquare, Linkedin, Twitter } from 'lucide-react';
 
 const team = [
   {
