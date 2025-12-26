@@ -43,7 +43,7 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-4 left-4 right-4 z-50">
-      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 rounded-2xl transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-lg shadow-xl py-2' : 'bg-white/60 backdrop-blur-sm shadow-lg py-3'}`}>
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 rounded-2xl transition-all duration-300 ${scrolled ? 'bg-pink-100 backdrop-blur-lg shadow-xl py-2' : 'bg-purple-100 backdrop-blur-lg shadow-lg py-3'}`}>
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center">
             <Logo className="h-14" />
