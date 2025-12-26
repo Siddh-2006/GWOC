@@ -42,7 +42,7 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="fixed top-4 left-4 right-4 z-50">
+    <nav className="fixed top left-4 right-4 z-50">
       <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 rounded-2xl transition-all duration-300 ${scrolled ? 'bg-pink-100 backdrop-blur-lg shadow-xl py-2' : 'bg-purple-100 backdrop-blur-lg shadow-lg py-3'}`}>
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center">
@@ -55,7 +55,7 @@ const Navbar = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm font-medium link-underline pb-1 transition-colors hover:text-secondary ${location.pathname === link.path ? 'text-secondary' : 'text-primary'}`}
+                className={`text-lg font-semibold link-underline pb-1 transition-colors hover:text-secondary ${location.pathname === link.path ? 'text-secondary' : 'text-primary'}`}
               >
                 {link.name}
               </Link>
@@ -84,7 +84,7 @@ const Navbar = () => {
                 </Link>
               )}
 
-              <Link to="/booking" className="bg-secondary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-secondary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 text-sm">
+              <Link to="/booking" className="bg-secondary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-secondary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 text-base">
                 <Calendar size={18} />
                 <span>Book Session</span>
               </Link>

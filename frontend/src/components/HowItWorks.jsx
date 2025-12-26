@@ -58,8 +58,12 @@ const HowItWorks = () => {
   }, []);
 
   return (
-    <section className="bg-bg py-32 px-6">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section 
+      className="relative py-32 px-6 bg-fixed bg-cover bg-center"
+      style={{ backgroundImage: "url('/assets/background_1_home.jpg')" }}
+    >
+      <div className="absolute inset-0 bg-white/50"></div>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-24">
           <motion.span
             initial={{ opacity: 0 }}
@@ -82,7 +86,7 @@ const HowItWorks = () => {
                 key={stage.id}
                 ref={el => scrollRef.current[index] = el}
                 className={`p-10 md:p-14 rounded-[2.5rem] transition-all duration-700 bg-white shadow-sm border border-purple-50
-                  ${activeIndex === index ? 'opacity-100 scale-100 border-secondary/20 shadow-xl' : 'opacity-40 scale-95'}`}
+                  ${activeIndex === index ? 'scale-100 border-secondary/20 shadow-xl' : 'scale-95'}`}
               >
                 <span className="text-sm font-bold text-secondary mb-6 block tracking-widest">STAGE {stage.id}</span>
                 <h3 className="text-3xl font-bold text-primary mb-6">{stage.title}</h3>
