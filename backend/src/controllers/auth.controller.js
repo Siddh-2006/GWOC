@@ -60,6 +60,12 @@ export const signUp = async (req, res) => {
 
         // Generate and send OTP
         const otp = generateOTP();
+        console.log(`\n🚨 SIGNUP OTP GENERATED 🚨`);
+        console.log(`📧 Email: ${email}`);
+        console.log(`🔐 OTP: ${otp}`);
+        console.log(`⏰ Valid for 10 minutes`);
+        console.log(`🚨 USE THIS OTP TO VERIFY 🚨\n`);
+        
         await OTP.create({
           email,
           otp,
@@ -98,6 +104,12 @@ export const signUp = async (req, res) => {
 
     // Generate and send OTP
     const otp = generateOTP();
+    console.log(`\n🚨 NEW USER SIGNUP OTP 🚨`);
+    console.log(`📧 Email: ${email}`);
+    console.log(`🔐 OTP: ${otp}`);
+    console.log(`⏰ Valid for 10 minutes`);
+    console.log(`🚨 USE THIS OTP TO VERIFY 🚨\n`);
+    
     await OTP.create({
       email,
       otp,
