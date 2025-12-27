@@ -14,6 +14,8 @@ import Contact from './pages/Contact';
 import BlogPage from './pages/BlogPage';
 import Resources from './pages/Resources';
 import PsychoEducation from './pages/PsychoEducation';
+import Profile from './pages/Profile';
+import ProfileSimple from './pages/ProfileSimple';
 import { Corporate } from './pages/Corporate';
 
 import PrivacyPolicy from './pages/policies/PrivacyPolicy';
@@ -97,6 +99,24 @@ function App() {
             element={
               <ProtectedRoute>
                 <UserBookings />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfileSimple />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/profile-full"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />

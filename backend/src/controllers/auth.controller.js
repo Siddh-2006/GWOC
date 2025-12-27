@@ -378,6 +378,7 @@ export const updateProfile = async (req, res) => {
   try {
     // Validate input
     const { error, value } = authValidation.updateProfile.validate(req.body);
+    
     if (error) {
       return res.status(400).json({
         success: false,
@@ -387,7 +388,7 @@ export const updateProfile = async (req, res) => {
     }
 
     const userId = req.user.userId;
-    const { firstName, lastName, phone } = value;
+    const { firstName, lastName, avatar, bio, location, interests } = value;
 
     // Update Auth model
     const authUser = await Auth.findById(userId);
@@ -398,19 +399,15 @@ export const updateProfile = async (req, res) => {
       });
     }
 
-    if (firstName) authUser.firstName = firstName;
-    if (lastName) authUser.lastName = lastName;
+    // Update fields if provided
+    if (firstName !== undefined) authUser.firstName = firstName;
+    if (lastName !== undefined) authUser.lastName = lastName;
+    if (avatar !== undefined) authUser.avatar = avatar;
+    if (bio !== undefined) authUser.bio = bio;
+    if (location !== undefined) authUser.location = location;
+    if (interests !== undefined) authUser.interests = interests;
+    
     await authUser.save();
-
-    // Update User model
-    const userProfile = await User.findOne({ email: authUser.email });
-    if (userProfile) {
-      if (firstName || lastName) {
-        userProfile.name = `${authUser.firstName} ${authUser.lastName}`;
-      }
-      if (phone !== undefined) userProfile.phone = phone;
-      await userProfile.save();
-    }
 
     res.json({
       success: true,
@@ -421,8 +418,10 @@ export const updateProfile = async (req, res) => {
           email: authUser.email,
           firstName: authUser.firstName,
           lastName: authUser.lastName,
-          name: userProfile?.name || `${authUser.firstName} ${authUser.lastName}`,
-          phone: userProfile?.phone,
+          avatar: authUser.avatar,
+          bio: authUser.bio,
+          location: authUser.location,
+          interests: authUser.interests,
           role: authUser.role,
           isActive: authUser.isActive,
           isEmailVerified: authUser.isEmailVerified,
@@ -437,7 +436,8 @@ export const updateProfile = async (req, res) => {
     console.error('Update profile error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };

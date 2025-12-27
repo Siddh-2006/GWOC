@@ -63,32 +63,68 @@ export const authValidation = {
 
   updateProfile: Joi.object({
     firstName: Joi.string()
-      .min(2)
+      .min(1)
       .max(50)
-      .pattern(/^[a-zA-Z\s]+$/)
+      .trim()
+      .required()
       .messages({
-        'string.min': 'First name must be at least 2 characters long',
+        'string.min': 'First name is required',
         'string.max': 'First name cannot exceed 50 characters',
-        'string.pattern.base': 'First name can only contain letters and spaces'
+        'string.empty': 'First name is required',
+        'any.required': 'First name is required'
       }),
     
     lastName: Joi.string()
-      .min(2)
+      .min(1)
       .max(50)
-      .pattern(/^[a-zA-Z\s]+$/)
+      .trim()
+      .required()
       .messages({
-        'string.min': 'Last name must be at least 2 characters long',
+        'string.min': 'Last name is required',
         'string.max': 'Last name cannot exceed 50 characters',
-        'string.pattern.base': 'Last name can only contain letters and spaces'
+        'string.empty': 'Last name is required',
+        'any.required': 'Last name is required'
       }),
 
     phone: Joi.string()
-      .pattern(/^[\+]?[1-9][\d]{0,15}$/)
-      .allow('')
+      .allow('', null)
+      .optional()
       .messages({
-        'string.pattern.base': 'Please provide a valid phone number'
+        'string.base': 'Phone must be a string'
+      }),
+
+    avatar: Joi.string()
+      .max(10)
+      .allow('', null)
+      .optional()
+      .messages({
+        'string.max': 'Avatar cannot exceed 10 characters'
+      }),
+
+    bio: Joi.string()
+      .max(500)
+      .allow('', null)
+      .optional()
+      .messages({
+        'string.max': 'Bio cannot exceed 500 characters'
+      }),
+
+    location: Joi.string()
+      .max(100)
+      .allow('', null)
+      .optional()
+      .messages({
+        'string.max': 'Location cannot exceed 100 characters'
+      }),
+
+    interests: Joi.string()
+      .max(200)
+      .allow('', null)
+      .optional()
+      .messages({
+        'string.max': 'Interests cannot exceed 200 characters'
       })
-  }).min(1),
+  }),
 
   forgotPassword: Joi.object({
     email: Joi.string()

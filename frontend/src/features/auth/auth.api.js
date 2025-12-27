@@ -36,6 +36,11 @@ export const authApi = {
     return response.data;
   },
 
+  updateProfile: async (profileData) => {
+    const response = await apiClient.put('/api/auth/profile', profileData);
+    return response.data;
+  },
+
   logout: async () => {
     const refreshToken = localStorage.getItem('refreshToken');
     const response = await apiClient.post('/api/auth/logout', { refreshToken });
