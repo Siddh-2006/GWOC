@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { corporateService } from '../services/corporate.api';
+import { Send, Loader2 } from 'lucide-react';
 
 /**
  * Corporate Inquiry Form
@@ -16,7 +17,7 @@ export const CorporateForm = () => {
     organizationSize: 'not-specified',
     preferredContact: 'email'
   });
-  
+
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -37,7 +38,7 @@ export const CorporateForm = () => {
       ...prev,
       [name]: value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
@@ -49,38 +50,38 @@ export const CorporateForm = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.organizationName.trim()) {
       newErrors.organizationName = 'Organization name is required';
     }
-    
+
     if (!formData.contactPerson.trim()) {
       newErrors.contactPerson = 'Contact person name is required';
     }
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
-    
+
     if (!formData.engagementType) {
       newErrors.engagementType = 'Please select an engagement type';
     }
-    
+
     if (!formData.message.trim()) {
       newErrors.message = 'Please share some context about your needs';
     } else if (formData.message.trim().length < 10) {
       newErrors.message = 'Please provide more details (at least 10 characters)';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsSubmitting(true);
@@ -88,15 +89,15 @@ export const CorporateForm = () => {
 
     try {
       const response = await corporateService.submitInquiry(formData);
-      
+
       if (response.success) {
         setIsSubmitted(true);
       } else {
         setSubmitError(response.message || 'Something went wrong. Please try again.');
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          'We\'re experiencing technical difficulties. Please try again in a moment.';
+      const errorMessage = error.response?.data?.message ||
+        'We\'re experiencing technical difficulties. Please try again in a moment.';
       setSubmitError(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -106,13 +107,13 @@ export const CorporateForm = () => {
   if (isSubmitted) {
     return (
       <section className="py-24 px-8 max-w-6xl mx-auto">
-        <div className="bg-white rounded-3xl p-16 shadow-xl my-16">
-          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-8 rounded-2xl text-center">
-            <h3 className="text-2xl font-medium mb-4">
+        <div className="glass-card rounded-3xl p-16 shadow-xl my-16">
+          <div className="bg-purple-100 text-primary p-12 rounded-2xl text-center border border-purple-200">
+            <h3 className="text-3xl font-bold mb-6">
               Thank you for reaching out
             </h3>
-            <p className="text-lg leading-relaxed">
-              We've received your message and will be in touch soon to understand your needs better. 
+            <p className="text-lg leading-relaxed text-gray-700 max-w-2xl mx-auto">
+              We've received your message and will be in touch soon to understand your needs better.
               We look forward to exploring how we can support your community's well-being journey.
             </p>
           </div>
@@ -122,120 +123,147 @@ export const CorporateForm = () => {
   }
 
   return (
-    <section className="py-24 px-8 max-w-6xl mx-auto">
-      <div className="bg-white rounded-3xl p-16 shadow-xl my-16">
-        <h2 className="text-3xl font-medium text-slate-800 text-center mb-12">
-          Start a conversation
-        </h2>
-        
-        <form className="max-w-2xl mx-auto" onSubmit={handleSubmit}>
-          <div className="mb-8">
-            <label htmlFor="organizationName" className="block font-medium text-gray-700 mb-2">
-              Organization Name
-            </label>
-            <input
-              type="text"
-              id="organizationName"
-              name="organizationName"
-              value={formData.organizationName}
-              onChange={handleChange}
-              className="w-full p-4 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-indigo-500 focus:bg-white focus:shadow-sm"
-              placeholder="Your organization or institution name"
-            />
-            {errors.organizationName && (
-              <div className="text-red-500 text-sm mt-2">{errors.organizationName}</div>
-            )}
-          </div>
+    <section className="py-2 px-6 max-w-5xl mx-auto">
+      <div className="bg-white/70 backdrop-blur-2xl rounded-[3rem] p-8 md:p-20 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] my-16 border border-white/50 relative overflow-hidden">
+        <div className="relative z-10">
+          <h2 className="text-4xl md:text-6xl font-bold text-center mb-8 tracking-tight">
+            <span className="bg-gradient-to-r from-[#1a2b4b] via-purple-800 to-[#1a2b4b] bg-clip-text text-transparent">
+              Start a Conversation
+            </span>
+          </h2>
+          <p className="text-center text-slate-500 mb-16 text-lg max-w-2xl mx-auto">
+            Ready to explore how we can support your organization? Share a few details, and we'll start exploring the possibilities together.
+          </p>
 
-          <div className="mb-8">
-            <label htmlFor="contactPerson" className="block font-medium text-gray-700 mb-2">
-              Contact Person
-            </label>
-            <input
-              type="text"
-              id="contactPerson"
-              name="contactPerson"
-              value={formData.contactPerson}
-              onChange={handleChange}
-              className="w-full p-4 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-indigo-500 focus:bg-white focus:shadow-sm"
-              placeholder="Your name"
-            />
-            {errors.contactPerson && (
-              <div className="text-red-500 text-sm mt-2">{errors.contactPerson}</div>
-            )}
-          </div>
+          <form className="max-w-3xl mx-auto space-y-8" onSubmit={handleSubmit}>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="space-y-3">
+                <label htmlFor="organizationName" className="block font-bold text-slate-700 text-sm tracking-wide uppercase">
+                  Organization Name
+                </label>
+                <input
+                  type="text"
+                  id="organizationName"
+                  name="organizationName"
+                  value={formData.organizationName}
+                  onChange={handleChange}
+                  className="w-full p-4 border border-slate-200 rounded-2xl bg-slate-50/50 focus:bg-white focus:border-purple-300 focus:ring-4 focus:ring-purple-100/50 transition-all duration-300 outline-none text-slate-700"
+                  placeholder="Organization name"
+                />
+                {errors.organizationName && (
+                  <div className="text-rose-500 text-sm pl-2 font-medium">{errors.organizationName}</div>
+                )}
+              </div>
 
-          <div className="mb-8">
-            <label htmlFor="email" className="block font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full p-4 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-indigo-500 focus:bg-white focus:shadow-sm"
-              placeholder="your.email@organization.com"
-            />
-            {errors.email && (
-              <div className="text-red-500 text-sm mt-2">{errors.email}</div>
-            )}
-          </div>
-
-          <div className="mb-8">
-            <label htmlFor="engagementType" className="block font-medium text-gray-700 mb-2">
-              Type of Engagement
-            </label>
-            <select
-              id="engagementType"
-              name="engagementType"
-              value={formData.engagementType}
-              onChange={handleChange}
-              className="w-full p-4 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-indigo-500 focus:bg-white focus:shadow-sm"
-            >
-              {engagementTypes.map(type => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-            {errors.engagementType && (
-              <div className="text-red-500 text-sm mt-2">{errors.engagementType}</div>
-            )}
-          </div>
-
-          <div className="mb-8">
-            <label htmlFor="message" className="block font-medium text-gray-700 mb-2">
-              Tell us about your context and needs
-            </label>
-            <textarea
-              id="message"
-              name="message"
-              value={formData.message}
-              onChange={handleChange}
-              className="w-full min-h-[120px] p-4 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 resize-y focus:outline-none focus:border-indigo-500 focus:bg-white focus:shadow-sm"
-              placeholder="Share some context about your organization, community, or event. What are you hoping to explore together? What would meaningful support look like for your group?"
-            />
-            {errors.message && (
-              <div className="text-red-500 text-sm mt-2">{errors.message}</div>
-            )}
-          </div>
-
-          {submitError && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-xl border-l-4 border-red-500 mb-4">
-              {submitError}
+              <div className="space-y-3">
+                <label htmlFor="contactPerson" className="block font-bold text-slate-700 text-sm tracking-wide uppercase">
+                  Contact Person
+                </label>
+                <input
+                  type="text"
+                  id="contactPerson"
+                  name="contactPerson"
+                  value={formData.contactPerson}
+                  onChange={handleChange}
+                  className="w-full p-4 border border-slate-200 rounded-2xl bg-slate-50/50 focus:bg-white focus:border-purple-300 focus:ring-4 focus:ring-purple-100/50 transition-all duration-300 outline-none text-slate-700"
+                  placeholder="Your full name"
+                />
+                {errors.contactPerson && (
+                  <div className="text-rose-500 text-sm pl-2 font-medium">{errors.contactPerson}</div>
+                )}
+              </div>
             </div>
-          )}
 
-          <button
-            type="submit"
-            className="w-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-0 rounded-xl p-4 text-lg font-medium cursor-pointer transition-all duration-300 mt-4 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Sending...' : 'Start a conversation'}
-          </button>
-        </form>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="space-y-3">
+                <label htmlFor="email" className="block font-bold text-slate-700 text-sm tracking-wide uppercase">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full p-4 border border-slate-200 rounded-2xl bg-slate-50/50 focus:bg-white focus:border-purple-300 focus:ring-4 focus:ring-purple-100/50 transition-all duration-300 outline-none text-slate-700"
+                  placeholder="name@company.com"
+                />
+                {errors.email && (
+                  <div className="text-rose-500 text-sm pl-2 font-medium">{errors.email}</div>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <label htmlFor="engagementType" className="block font-bold text-slate-700 text-sm tracking-wide uppercase">
+                  Interest Area
+                </label>
+                <div className="relative">
+                  <select
+                    id="engagementType"
+                    name="engagementType"
+                    value={formData.engagementType}
+                    onChange={handleChange}
+                    className="w-full p-4 border border-slate-200 rounded-2xl bg-slate-50/50 focus:bg-white focus:border-purple-300 focus:ring-4 focus:ring-purple-100/50 transition-all duration-300 outline-none text-slate-700 appearance-none cursor-pointer"
+                  >
+                    {engagementTypes.map(type => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </div>
+                </div>
+                {errors.engagementType && (
+                  <div className="text-rose-500 text-sm pl-2 font-medium">{errors.engagementType}</div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <label htmlFor="message" className="block font-bold text-slate-700 text-sm tracking-wide uppercase">
+                Context & Needs
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                className="w-full min-h-[160px] p-6 border border-slate-200 rounded-2xl bg-slate-50/50 focus:bg-white focus:border-purple-300 focus:ring-4 focus:ring-purple-100/50 transition-all duration-300 outline-none text-slate-700 resize-y leading-relaxed"
+                placeholder="Tell us a bit about your organization and what you're hoping to achieve..."
+              />
+              {errors.message && (
+                <div className="text-rose-500 text-sm pl-2 font-medium">{errors.message}</div>
+              )}
+            </div>
+
+            {submitError && (
+              <div className="bg-rose-50 text-rose-600 p-4 rounded-xl border border-rose-100 flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-rose-500"></div>
+                {submitError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-[#1a2b4b] to-[#2a4b7c] hover:from-[#2a4b7c] hover:to-[#3a6b9c] text-white p-5 rounded-2xl font-bold text-lg shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  Start a Conversation
+                  <Send className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
+            </button>
+          </form>
+        </div>
       </div>
     </section>
   );
