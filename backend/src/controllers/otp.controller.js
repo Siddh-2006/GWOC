@@ -1,7 +1,7 @@
 import OTP from '../models/OTP.model.js';
 import Auth from '../models/Auth.model.js';
 import { User } from '../models/User.model.js';
-import { generateOTP, sendOTPEmail, sendWelcomeEmail } from '../services/email.service.js';
+import { generateOTP, sendOTPEmail, sendWelcomeEmail } from '../services/auth-email.service.js';
 import { otpValidation } from '../validation/otp.validation.js';
 
 // Send OTP for registration

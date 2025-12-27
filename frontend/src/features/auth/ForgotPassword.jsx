@@ -15,13 +15,22 @@ const ForgotPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    clearError();
+    
     try {
+      console.log('Sending forgot password request for:', email);
       const response = await authApi.forgotPassword(email);
+      console.log('Forgot password response:', response);
+      
       if (response.success) {
         navigate('/reset-password', { state: { email } });
+      } else {
+        setError(response.message || 'Failed to send reset email');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong. Please try again.');
+      console.error('Forgot password error:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Something went wrong. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -1,10 +1,10 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 import Chatbot from './features/chatbot/Chatbot';
 
 import Booking from './features/booking/BookingPage';
+import UserBookings from './features/booking/UserBookings';
 import AdminDashboard from './features/admin/AdminDashboard';
 import Home from './pages/Home';
 import About from './pages/About';
@@ -22,6 +22,7 @@ import Login from './features/auth/Login';
 import VerifyEmail from './features/auth/VerifyEmail';
 import ForgotPassword from './features/auth/ForgotPassword';
 import ResetPassword from './features/auth/ResetPassword';
+import TestAuth from './pages/TestAuth';
 
 import useAuthStore from './store/useAuthStore';
 
@@ -31,20 +32,6 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (adminOnly && user?.role !== 'admin') return <Navigate to="/" replace />;
-
-  return children;
-};
-
-// Admin Route Component - Redirects admin users to admin dashboard
-const AdminRoute = ({ children }) => {
-  const { isAuthenticated, user } = useAuthStore();
-
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  
-  // If user is admin, redirect to admin dashboard
-  if (user?.role === 'admin') {
-    return <Navigate to="/admin" replace />;
-  }
 
   return children;
 };
@@ -63,11 +50,7 @@ function App() {
       <ScrollToTop />
       <Layout>
         <Routes>
-          <Route path="/" element={
-            <AdminRoute>
-              <Home />
-            </AdminRoute>
-          } />
+          <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/psycho-education" element={<Placeholder title="Psycho-Education Awareness" />} />
           <Route path="/how-it-works" element={<Placeholder title="How It Works" />} />
@@ -84,7 +67,17 @@ function App() {
             }
           />
 
+          <Route
+            path="/my-bookings"
+            element={
+              <ProtectedRoute>
+                <UserBookings />
+              </ProtectedRoute>
+            }
+          />
+
           <Route path="/corporate" element={<Corporate />} />
+          <Route path="/test-auth" element={<TestAuth />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
           <Route path="/confidentiality" element={<ConfidentialityPolicy />} />

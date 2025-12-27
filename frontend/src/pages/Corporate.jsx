@@ -5,7 +5,6 @@ import { CorporateOfferings } from '../components/CorporateOfferings';
 import { CorporateProcess } from '../components/CorporateProcess';
 import { CorporateEthics } from '../components/CorporateEthics';
 import { CorporateForm } from '../components/CorporateForm';
-import styles from '../styles/corporate.module.css';
 
 /**
  * Corporate Services Page
@@ -14,7 +13,7 @@ import styles from '../styles/corporate.module.css';
  */
 export const Corporate = () => {
   return (
-    <div className={styles.corporatePage}>
+    <div className="min-h-screen corporate-page-bg">
       {/* Intro - Calm headline with mountain/river continuation */}
       <CorporateIntro />
       

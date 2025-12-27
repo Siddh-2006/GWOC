@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import styles from '../styles/corporate.module.css';
 
 /**
  * Corporate Audience Section
@@ -16,7 +15,8 @@ export const CorporateAudience = () => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add(styles.visible);
+            entry.target.classList.add('opacity-100', 'translate-y-0');
+            entry.target.classList.remove('opacity-0', 'translate-y-8');
           }
         });
       },
@@ -59,28 +59,28 @@ export const CorporateAudience = () => {
   ];
 
   return (
-    <section className={styles.section} ref={sectionRef}>
+    <section className="py-24 px-8 max-w-6xl mx-auto" ref={sectionRef}>
       <h2 
-        className={styles.sectionTitle} 
+        className="text-4xl font-light text-slate-800 text-center mb-12 opacity-0 translate-y-5 transition-all duration-800 ease-out" 
         ref={titleRef}
       >
         Who we work with
       </h2>
       
-      <div className={styles.audienceGrid}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
         {audiences.map((audience, index) => (
           <div
             key={index}
-            className={styles.audienceCard}
+            className="bg-white rounded-2xl p-10 shadow-lg transition-all duration-600 ease-out opacity-0 translate-y-8 border border-slate-100 hover:-translate-y-2 hover:shadow-2xl"
             ref={(el) => cardsRef.current[index] = el}
           >
-            <div className={styles.audienceIcon}>
+            <div className="w-15 h-15 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mb-6 text-2xl text-white">
               {audience.icon}
             </div>
-            <h3 className={styles.audienceTitle}>
+            <h3 className="text-2xl font-medium text-slate-800 mb-4">
               {audience.title}
             </h3>
-            <p className={styles.audienceDescription}>
+            <p className="text-slate-600 leading-relaxed">
               {audience.description}
             </p>
           </div>

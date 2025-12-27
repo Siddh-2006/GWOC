@@ -1,5 +1,4 @@
 import React from 'react';
-import styles from '../styles/corporate.module.css';
 
 /**
  * Corporate Ethics Section
@@ -31,57 +30,34 @@ export const CorporateEthics = () => {
   ];
 
   return (
-    <section className={styles.section}>
-      <div className={styles.ethicsSection}>
-        <h2 className={styles.ethicsTitle}>
+    <section className="py-24 px-8 max-w-6xl mx-auto">
+      <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-3xl p-16 my-16 text-center">
+        <h2 className="text-3xl font-medium text-slate-800 mb-8">
           Ethics & Confidentiality
         </h2>
-        <p style={{ 
-          fontSize: '1.1rem', 
-          color: '#64748b', 
-          maxWidth: '600px', 
-          margin: '0 auto 2rem auto',
-          lineHeight: '1.6'
-        }}>
+        <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed">
           Our approach is grounded in respect, confidentiality, and ethical practice. 
           We believe in creating supportive environments while maintaining clear boundaries.
         </p>
         
-        <div className={styles.ethicsGrid}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-8">
           {ethicsPoints.map((point, index) => (
-            <div key={index} className={styles.ethicsItem}>
-              <div className={styles.ethicsIcon}>
+            <div key={index} className="bg-white rounded-xl p-8 shadow-sm">
+              <div className="text-3xl mb-4">
                 {point.icon}
               </div>
-              <h3 style={{ 
-                fontSize: '1.1rem', 
-                fontWeight: '600', 
-                color: '#1e293b', 
-                marginBottom: '0.5rem' 
-              }}>
+              <h3 className="text-lg font-semibold text-slate-800 mb-2">
                 {point.title}
               </h3>
-              <p className={styles.ethicsText}>
+              <p className="text-slate-600 font-medium">
                 {point.description}
               </p>
             </div>
           ))}
         </div>
         
-        <div style={{ 
-          marginTop: '3rem', 
-          padding: '2rem', 
-          background: 'rgba(99, 102, 241, 0.1)', 
-          borderRadius: '12px',
-          border: '1px solid rgba(99, 102, 241, 0.2)'
-        }}>
-          <p style={{ 
-            fontSize: '1rem', 
-            color: '#475569', 
-            margin: 0,
-            fontStyle: 'italic',
-            textAlign: 'center'
-          }}>
+        <div className="mt-12 p-8 bg-indigo-50 rounded-xl border border-indigo-200">
+          <p className="text-slate-600 italic text-center">
             "We are facilitators and educators, not therapists or clinicians. 
             Our role is to create supportive learning environments, not to provide treatment or clinical services."
           </p>

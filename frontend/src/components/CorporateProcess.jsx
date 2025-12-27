@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import styles from '../styles/corporate.module.css';
 
 /**
  * Corporate Process Section
@@ -16,7 +15,8 @@ export const CorporateProcess = () => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add(styles.visible);
+            entry.target.classList.add('opacity-100', 'translate-x-0');
+            entry.target.classList.remove('opacity-0', '-translate-x-8');
           }
         });
       },
@@ -67,27 +67,27 @@ export const CorporateProcess = () => {
   ];
 
   return (
-    <section className={styles.section} ref={sectionRef}>
+    <section className="py-24 px-8 max-w-6xl mx-auto" ref={sectionRef}>
       <h2 
-        className={styles.sectionTitle} 
+        className="text-4xl font-light text-slate-800 text-center mb-12 opacity-0 translate-y-5 transition-all duration-800 ease-out" 
         ref={titleRef}
       >
         How engagement works
       </h2>
       
-      <div className={styles.processSteps}>
+      <div className="grid gap-8 mt-12 relative">
         {processSteps.map((step, index) => (
           <div
             key={index}
-            className={styles.processStep}
+            className="flex items-start bg-white rounded-2xl p-8 shadow-lg opacity-0 -translate-x-8 transition-all duration-600 ease-out"
             ref={(el) => stepsRef.current[index] = el}
           >
-            <div className={styles.stepNumber}>
+            <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold mr-8 flex-shrink-0">
               {step.number}
             </div>
-            <div className={styles.stepContent}>
-              <h3>{step.title}</h3>
-              <p>{step.description}</p>
+            <div>
+              <h3 className="text-xl font-semibold text-slate-800 mb-2">{step.title}</h3>
+              <p className="text-slate-600 leading-relaxed">{step.description}</p>
             </div>
           </div>
         ))}

@@ -3,7 +3,7 @@ import Auth from '../models/Auth.model.js';
 import { User } from '../models/User.model.js';
 import OTP from '../models/OTP.model.js';
 import { authValidation } from '../validation/auth.validation.js';
-import { generateOTP, sendOTPEmail } from '../services/email.service.js';
+import { generateOTP, sendOTPEmail } from '../services/auth-email.service.js';
 
 // Generate JWT tokens
 const generateTokens = async (userId) => {
@@ -447,13 +447,14 @@ export const forgotPassword = async (req, res) => {
     // Check if user exists and is verified
     const user = await Auth.findOne({ email, isEmailVerified: true });
     if (!user) {
+      // For security, always return success even if user doesn't exist
       return res.json({
         success: true,
         message: 'If an account exists with this email, you will receive a password reset OTP.'
       });
     }
 
-    // Check for recent OTP requests
+    // Check for recent OTP requests (rate limiting)
     const recentOTP = await OTP.findOne({
       email,
       type: 'password_reset',
@@ -476,12 +477,30 @@ export const forgotPassword = async (req, res) => {
     });
 
     // Send OTP email
-    await sendOTPEmail(email, otp, 'password_reset');
-
-    res.json({
-      success: true,
-      message: 'Password reset OTP sent to your email'
-    });
+    try {
+      await sendOTPEmail(email, otp, 'password_reset');
+      
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`🔐 Password reset OTP sent to ${email}: ${otp}`);
+      }
+      
+      res.json({
+        success: true,
+        message: 'Password reset OTP sent to your email'
+      });
+    } catch (emailError) {
+      console.error('Failed to send password reset email:', emailError.message);
+      
+      // If email fails, still return success for security but log the error
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`🔐 Email failed, but OTP for ${email}: ${otp}`);
+      }
+      
+      res.json({
+        success: true,
+        message: 'Password reset OTP sent to your email'
+      });
+    }
 
   } catch (error) {
     console.error('Forgot password error:', error);
@@ -506,6 +525,10 @@ export const resetPassword = async (req, res) => {
 
     const { email, otp, password } = value;
 
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`🔍 Reset password attempt for ${email} with OTP: ${otp}`);
+    }
+
     // Verify OTP
     const otpRecord = await OTP.findOne({
       email,
@@ -516,6 +539,12 @@ export const resetPassword = async (req, res) => {
     });
 
     if (!otpRecord) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`❌ Invalid OTP for ${email}. Checking all OTPs...`);
+        const allOTPs = await OTP.find({ email, type: 'password_reset' }).sort({ createdAt: -1 });
+        console.log('Recent OTPs:', allOTPs.map(o => ({ otp: o.otp, isUsed: o.isUsed, expired: o.expiresAt < new Date() })));
+      }
+      
       return res.status(400).json({
         success: false,
         message: 'Invalid or expired OTP'
@@ -540,6 +569,10 @@ export const resetPassword = async (req, res) => {
     // Mark OTP as used
     otpRecord.isUsed = true;
     await otpRecord.save();
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`✅ Password reset successful for ${email}`);
+    }
 
     res.json({
       success: true,

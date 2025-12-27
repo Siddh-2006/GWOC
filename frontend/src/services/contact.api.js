@@ -27,7 +27,6 @@ class ContactAPI {
   async getContactMessages(params = {}) {
     try {
       const token = localStorage.getItem('accessToken');
-      console.log('Getting contact messages with token:', token ? 'Present' : 'Missing');
       
       if (!token) {
         throw new Error('Authentication required');
@@ -39,8 +38,6 @@ class ContactAPI {
       if (params.status) queryParams.append('status', params.status);
       if (params.search) queryParams.append('search', params.search);
 
-      console.log('Making request to:', `${API_BASE_URL}/contact/messages?${queryParams}`);
-
       const response = await fetch(`${API_BASE_URL}/contact/messages?${queryParams}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -48,9 +45,7 @@ class ContactAPI {
         }
       });
 
-      console.log('Response status:', response.status);
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to fetch contact messages');
@@ -150,13 +145,10 @@ class ContactAPI {
   async getContactStats() {
     try {
       const token = localStorage.getItem('accessToken');
-      console.log('Getting contact stats with token:', token ? 'Present' : 'Missing');
       
       if (!token) {
         throw new Error('Authentication required');
       }
-
-      console.log('Making request to:', `${API_BASE_URL}/contact/stats`);
 
       const response = await fetch(`${API_BASE_URL}/contact/stats`, {
         headers: {
@@ -165,9 +157,7 @@ class ContactAPI {
         }
       });
 
-      console.log('Stats response status:', response.status);
       const data = await response.json();
-      console.log('Stats response data:', data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to fetch contact statistics');

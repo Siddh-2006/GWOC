@@ -41,19 +41,27 @@ const ResetPassword = () => {
     if (password !== confirmPassword) return setError('Passwords do not match');
 
     setLoading(true);
+    clearError();
+    
     try {
+      console.log('Sending reset password request:', { email, otp: otpValue });
       const response = await authApi.resetPassword({
         email,
         otp: otpValue,
         password
       });
+      console.log('Reset password response:', response);
 
       if (response.success) {
         setSuccess(true);
         setTimeout(() => navigate('/login'), 3000);
+      } else {
+        setError(response.message || 'Failed to reset password');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to reset password. Please check your code.');
+      console.error('Reset password error:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to reset password. Please check your code.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

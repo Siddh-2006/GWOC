@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import styles from '../styles/corporate.module.css';
 
 /**
  * Corporate Offerings Section
@@ -16,7 +15,8 @@ export const CorporateOfferings = () => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add(styles.visible);
+            entry.target.classList.add('opacity-100', 'translate-y-0');
+            entry.target.classList.remove('opacity-0', 'translate-y-8');
           }
         });
       },
@@ -90,45 +90,45 @@ export const CorporateOfferings = () => {
   ];
 
   return (
-    <section className={styles.section} ref={sectionRef}>
+    <section className="py-24 px-8 max-w-6xl mx-auto" ref={sectionRef}>
       <h2 
-        className={styles.sectionTitle} 
+        className="text-4xl font-light text-slate-800 text-center mb-12 opacity-0 translate-y-5 transition-all duration-800 ease-out" 
         ref={titleRef}
       >
         What we offer
       </h2>
       
-      <div className={styles.offeringsGrid}>
+      <div className="grid gap-12 mt-12">
         {offerings.map((offering, index) => (
           <div
             key={index}
-            className={styles.offeringItem}
+            className="bg-white rounded-2xl p-12 shadow-lg opacity-0 translate-y-8 transition-all duration-600 ease-out"
             ref={(el) => offeringsRef.current[index] = el}
           >
-            <div className={styles.offeringHeader}>
-              <div className={styles.offeringIcon}>
+            <div className="flex items-center mb-8">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center mr-4 text-xl text-white">
                 {offering.icon}
               </div>
-              <h3 className={styles.offeringTitle}>
+              <h3 className="text-2xl font-medium text-slate-800">
                 {offering.title}
               </h3>
             </div>
             
-            <div className={styles.offeringContent}>
-              <div className={styles.offeringWhat}>
-                <h4 className={styles.offeringSubtitle}>What we provide</h4>
-                <ul>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="p-6 bg-emerald-50 rounded-xl border-l-4 border-emerald-500">
+                <h4 className="font-semibold mb-4 text-emerald-700">What we provide</h4>
+                <ul className="space-y-2">
                   {offering.what.map((item, idx) => (
-                    <li key={idx}>{item}</li>
+                    <li key={idx} className="text-slate-600 leading-relaxed">• {item}</li>
                   ))}
                 </ul>
               </div>
               
-              <div className={styles.offeringNot}>
-                <h4 className={styles.offeringSubtitle}>What we don't provide</h4>
-                <ul>
+              <div className="p-6 bg-red-50 rounded-xl border-l-4 border-red-500">
+                <h4 className="font-semibold mb-4 text-red-700">What we don't provide</h4>
+                <ul className="space-y-2">
                   {offering.whatNot.map((item, idx) => (
-                    <li key={idx}>{item}</li>
+                    <li key={idx} className="text-slate-600 leading-relaxed">• {item}</li>
                   ))}
                 </ul>
               </div>

@@ -50,14 +50,23 @@ const VerifyEmail = () => {
     if (otpValue.length !== 6) return setError('Please enter a 6-digit code');
 
     setLoading(true);
+    clearError();
+    
     try {
+      console.log('Verifying email with:', { email, otp: otpValue });
       const response = await authApi.verifyEmail({ email, otp: otpValue });
+      console.log('Verification response:', response);
+      
       if (response.success) {
         setSuccess(true);
         setTimeout(() => navigate('/login'), 2000);
+      } else {
+        setError(response.message || 'Verification failed');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Verification failed. Please try again.');
+      console.error('Verification error:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Verification failed. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -65,11 +74,23 @@ const VerifyEmail = () => {
 
   const handleResend = async () => {
     setResendLoading(true);
+    clearError();
+    
     try {
-      await authApi.resendOTP(email);
-      // Optional: Show success message for resend
+      console.log('Resending OTP for:', email);
+      const response = await authApi.resendOTP(email);
+      console.log('Resend response:', response);
+      
+      if (response.success) {
+        // Show success message or toast
+        console.log('OTP resent successfully');
+      } else {
+        setError(response.message || 'Failed to resend OTP');
+      }
     } catch (err) {
-      setError('Failed to resend OTP. Please try again.');
+      console.error('Resend OTP error:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to resend OTP. Please try again.';
+      setError(errorMessage);
     } finally {
       setResendLoading(false);
     }

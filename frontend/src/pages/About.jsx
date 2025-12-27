@@ -40,7 +40,9 @@ const About = () => {
     if (videoRef.current) {
       if (isFlipped) {
         videoRef.current.currentTime = 0;
-        videoRef.current.play().catch(e => console.log("Autoplay prevented", e));
+        videoRef.current.play().catch(() => {
+          // Autoplay prevented - this is normal behavior
+        });
       } else {
         videoRef.current.pause();
       }

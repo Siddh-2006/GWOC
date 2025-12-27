@@ -31,7 +31,15 @@ const Signup = () => {
     }
 
     setLoading(true);
+    clearError();
+    
     try {
+      console.log('Sending signup request:', { 
+        firstName: formData.firstName, 
+        lastName: formData.lastName, 
+        email: formData.email 
+      });
+      
       const response = await authApi.signup({
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -39,12 +47,18 @@ const Signup = () => {
         password: formData.password
       });
 
+      console.log('Signup response:', response);
+
       if (response.success) {
         // Redirect to email verification with email in state
         navigate('/verify-email', { state: { email: formData.email } });
+      } else {
+        setError(response.message || 'Signup failed');
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.errors?.[0] || 'Something went wrong during signup');
+      console.error('Signup error:', err);
+      const errorMessage = err.response?.data?.message || err.response?.data?.errors?.[0] || err.message || 'Something went wrong during signup';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

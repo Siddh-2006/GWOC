@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, X, Clock, User, Filter, Plus, Calendar, Loader2, Building2, MessageSquare, Bug } from 'lucide-react';
+import { Check, X, Clock, User, Filter, Plus, Calendar, Loader2, Building2, MessageSquare, Bug, Eye, Mail, Phone, Heart } from 'lucide-react';
 import { useBookingStore } from '../../store/useBookingStore';
 import { bookingApi } from '../booking/booking.api';
 import { CorporateInquiries } from '../../components/admin/CorporateInquiries';
@@ -15,44 +15,107 @@ const AdminDashboard = () => {
     setAvailableSlots,
   } = useBookingStore();
 
-  const [activeTab, setActiveTab] = useState('appointments');
+  const [activeTab, setActiveTab] = useState('bookings');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [bookings, setBookings] = useState([]);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [confirmationData, setConfirmationData] = useState({
+    confirmedDate: '',
+    confirmedTime: '',
+    meetingLink: '',
+    notes: ''
+  });
 
-  const fetchData = async () => {
+  const fetchBookings = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const today = new Date().toISOString().split('T')[0];
-      // Dummy data for testing
-      const dummySlots = [
-        { id: 1, time: '10:00 AM', date: today, status: 'available' },
-        { id: 2, time: '11:00 AM', date: today, status: 'available' },
-        { id: 3, time: '02:00 PM', date: today, status: 'available' },
-      ];
-
-      // const slots = await bookingApi.getAvailableSlots(today);
-      // setAvailableSlots(slots);
-
-      setAvailableSlots(dummySlots);
-
-      // Note: Assuming there's also an API for fetching appointments
-      // const apps = await bookingApi.getAllAppointments();
-      // setAppointments(apps);
+      const response = await bookingApi.admin.getAllBookings();
+      setBookings(response.data || []);
     } catch (err) {
-      setError('Failed to fetch dashboard data');
+      setError('Failed to fetch bookings: ' + err.message);
+      console.error('Fetch bookings error:', err);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchSlots = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const slots = await bookingApi.getAvailableSlots(today);
+      setAvailableSlots(slots);
+    } catch (err) {
+      console.error('Fetch slots error:', err);
+    }
+  };
+
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (activeTab === 'bookings') {
+      fetchBookings();
+    } else if (activeTab === 'slots') {
+      fetchSlots();
+    }
+  }, [activeTab]);
+
+  const handleConfirmBooking = async (bookingId) => {
+    try {
+      setLoading(true);
+      await bookingApi.admin.confirmBooking(bookingId, confirmationData);
+      
+      // Refresh the bookings list
+      await fetchBookings();
+      
+      // Close the modal and reset form
+      setSelectedBooking(null);
+      setConfirmationData({
+        confirmedDate: '',
+        confirmedTime: '',
+        meetingLink: '',
+        notes: ''
+      });
+      
+    } catch (err) {
+      setError('Failed to confirm booking: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-IN', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const formatTime = (timeString) => {
+    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
 
   const stats = [
-    { label: 'Pending', count: appointments.filter(a => a.status === 'pending').length, color: 'text-yellow-600 bg-yellow-100' },
-    { label: 'Confirmed', count: appointments.filter(a => a.status === 'confirmed').length, color: 'text-green-600 bg-green-100' },
-    { label: 'Total Slots', count: availableSlots.length, color: 'text-purple-600 bg-purple-100' },
+    { 
+      label: 'Pending', 
+      count: bookings.filter(b => b.status === 'pending').length, 
+      color: 'text-yellow-600 bg-yellow-100' 
+    },
+    { 
+      label: 'Confirmed', 
+      count: bookings.filter(b => b.status === 'confirmed').length, 
+      color: 'text-green-600 bg-green-100' 
+    },
+    { 
+      label: 'Total Bookings', 
+      count: bookings.length, 
+      color: 'text-purple-600 bg-purple-100' 
+    },
   ];
 
   return (
@@ -62,24 +125,37 @@ const AdminDashboard = () => {
           <h1 className="text-3xl font-bold text-primary">Admin Dashboard</h1>
           <p className="text-gray-500">Manage your sessions and appointment requests.</p>
         </div>
-        <div className="flex gap-4">
-          {stats.map((stat, i) => (
-            <div key={i} className={`px-4 py-2 rounded-xl flex items-center gap-3 ${stat.color}`}>
-              <span className="font-bold text-lg">{stat.count}</span>
-              <span className="text-xs uppercase font-semibold">{stat.label}</span>
-            </div>
-          ))}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => {
+              if (activeTab === 'bookings') fetchBookings();
+              else if (activeTab === 'slots') fetchSlots();
+            }}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+            disabled={loading}
+          >
+            {loading ? <Loader2 className="animate-spin" size={16} /> : '🔄'}
+            Refresh
+          </button>
+          <div className="flex gap-4">
+            {stats.map((stat, i) => (
+              <div key={i} className={`px-4 py-2 rounded-xl flex items-center gap-3 ${stat.color}`}>
+                <span className="font-bold text-lg">{stat.count}</span>
+                <span className="text-xs uppercase font-semibold">{stat.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="flex space-x-1 bg-purple-50 p-1 rounded-2xl mb-8 w-fit">
         <button
-          onClick={() => setActiveTab('appointments')}
-          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'appointments' ? 'bg-white shadow text-primary' : 'text-gray-500 hover:text-primary'
+          onClick={() => setActiveTab('bookings')}
+          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'bookings' ? 'bg-white shadow text-primary' : 'text-gray-500 hover:text-primary'
             }`}
         >
-          Appointments
+          Session Bookings
         </button>
         <button
           onClick={() => setActiveTab('slots')}
@@ -114,71 +190,120 @@ const AdminDashboard = () => {
         </button>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6">
+          {error}
+        </div>
+      )}
+
       <div className="glass-card overflow-hidden">
-        {activeTab === 'appointments' ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-purple-50/50">
-                <tr>
-                  <th className="px-6 py-4 text-xs font-bold text-primary uppercase">User</th>
-                  <th className="px-6 py-4 text-xs font-bold text-primary uppercase">Session</th>
-                  <th className="px-6 py-4 text-xs font-bold text-primary uppercase">Status</th>
-                  <th className="px-6 py-4 text-xs font-bold text-primary uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-purple-50">
-                {appointments.length === 0 ? (
-                  <tr>
-                    <td colSpan="4" className="px-6 py-12 text-center text-gray-400">No appointment requests yet.</td>
-                  </tr>
-                ) : (
-                  appointments.map((app) => (
-                    <tr key={app.id} className="hover:bg-purple-50/20 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-primary">
-                            <User size={18} />
-                          </div>
-                          <div>
-                            <p className="font-bold text-sm">{app.name}</p>
-                            <p className="text-xs text-gray-400">{app.email}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="text-sm font-medium">{app.slot?.time}</p>
-                        <p className="text-xs text-secondary capitalize">{app.mode}</p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${app.status === 'confirmed' ? 'bg-green-100 text-green-600' :
-                          app.status === 'rejected' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600'
-                          }`}>
-                          {app.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        {app.status === 'pending' && (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => updateAppointmentStatus(app.id, 'confirmed')}
-                              className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                            >
-                              <Check size={16} />
-                            </button>
-                            <button
-                              onClick={() => updateAppointmentStatus(app.id, 'rejected')}
-                              className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                            >
-                              <X size={16} />
-                            </button>
-                          </div>
-                        )}
-                      </td>
+        {activeTab === 'bookings' ? (
+          <div>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="animate-spin text-primary" size={32} />
+                <span className="ml-3 text-gray-600">Loading bookings...</span>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-purple-50/50">
+                    <tr>
+                      <th className="px-6 py-4 text-xs font-bold text-primary uppercase">Client</th>
+                      <th className="px-6 py-4 text-xs font-bold text-primary uppercase">Session Details</th>
+                      <th className="px-6 py-4 text-xs font-bold text-primary uppercase">Status</th>
+                      <th className="px-6 py-4 text-xs font-bold text-primary uppercase">Actions</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody className="divide-y divide-purple-50">
+                    {bookings.length === 0 ? (
+                      <tr>
+                        <td colSpan="4" className="px-6 py-12 text-center text-gray-400">
+                          No booking requests yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      bookings.map((booking) => (
+                        <tr key={booking._id} className="hover:bg-purple-50/20 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-primary">
+                                <User size={18} />
+                              </div>
+                              <div>
+                                <p className="font-bold text-sm">{booking.personalInfo?.name}</p>
+                                <p className="text-xs text-gray-400 flex items-center gap-1">
+                                  <Mail size={12} />
+                                  {booking.personalInfo?.email}
+                                </p>
+                                <p className="text-xs text-gray-400 flex items-center gap-1">
+                                  <Phone size={12} />
+                                  {booking.personalInfo?.phone}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium">
+                                {booking.slotId ? formatDate(booking.slotId.date) : 'Date not available'}
+                              </p>
+                              <p className="text-xs text-secondary">
+                                {booking.slotId ? `${formatTime(booking.slotId.startTime)} - ${formatTime(booking.slotId.endTime)}` : 'Time not available'}
+                              </p>
+                              <p className="text-xs text-gray-500 capitalize flex items-center gap-1">
+                                <Heart size={12} />
+                                {booking.sessionMode} • {booking.personalInfo?.relationshipStatus}
+                              </p>
+                              <p className="text-xs text-green-600 font-medium">
+                                ₹{booking.payment?.amount || 'N/A'}
+                              </p>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                              booking.status === 'confirmed' ? 'bg-green-100 text-green-600' :
+                              booking.status === 'cancelled' ? 'bg-red-100 text-red-600' : 
+                              'bg-yellow-100 text-yellow-600'
+                            }`}>
+                              {booking.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => setSelectedBooking(booking)}
+                                className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                                title="View Details"
+                              >
+                                <Eye size={16} />
+                              </button>
+                              {booking.status === 'pending' && (
+                                <button
+                                  onClick={() => {
+                                    setSelectedBooking(booking);
+                                    setConfirmationData({
+                                      confirmedDate: booking.slotId?.date || '',
+                                      confirmedTime: booking.slotId?.startTime || '',
+                                      meetingLink: booking.sessionMode === 'online' ? '' : undefined,
+                                      notes: ''
+                                    });
+                                  }}
+                                  className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                                  title="Confirm Booking"
+                                >
+                                  <Check size={16} />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         ) : activeTab === 'slots' ? (
           <div className="p-8">
@@ -191,10 +316,11 @@ const AdminDashboard = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {availableSlots.map((slot) => (
-                <div key={slot.id} className="p-4 rounded-2xl border border-purple-100 flex justify-between items-center group hover:shadow-md transition-all">
+                <div key={slot._id} className="p-4 rounded-2xl border border-purple-100 flex justify-between items-center group hover:shadow-md transition-all">
                   <div>
-                    <p className="font-bold text-primary">{slot.time}</p>
-                    <p className="text-xs text-gray-400">{slot.date}</p>
+                    <p className="font-bold text-primary">{slot.startTime} - {slot.endTime}</p>
+                    <p className="text-xs text-gray-400">{formatDate(slot.date)}</p>
+                    <p className="text-xs text-green-600">₹{slot.pricing?.online} - ₹{slot.pricing?.offline}</p>
                   </div>
                   <button className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
                     <X size={18} />
@@ -211,6 +337,204 @@ const AdminDashboard = () => {
           <ContactDebug />
         ) : null}
       </div>
+
+      {/* Booking Details Modal */}
+      {selectedBooking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold">Booking Details</h3>
+                <button
+                  onClick={() => setSelectedBooking(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Client Information */}
+              <div className="bg-gray-50 p-4 rounded-xl">
+                <h4 className="font-semibold mb-3">Client Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Name:</span>
+                    <p className="font-medium">{selectedBooking.personalInfo?.name}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Email:</span>
+                    <p className="font-medium">{selectedBooking.personalInfo?.email}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Phone:</span>
+                    <p className="font-medium">{selectedBooking.personalInfo?.phone}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Relationship Status:</span>
+                    <p className="font-medium capitalize">{selectedBooking.personalInfo?.relationshipStatus}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Number of People:</span>
+                    <p className="font-medium">{selectedBooking.personalInfo?.numberOfPeople}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Session Content */}
+              <div className="bg-blue-50 p-4 rounded-xl">
+                <h4 className="font-semibold mb-3">Session Content</h4>
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <span className="text-gray-600">Topics to Discuss:</span>
+                    <p className="mt-1 p-2 bg-white rounded border">{selectedBooking.sessionContent?.topics}</p>
+                  </div>
+                  {selectedBooking.sessionContent?.concerns && (
+                    <div>
+                      <span className="text-gray-600">Concerns:</span>
+                      <p className="mt-1 p-2 bg-white rounded border">{selectedBooking.sessionContent.concerns}</p>
+                    </div>
+                  )}
+                  {selectedBooking.sessionContent?.goals && (
+                    <div>
+                      <span className="text-gray-600">Goals:</span>
+                      <p className="mt-1 p-2 bg-white rounded border">{selectedBooking.sessionContent.goals}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Session Details */}
+              <div className="bg-purple-50 p-4 rounded-xl">
+                <h4 className="font-semibold mb-3">Session Details</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Date:</span>
+                    <p className="font-medium">{selectedBooking.slotId ? formatDate(selectedBooking.slotId.date) : 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Time:</span>
+                    <p className="font-medium">
+                      {selectedBooking.slotId ? `${formatTime(selectedBooking.slotId.startTime)} - ${formatTime(selectedBooking.slotId.endTime)}` : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Mode:</span>
+                    <p className="font-medium capitalize">{selectedBooking.sessionMode}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Amount:</span>
+                    <p className="font-medium text-green-600">₹{selectedBooking.payment?.amount}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Confirmation Form (for pending bookings) */}
+              {selectedBooking.status === 'pending' && (
+                <div className="bg-green-50 p-4 rounded-xl">
+                  <h4 className="font-semibold mb-3">Confirm Booking</h4>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Confirmed Date</label>
+                        <input
+                          type="date"
+                          value={confirmationData.confirmedDate ? new Date(confirmationData.confirmedDate).toISOString().split('T')[0] : ''}
+                          onChange={(e) => setConfirmationData({...confirmationData, confirmedDate: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Confirmed Time</label>
+                        <input
+                          type="time"
+                          value={confirmationData.confirmedTime}
+                          onChange={(e) => setConfirmationData({...confirmationData, confirmedTime: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                    
+                    {selectedBooking.sessionMode === 'online' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Meeting Link</label>
+                        <input
+                          type="url"
+                          value={confirmationData.meetingLink}
+                          onChange={(e) => setConfirmationData({...confirmationData, meetingLink: e.target.value})}
+                          placeholder="https://meet.google.com/..."
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                        />
+                      </div>
+                    )}
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
+                      <textarea
+                        value={confirmationData.notes}
+                        onChange={(e) => setConfirmationData({...confirmationData, notes: e.target.value})}
+                        placeholder="Any additional notes for the client..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent h-20"
+                      />
+                    </div>
+                    
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleConfirmBooking(selectedBooking._id)}
+                        disabled={loading}
+                        className="btn-primary flex items-center gap-2 disabled:opacity-50"
+                      >
+                        {loading ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
+                        Confirm Booking
+                      </button>
+                      <button
+                        onClick={() => setSelectedBooking(null)}
+                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Confirmed Details (for confirmed bookings) */}
+              {selectedBooking.status === 'confirmed' && selectedBooking.adminResponse && (
+                <div className="bg-green-50 p-4 rounded-xl">
+                  <h4 className="font-semibold mb-3">Confirmation Details</h4>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <span className="text-gray-600">Confirmed Date:</span>
+                      <p className="font-medium">{formatDate(selectedBooking.adminResponse.confirmedDate)}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Confirmed Time:</span>
+                      <p className="font-medium">{formatTime(selectedBooking.adminResponse.confirmedTime)}</p>
+                    </div>
+                    {selectedBooking.adminResponse.meetingLink && (
+                      <div>
+                        <span className="text-gray-600">Meeting Link:</span>
+                        <p className="font-medium">
+                          <a href={selectedBooking.adminResponse.meetingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            {selectedBooking.adminResponse.meetingLink}
+                          </a>
+                        </p>
+                      </div>
+                    )}
+                    {selectedBooking.adminResponse.notes && (
+                      <div>
+                        <span className="text-gray-600">Admin Notes:</span>
+                        <p className="font-medium">{selectedBooking.adminResponse.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

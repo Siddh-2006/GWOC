@@ -1,5 +1,5 @@
 import Contact from '../models/Contact.js';
-import emailService from '../services/emailService.js';
+import contactEmailService from '../services/contact-email.service.js';
 
 export const submitContactForm = async (req, res) => {
   try {
@@ -25,7 +25,7 @@ export const submitContactForm = async (req, res) => {
     await contact.save();
 
     // Send both emails (admin notification + user confirmation)
-    const emailResult = await emailService.handleContactFormSubmission(contact);
+    const emailResult = await contactEmailService.handleContactFormSubmission(contact);
     
     // Log email results but don't fail the request if emails fail
     if (!emailResult.success) {
