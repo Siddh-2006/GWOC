@@ -7,14 +7,14 @@ const slides = [
     title: "Understand Your Mind",
     subtitle: "A Calm Space to Begin",
     desc: "MindSettler offers confidential psycho-education sessions that help you understand emotions and life patterns—without judgment.",
-    image: "https://images.unsplash.com/photo-1527137342181-19aab11a8ee8?q=80&w=1920&auto=format&fit=crop",
+    image: "https://plus.unsplash.com/premium_photo-1661963810374-85a874671aa8?q=80&w=1920&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     gradient: "from-indigo-900/50 via-purple-900/30 to-transparent",
   },
   {
     title: "You Are Not Alone",
     subtitle: "Empathy Comes First",
     desc: "Through structured conversations and compassionate listening, we help you feel heard, understood, and supported.",
-    image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1920&auto=format&fit=crop",
+    image: "https://plus.unsplash.com/premium_photo-1663051303500-c85bef3f05f6?q=80&w=1920&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     gradient: "from-indigo-900/50 via-purple-900/30 to-transparent",
   },
   {
@@ -28,7 +28,7 @@ const slides = [
     title: "Start With a Conversation",
     subtitle: "No Pressure. No Judgment.",
     desc: "You don’t need to have everything figured out. We’re here to listen and guide you gently forward.",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1920&auto=format&fit=crop",
+    image: "https://plus.unsplash.com/premium_photo-1661295652613-b19f33269af4?q=80&w=1920&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
    gradient: "from-indigo-900/50 via-purple-900/30 to-transparent",
   },
 ];

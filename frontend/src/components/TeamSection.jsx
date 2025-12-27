@@ -67,7 +67,7 @@ const TeamCard = ({ member }) => {
       >
         {/* Front Side */}
         <div className="absolute inset-0 w-full h-full backface-hidden">
-          <div className="relative w-full h-full rounded-[2rem] overflow-hidden bg-gray-100 shadow-sm border border-purple-50">
+          <div className="relative w-full h-full rounded-[2rem] overflow-hidden bg-gray-100 shadow-lg shadow-purple-100/50 border-4 border-purple-200">
             <img
               src={member.image}
               alt={member.name}
@@ -85,7 +85,7 @@ const TeamCard = ({ member }) => {
 
         {/* Back Side */}
         <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180">
-          <div className="w-full h-full rounded-[2rem] bg-white p-8 flex flex-col justify-between shadow-2xl border border-purple-100">
+          <div className="w-full h-full rounded-[2rem] bg-white p-8 flex flex-col justify-between shadow-xl shadow-purple-100/50 border-4 border-purple-200">
             <div>
               <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center mb-6">
                 <MessageSquare className="text-secondary" size={20} />
@@ -129,8 +129,17 @@ const TeamSection = () => {
   const extendedTeam = [...team, ...team];
 
   return (
-    <section className="py-32 bg-white relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20 text-center">
+    <section className="py-32 relative overflow-hidden">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src="/assets/bg-img-2.jpg"
+          alt="Background"
+          className="w-full h-full object-cover opacity-20"
+        />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20 text-center">
         <span className="text-secondary font-bold tracking-[0.2em] uppercase text-sm mb-4 block">Meet Our Experts</span>
         <h2 className="text-4xl md:text-6xl font-bold text-primary mb-6">Guidance from <span className="text-secondary italic">Trustworthy</span> Minds</h2>
         <p className="text-gray-500 text-xl leading-relaxed max-w-2xl mx-auto">

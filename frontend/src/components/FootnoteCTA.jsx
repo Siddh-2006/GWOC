@@ -4,16 +4,12 @@ import { motion } from 'framer-motion';
 const FootnoteCTA = () => {
   return (
     <section className="relative py-32 overflow-hidden">
-      {/* Background Video */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
+      {/* Background Image */}
+      <img
+        src="/assets/bg-img-1.jpg"
+        alt="Background"
         className="absolute inset-0 w-full h-full object-cover"
-      >
-        <source src="/assets/bg-video1.mp4" type="video/mp4" />
-      </video>
+      />
       
       {/* Optional Overlay to ensure text readability if needed, though the card is white */}
       <div className="absolute inset-0 bg-purple-50 mix-blend-multiply"></div>
