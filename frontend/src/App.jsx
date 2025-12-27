@@ -11,6 +11,8 @@ import About from './pages/About';
 import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
 import BlogPage from './pages/BlogPage';
+import Resources from './pages/Resources';
+import PsychoEducation from './pages/PsychoEducation';
 import { Corporate } from './pages/Corporate';
 
 import PrivacyPolicy from './pages/policies/PrivacyPolicy';
@@ -51,9 +53,10 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
-          <Route path="/psycho-education" element={<Placeholder title="Psycho-Education Awareness" />} />
+          <Route path="/psycho-education" element={<PsychoEducation />} />
           <Route path="/how-it-works" element={<Placeholder title="How It Works" />} />
-          <Route path="/resources" element={<BlogPage />} />
+          <Route path="/resources" element={<Resources />} />
+          <Route path="/blog" element={<BlogPage />} />
           <Route path="/faqs" element={<FAQ />} />
           <Route path="/contact" element={<Contact />} />
 

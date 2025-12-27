@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { bookingController } from '../controllers/booking.controller.js';
+import { slotController } from '../controllers/slot.controller.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.middleware.js';
 
 const router = Router();
@@ -24,5 +25,18 @@ router.get('/admin/all', authenticateToken, requireAdmin, bookingController.getA
 
 // PUT /api/booking/admin/confirm/:bookingId - Confirm booking (admin only)
 router.put('/admin/confirm/:bookingId', authenticateToken, requireAdmin, bookingController.confirmBooking);
+
+// Slot management routes (admin only)
+// POST /api/booking/admin/slots - Create new slot
+router.post('/admin/slots', authenticateToken, requireAdmin, slotController.createSlot);
+
+// GET /api/booking/admin/slots - Get all slots for admin
+router.get('/admin/slots', authenticateToken, requireAdmin, slotController.getAllSlots);
+
+// PUT /api/booking/admin/slots/:slotId - Update slot
+router.put('/admin/slots/:slotId', authenticateToken, requireAdmin, slotController.updateSlot);
+
+// DELETE /api/booking/admin/slots/:slotId - Delete slot
+router.delete('/admin/slots/:slotId', authenticateToken, requireAdmin, slotController.deleteSlot);
 
 export default router;

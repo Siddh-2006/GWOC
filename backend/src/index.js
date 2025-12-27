@@ -13,6 +13,8 @@ import adminRoutes from './api/admin.routes.js';
 import contentRoutes from './api/content.routes.js';
 import corporateRoutes from './api/corporate.routes.js';
 import contactRoutes from './api/contact.routes.js';
+import mediaRoutes from './api/media.routes.js';
+import psychoEducationRoutes from './api/psychoEducation.routes.js';
 
 dotenv.config();
 
@@ -43,6 +45,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/corporate', corporateRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/media', mediaRoutes);
+app.use('/api/psycho-education', psychoEducationRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, X, Clock, User, Filter, Plus, Calendar, Loader2, Building2, MessageSquare, Eye, Mail, Phone, Heart } from 'lucide-react';
+import { Check, X, Clock, User, Filter, Plus, Calendar, Loader2, Building2, MessageSquare, Eye, Mail, Phone, Heart, Image, BookOpen, Trash2 } from 'lucide-react';
 import { useBookingStore } from '../../store/useBookingStore';
 import { bookingApi } from '../booking/booking.api';
+import { slotApi } from '../../services/slot.api';
 import { CorporateInquiries } from '../../components/admin/CorporateInquiries';
 import ContactMessages from '../../components/admin/ContactMessages';
+import AddSlotModal from '../../components/admin/AddSlotModal';
 
 const AdminDashboard = () => {
   const {
@@ -25,6 +27,7 @@ const AdminDashboard = () => {
     meetingLink: '',
     notes: ''
   });
+  const [showAddSlotModal, setShowAddSlotModal] = useState(false);
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -42,11 +45,25 @@ const AdminDashboard = () => {
 
   const fetchSlots = async () => {
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const slots = await bookingApi.getAvailableSlots(today);
-      setAvailableSlots(slots);
+      const response = await slotApi.getAllSlots();
+      setAvailableSlots(response.data || []);
     } catch (err) {
       console.error('Fetch slots error:', err);
+    }
+  };
+
+  const handleSlotAdded = (newSlot) => {
+    setAvailableSlots(prev => [...prev, newSlot]);
+  };
+
+  const handleDeleteSlot = async (slotId) => {
+    if (!window.confirm('Are you sure you want to delete this slot?')) return;
+    
+    try {
+      await slotApi.deleteSlot(slotId);
+      setAvailableSlots(prev => prev.filter(slot => slot._id !== slotId));
+    } catch (err) {
+      setError('Failed to delete slot: ' + err.message);
     }
   };
 
@@ -179,6 +196,22 @@ const AdminDashboard = () => {
           <MessageSquare size={16} />
           Contact Messages
         </button>
+        <button
+          onClick={() => setActiveTab('media')}
+          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'media' ? 'bg-white shadow text-primary' : 'text-gray-500 hover:text-primary'
+            }`}
+        >
+          <Image size={16} />
+          Media & Resources
+        </button>
+        <button
+          onClick={() => setActiveTab('psycho-education')}
+          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'psycho-education' ? 'bg-white shadow text-primary' : 'text-gray-500 hover:text-primary'
+            }`}
+        >
+          <BookOpen size={16} />
+          Psycho-Education
+        </button>
       </div>
 
       {error && (
@@ -300,30 +333,83 @@ const AdminDashboard = () => {
           <div className="p-8">
             <div className="flex justify-between items-center mb-8">
               <h3 className="text-xl font-bold">Manage Available Slots</h3>
-              <button className="btn-primary py-2 px-4 flex items-center gap-2 text-sm">
+              <button 
+                onClick={() => setShowAddSlotModal(true)}
+                className="btn-primary py-2 px-4 flex items-center gap-2 text-sm"
+              >
                 <Plus size={18} />
                 Add Slot
               </button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {availableSlots.map((slot) => (
-                <div key={slot._id} className="p-4 rounded-2xl border border-purple-100 flex justify-between items-center group hover:shadow-md transition-all">
-                  <div>
-                    <p className="font-bold text-primary">{slot.startTime} - {slot.endTime}</p>
-                    <p className="text-xs text-gray-400">{formatDate(slot.date)}</p>
-                    <p className="text-xs text-green-600">₹{slot.pricing?.online} - ₹{slot.pricing?.offline}</p>
+                <div key={slot._id} className="p-4 rounded-2xl border border-purple-100 group hover:shadow-md transition-all">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <p className="font-bold text-primary">{slot.startTime} - {slot.endTime}</p>
+                      <p className="text-xs text-gray-400">{formatDate(slot.date)}</p>
+                      <p className="text-xs text-green-600">₹{slot.pricing?.online} - ₹{slot.pricing?.offline}</p>
+                      <div className="flex gap-1 mt-1">
+                        {slot.availableModes?.map(mode => (
+                          <span key={mode} className="text-[10px] px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full">
+                            {mode}
+                          </span>
+                        ))}
+                      </div>
+                      {slot.isAvailable ? (
+                        <span className="text-[10px] px-2 py-0.5 bg-green-100 text-green-600 rounded-full">Available</span>
+                      ) : (
+                        <span className="text-[10px] px-2 py-0.5 bg-red-100 text-red-600 rounded-full">Booked</span>
+                      )}
+                    </div>
+                    <button 
+                      onClick={() => handleDeleteSlot(slot._id)}
+                      className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                      disabled={!slot.isAvailable}
+                      title={slot.isAvailable ? "Delete slot" : "Cannot delete booked slot"}
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
-                  <button className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <X size={18} />
-                  </button>
                 </div>
               ))}
+              {availableSlots.length === 0 && (
+                <div className="col-span-full text-center py-12 text-gray-400">
+                  No slots available. Click "Add Slot" to create your first time slot.
+                </div>
+              )}
             </div>
           </div>
         ) : activeTab === 'corporate' ? (
           <CorporateInquiries />
         ) : activeTab === 'contacts' ? (
           <ContactMessages />
+        ) : activeTab === 'media' ? (
+          <div className="p-8">
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="text-xl font-bold">Media & Resources Management</h3>
+              <button className="btn-primary py-2 px-4 flex items-center gap-2 text-sm">
+                <Plus size={18} />
+                Add Media
+              </button>
+            </div>
+            <div className="text-center py-12 text-gray-400">
+              Media management coming soon...
+            </div>
+          </div>
+        ) : activeTab === 'psycho-education' ? (
+          <div className="p-8">
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="text-xl font-bold">Psycho-Education Content</h3>
+              <button className="btn-primary py-2 px-4 flex items-center gap-2 text-sm">
+                <Plus size={18} />
+                Add Content
+              </button>
+            </div>
+            <div className="text-center py-12 text-gray-400">
+              Psycho-education management coming soon...
+            </div>
+          </div>
         ) : null}
       </div>
 
@@ -524,6 +610,13 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Add Slot Modal */}
+      <AddSlotModal
+        isOpen={showAddSlotModal}
+        onClose={() => setShowAddSlotModal(false)}
+        onSlotAdded={handleSlotAdded}
+      />
     </div>
   );
 };
