@@ -24,6 +24,26 @@ const authSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  avatar: {
+    type: String,
+    default: '😊',
+    maxlength: 10
+  },
+  bio: {
+    type: String,
+    maxlength: 500,
+    default: ''
+  },
+  location: {
+    type: String,
+    maxlength: 100,
+    default: ''
+  },
+  interests: {
+    type: String,
+    maxlength: 200,
+    default: ''
+  },
   role: {
     type: String,
     enum: ['user', 'admin'],
