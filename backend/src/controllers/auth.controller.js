@@ -6,15 +6,19 @@ import { authValidation } from '../validation/auth.validation.js';
 import { generateOTP, sendOTPEmail } from '../services/email.service.js';
 
 // Generate JWT tokens
-const generateTokens = (userId) => {
+const generateTokens = async (userId) => {
+  // Get user role from database
+  const user = await Auth.findById(userId);
+  const role = user?.role || 'user';
+
   const accessToken = jwt.sign(
-    { userId, type: 'access' },
+    { userId, role, type: 'access' },
     process.env.JWT_ACCESS_SECRET || 'access_secret_key',
     { expiresIn: '15m' }
   );
 
   const refreshToken = jwt.sign(
-    { userId, type: 'refresh' },
+    { userId, role, type: 'refresh' },
     process.env.JWT_REFRESH_SECRET || 'refresh_secret_key',
     { expiresIn: '7d' }
   );
@@ -176,7 +180,7 @@ export const signIn = async (req, res) => {
     }
 
     // Generate tokens
-    const { accessToken, refreshToken } = generateTokens(user._id);
+    const { accessToken, refreshToken } = await generateTokens(user._id);
 
     // Save refresh token and update last login
     user.refreshTokens.push({ token: refreshToken });
@@ -232,7 +236,7 @@ export const refreshToken = async (req, res) => {
     }
 
     // Generate new tokens
-    const tokens = generateTokens(user._id);
+    const tokens = await generateTokens(user._id);
 
     // Remove old refresh token and add new one
     user.refreshTokens = user.refreshTokens.filter(tokenObj => tokenObj.token !== refreshToken);
