@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Target, Eye, Users } from 'lucide-react';
+import { Target, Eye } from 'lucide-react';
 
 const About = () => {
   return (
@@ -16,10 +16,11 @@ const About = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center mb-24">
           <div className="relative">
             <div className="aspect-square bg-purple-100 rounded-[4rem] rotate-3 overflow-hidden">
-              {/* Image placeholder or illustration */}
-              <div className="absolute inset-0 flex items-center justify-center text-primary/20">
-                <Users size={120} />
-              </div>
+              <img 
+                src="/assets/pranika.jpg" 
+                alt="Parnika - Founder of MindSettler" 
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="absolute -bottom-8 -right-8 w-48 h-48 bg-secondary/10 rounded-full blur-2xl -z-10" />
           </div>

@@ -10,7 +10,7 @@ const DUMMY_BLOGS = [
     excerpt: "Anxiety is a natural response to stress, but when it becomes overwhelming, it's important to understand its roots...",
     date: "Dec 15, 2025",
     readTime: "5 min read",
-    image: "../../public/assets/blog1.jpg"
+    image: "/assets/blog1.jpg"
   },
   {
     id: 2,
@@ -28,7 +28,7 @@ const DUMMY_BLOGS = [
     excerpt: "Grief is not a linear process. Learn how to hold space for your emotions while moving through life's toughest changes.",
     date: "Dec 05, 2025",
     readTime: "7 min read",
-    image: "../../public/assets/blog3.jpg"
+    image: "/assets/blog3.jpg"
   },
   {
     id: 4,
@@ -37,7 +37,7 @@ const DUMMY_BLOGS = [
     excerpt: "Why seeking help is a sign of strength, not weakness. Let's change the conversation around mental health support.",
     date: "Nov 28, 2025",
     readTime: "6 min read",
-    image: "../../public/assets/blog4.jpg"
+    image: "/assets/blog4.jpg"
   },
   {
     id: 5,
