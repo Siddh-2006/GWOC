@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import { authService } from '../services/auth.api';
 
 export const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user, setAuth, logout } = useAuthStore();
+  const location = useLocation();
 
   useEffect(() => {
     // Verify token on mount if authenticated
@@ -28,7 +29,12 @@ export const ProtectedRoute = ({ children }) => {
   }, [isAuthenticated, user, setAuth, logout]);
 
   if (!isAuthenticated) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/login" replace />;
+  }
+
+  // Redirect admin users to admin dashboard if they're on the home page
+  if (user?.role === 'admin' && location.pathname === '/') {
+    return <Navigate to="/admin" replace />;
   }
 
   return children;

@@ -27,7 +27,7 @@ const Login = () => {
       const response = await authApi.signin(formData);
       if (response.success) {
         setAuth(response.data.user, response.data.accessToken, response.data.refreshToken);
-        navigate('/');
+        // Redirect is now handled in setAuth based on user role
       }
     } catch (err) {
       if (err.response?.status === 401 && err.response?.data?.message?.includes('verified')) {

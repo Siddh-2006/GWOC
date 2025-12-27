@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, X, Clock, User, Filter, Plus, Calendar, Loader2 } from 'lucide-react';
+import { Check, X, Clock, User, Filter, Plus, Calendar, Loader2, Building2 } from 'lucide-react';
 import { useBookingStore } from '../../store/useBookingStore';
 import { bookingApi } from '../booking/booking.api';
+import { CorporateInquiries } from '../../components/admin/CorporateInquiries';
 
 const AdminDashboard = () => {
   const {
@@ -85,6 +86,14 @@ const AdminDashboard = () => {
         >
           Time Slots
         </button>
+        <button
+          onClick={() => setActiveTab('corporate')}
+          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'corporate' ? 'bg-white shadow text-primary' : 'text-gray-500 hover:text-primary'
+            }`}
+        >
+          <Building2 size={16} />
+          Corporate Inquiries
+        </button>
       </div>
 
       <div className="glass-card overflow-hidden">
@@ -153,7 +162,7 @@ const AdminDashboard = () => {
               </tbody>
             </table>
           </div>
-        ) : (
+        ) : activeTab === 'slots' ? (
           <div className="p-8">
             <div className="flex justify-between items-center mb-8">
               <h3 className="text-xl font-bold">Manage Available Slots</h3>
@@ -176,6 +185,8 @@ const AdminDashboard = () => {
               ))}
             </div>
           </div>
+        ) : (
+          <CorporateInquiries />
         )}
       </div>
     </div>
