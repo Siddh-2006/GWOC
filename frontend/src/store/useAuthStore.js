@@ -18,6 +18,15 @@ const useAuthStore = create((set) => ({
       isAuthenticated: true,
       error: null
     });
+
+    // Auto-redirect based on user role
+    if (user?.role === 'admin') {
+      // Redirect admin users to admin dashboard
+      window.location.href = '/admin';
+    } else {
+      // Redirect regular users to home/dashboard
+      window.location.href = '/';
+    }
   },
 
   logout: () => {

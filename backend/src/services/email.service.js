@@ -24,25 +24,19 @@ export const generateOTP = () => {
 // Send OTP email
 export const sendOTPEmail = async (email, otp, type = 'registration') => {
   try {
-    // Debug: Check environment variables
-    console.log('NODE_ENV:', process.env.NODE_ENV);
-    console.log('SKIP_EMAIL:', process.env.SKIP_EMAIL);
-    console.log('EMAIL_USER:', process.env.EMAIL_USER ? 'SET' : 'NOT SET');
-    
-    // If SKIP_EMAIL is true, just log the OTP
+    // If SKIP_EMAIL is true, just log the OTP for development
     if (process.env.SKIP_EMAIL === 'true') {
-      console.log(`\n🔐 OTP for ${email}: ${otp}`);
-      console.log(`📧 Email type: ${type}`);
-      console.log(`⏰ Valid for 10 minutes\n`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`🔐 OTP for ${email}: ${otp} (${type})`);
+      }
       return { success: true, messageId: 'dev-mode-skip' };
     }
 
     // If no email config and not skipping, provide helpful error
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-      console.log(`\n⚠️  Email not configured. OTP for ${email}: ${otp}`);
-      console.log(`📧 Email type: ${type}`);
-      console.log(`⏰ Valid for 10 minutes`);
-      console.log(`💡 Set SKIP_EMAIL=true in .env to use development mode\n`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`🔐 OTP for ${email}: ${otp} (${type}) - Email not configured`);
+      }
       return { success: true, messageId: 'no-email-config-dev-mode' };
     }
 
@@ -70,11 +64,6 @@ export const sendOTPEmail = async (email, otp, type = 'registration') => {
                 This OTP will expire in 10 minutes. If you didn't request this verification, 
                 please ignore this email.
               </p>
-              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                <p style="color: #999; font-size: 12px; text-align: center;">
-                  This is an automated email. Please do not reply to this message.
-                </p>
-              </div>
             </div>
           </div>
         `
@@ -98,11 +87,6 @@ export const sendOTPEmail = async (email, otp, type = 'registration') => {
                 This OTP will expire in 10 minutes. If you didn't request a password reset, 
                 please ignore this email and your password will remain unchanged.
               </p>
-              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                <p style="color: #999; font-size: 12px; text-align: center;">
-                  This is an automated email. Please do not reply to this message.
-                </p>
-              </div>
             </div>
           </div>
         `
@@ -119,11 +103,15 @@ export const sendOTPEmail = async (email, otp, type = 'registration') => {
     };
 
     const result = await transporter.sendMail(mailOptions);
-    console.log('OTP email sent successfully:', result.messageId);
+    
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('✅ OTP email sent successfully');
+    }
+    
     return { success: true, messageId: result.messageId };
 
   } catch (error) {
-    console.error('Error sending OTP email:', error);
+    console.error('❌ Error sending OTP email:', error.message);
     throw new Error('Failed to send OTP email');
   }
 };
@@ -131,6 +119,11 @@ export const sendOTPEmail = async (email, otp, type = 'registration') => {
 // Send welcome email after successful verification
 export const sendWelcomeEmail = async (email, firstName) => {
   try {
+    // Skip welcome email if email is not configured
+    if (process.env.SKIP_EMAIL === 'true' || !process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+      return { success: true, messageId: 'welcome-email-skipped' };
+    }
+
     const transporter = createTransporter();
 
     const mailOptions = {
@@ -159,22 +152,21 @@ export const sendWelcomeEmail = async (email, firstName) => {
                 Get Started
               </a>
             </div>
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-              <p style="color: #999; font-size: 12px; text-align: center;">
-                This is an automated email. Please do not reply to this message.
-              </p>
-            </div>
           </div>
         </div>
       `
     };
 
     const result = await transporter.sendMail(mailOptions);
-    console.log('Welcome email sent successfully:', result.messageId);
+    
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('✅ Welcome email sent successfully');
+    }
+    
     return { success: true, messageId: result.messageId };
 
   } catch (error) {
-    console.error('Error sending welcome email:', error);
+    console.error('❌ Error sending welcome email:', error.message);
     // Don't throw error for welcome email failure
     return { success: false, error: error.message };
   }

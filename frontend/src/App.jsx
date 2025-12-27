@@ -11,7 +11,7 @@ import About from './pages/About';
 import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
 import BlogPage from './pages/BlogPage';
-
+import { Corporate } from './pages/Corporate';
 
 import PrivacyPolicy from './pages/policies/PrivacyPolicy';
 import RefundPolicy from './pages/policies/RefundPolicy';
@@ -35,6 +35,19 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   return children;
 };
 
+// Admin Route Component - Redirects admin users to admin dashboard
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, user } = useAuthStore();
+
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  
+  // If user is admin, redirect to admin dashboard
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin" replace />;
+  }
+
+  return children;
+};
 
 // Placeholder components until pages are created
 const Placeholder = ({ title }) => (
@@ -50,7 +63,11 @@ function App() {
       <ScrollToTop />
       <Layout>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={
+            <AdminRoute>
+              <Home />
+            </AdminRoute>
+          } />
           <Route path="/about" element={<About />} />
           <Route path="/psycho-education" element={<Placeholder title="Psycho-Education Awareness" />} />
           <Route path="/how-it-works" element={<Placeholder title="How It Works" />} />
@@ -67,7 +84,7 @@ function App() {
             }
           />
 
-          <Route path="/corporate" element={<Placeholder title="Corporate Services" />} />
+          <Route path="/corporate" element={<Corporate />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
           <Route path="/confidentiality" element={<ConfidentialityPolicy />} />
