@@ -1,46 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
+import { Briefcase, BookOpen, Calendar, CheckCircle2, XCircle } from 'lucide-react';
 
-/**
- * Corporate Offerings Section
- * What we offer vs what we don't offer
- * Clear ethical boundaries and expectations
- */
 export const CorporateOfferings = () => {
-  const sectionRef = useRef(null);
-  const titleRef = useRef(null);
-  const offeringsRef = useRef([]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('opacity-100', 'translate-y-0');
-            entry.target.classList.remove('opacity-0', 'translate-y-8');
-          }
-        });
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
-    );
-
-    if (titleRef.current) {
-      observer.observe(titleRef.current);
-    }
-
-    offeringsRef.current.forEach((offering, index) => {
-      if (offering) {
-        setTimeout(() => {
-          observer.observe(offering);
-        }, index * 300);
-      }
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
   const offerings = [
     {
-      icon: '💼',
+      icon: <Briefcase className="w-6 h-6" />,
       title: 'Workplace Workshops',
       what: [
         'Facilitated conversations about stress and resilience',
@@ -56,7 +20,7 @@ export const CorporateOfferings = () => {
       ]
     },
     {
-      icon: '📚',
+      icon: <BookOpen className="w-6 h-6" />,
       title: 'Institutional Psycho-Education',
       what: [
         'Educational sessions on mental health awareness',
@@ -72,7 +36,7 @@ export const CorporateOfferings = () => {
       ]
     },
     {
-      icon: '🌟',
+      icon: <Calendar className="w-6 h-6" />,
       title: 'Event-Based Sessions',
       what: [
         'Mindful conversation circles at conferences',
@@ -90,51 +54,72 @@ export const CorporateOfferings = () => {
   ];
 
   return (
-    <section className="py-24 px-8 max-w-6xl mx-auto" ref={sectionRef}>
-      <h2 
-        className="text-4xl font-light text-slate-800 text-center mb-12 opacity-0 translate-y-5 transition-all duration-800 ease-out" 
-        ref={titleRef}
-      >
-        What we offer
-      </h2>
-      
-      <div className="grid gap-12 mt-12">
-        {offerings.map((offering, index) => (
-          <div
-            key={index}
-            className="bg-white rounded-2xl p-12 shadow-lg opacity-0 translate-y-8 transition-all duration-600 ease-out"
-            ref={(el) => offeringsRef.current[index] = el}
-          >
-            <div className="flex items-center mb-8">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center mr-4 text-xl text-white">
-                {offering.icon}
+    <section className="bg-slate-50 py-24 px-6 min-h-screen">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-4xl md:text-5xl font-bold text-[#1a2b4b] text-center mb-24 relative">
+          What We Offer
+          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-24 h-1.5 bg-gradient-to-r from-pink-200 to-pink-400 rounded-full"></div>
+        </h2>
+
+        <div className="relative flex flex-col items-center pb-24">
+          {offerings.map((offering, index) => (
+            <div
+              key={index}
+              style={{
+                top: `${80 + index * 100}px`,
+                zIndex: (index + 1) * 10,
+              }}
+              className="sticky w-full mb-24 bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden transition-transform duration-500"
+            >
+              {/* Card Header with Gradient */}
+              <div className="flex items-center p-8 md:p-10 bg-gradient-to-r from-purple-50 via-white to-pink-50 border-b border-slate-100/50">
+                <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center mr-6 text-purple-600 shrink-0 border border-purple-100">
+                  {offering.icon}
+                </div>
+                <h3 className="text-2xl md:text-4xl font-bold text-slate-800 tracking-tight">
+                  {offering.title}
+                </h3>
               </div>
-              <h3 className="text-2xl font-medium text-slate-800">
-                {offering.title}
-              </h3>
+
+              {/* Card Content */}
+              <div className="p-8 md:p-12">
+                <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+                  {/* WHAT WE PROVIDE */}
+                  <div className="bg-emerald-50/30 rounded-3xl p-8 border border-emerald-100/50">
+                    <h4 className="text-sm font-bold tracking-widest text-emerald-600 uppercase flex items-center gap-3 mb-6">
+                      <CheckCircle2 className="w-5 h-5" />
+                      What we provide
+                    </h4>
+                    <ul className="space-y-4">
+                      {offering.what.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3 text-slate-700 text-lg leading-relaxed font-medium">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-2.5 shrink-0 opacity-60"></span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* WHAT WE DON'T PROVIDE */}
+                  <div className="bg-rose-50/30 rounded-3xl p-8 border border-rose-100/50">
+                    <h4 className="text-sm font-bold tracking-widest text-rose-500 uppercase flex items-center gap-3 mb-6">
+                      <XCircle className="w-5 h-5" />
+                      What we don't provide
+                    </h4>
+                    <ul className="space-y-4">
+                      {offering.whatNot.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3 text-slate-500 italic text-lg leading-relaxed">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-300 mt-2.5 shrink-0 opacity-60"></span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="p-6 bg-emerald-50 rounded-xl border-l-4 border-emerald-500">
-                <h4 className="font-semibold mb-4 text-emerald-700">What we provide</h4>
-                <ul className="space-y-2">
-                  {offering.what.map((item, idx) => (
-                    <li key={idx} className="text-slate-600 leading-relaxed">• {item}</li>
-                  ))}
-                </ul>
-              </div>
-              
-              <div className="p-6 bg-red-50 rounded-xl border-l-4 border-red-500">
-                <h4 className="font-semibold mb-4 text-red-700">What we don't provide</h4>
-                <ul className="space-y-2">
-                  {offering.whatNot.map((item, idx) => (
-                    <li key={idx} className="text-slate-600 leading-relaxed">• {item}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );

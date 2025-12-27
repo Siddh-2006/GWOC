@@ -13,22 +13,22 @@ import { CorporateForm } from '../components/CorporateForm';
  */
 export const Corporate = () => {
   return (
-    <div className="min-h-screen corporate-page-bg">
+    <div className="min-h-screen bg-bg pt-5" >
       {/* Intro - Calm headline with mountain/river continuation */}
       <CorporateIntro />
-      
+
       {/* Who This Is For - Three audience cards */}
       <CorporateAudience />
-      
+
       {/* What We Offer - Grouped sections with clear boundaries */}
       <CorporateOfferings />
-      
+
       {/* How Engagement Works - Step-based vertical storytelling */}
       <CorporateProcess />
-      
+
       {/* Ethics & Confidentiality - Prominent and calm */}
       <CorporateEthics />
-      
+
       {/* Corporate Enquiry Form - "Start a conversation" */}
       <CorporateForm />
     </div>
