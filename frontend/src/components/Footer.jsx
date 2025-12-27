@@ -7,9 +7,9 @@ const Footer = () => {
   return (
     <footer className="bg-primary text-white pt-20 pb-10">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
           {/* Brand section */}
-          <div className="col-span-1 md:col-span-5">
+          <div className="col-span-1 lg:col-span-2">
             <div className="mb-6">
               <Logo variant="invert" className="h-16" />
             </div>
@@ -37,7 +37,7 @@ const Footer = () => {
           </div>
 
           {/* Quick Links */}
-          <div className="col-span-1 md:col-span-3">
+          <div className="col-span-1">
             <h4 className="text-lg font-bold mb-6 text-white relative inline-block after:absolute after:-bottom-2 after:left-0 after:w-12 after:h-1 after:bg-gradient-to-r after:from-secondary after:to-pink-400 after:rounded-full">
               Explore
             </h4>
@@ -59,8 +59,30 @@ const Footer = () => {
             </ul>
           </div>
 
+          {/* Services */}
+          <div className="col-span-1">
+            <h4 className="text-lg font-bold mb-6 text-white relative inline-block after:absolute after:-bottom-2 after:left-0 after:w-12 after:h-1 after:bg-gradient-to-r after:from-secondary after:to-pink-400 after:rounded-full">
+              Services
+            </h4>
+            <ul className="space-y-3.5 text-purple-100">
+              {[
+                { name: 'Individual Therapy', path: '/services/individual' },
+                { name: 'Couples Therapy', path: '/services/couples' },
+                { name: 'Teen Therapy', path: '/services/teen' },
+                { name: 'Psychiatric Therapy', path: '/services/psychiatric' }
+              ].map((link) => (
+                <li key={link.path}>
+                  <Link to={link.path} className="group inline-flex items-center gap-2 font-medium transition-all duration-300 hover:text-white hover:translate-x-1">
+                    <span className="w-0 h-0.5 bg-secondary transition-all duration-300 group-hover:w-5 rounded-full"></span>
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           {/* Policies */}
-          <div className="col-span-1 md:col-span-4">
+          <div className="col-span-1">
             <h4 className="text-lg font-bold mb-6 text-white relative inline-block after:absolute after:-bottom-2 after:left-0 after:w-12 after:h-1 after:bg-gradient-to-r after:from-secondary after:to-pink-400 after:rounded-full">
               Policies
             </h4>
