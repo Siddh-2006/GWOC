@@ -4,6 +4,14 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 
+// Configure environment variables first
+dotenv.config({ path: '.env' });
+
+console.log('🔍 Environment check after dotenv.config():');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT:', process.env.PORT);
+console.log('GEMINI_API_KEY exists:', !!process.env.GEMINI_API_KEY);
+
 // Import routes
 import authRoutes from './api/auth.routes.js';
 import otpRoutes from './api/otp.routes.js';
@@ -15,8 +23,7 @@ import corporateRoutes from './api/corporate.routes.js';
 import contactRoutes from './api/contact.routes.js';
 import mediaRoutes from './api/media.routes.js';
 import psychoEducationRoutes from './api/psychoEducation.routes.js';
-
-dotenv.config();
+import reflectionRoutes from './api/reflection.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -47,6 +54,7 @@ app.use('/api/corporate', corporateRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/psycho-education', psychoEducationRoutes);
+app.use('/api/reflection', reflectionRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

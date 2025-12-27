@@ -28,6 +28,8 @@ const AdminDashboard = () => {
     notes: ''
   });
   const [showAddSlotModal, setShowAddSlotModal] = useState(false);
+  const [reflectionSummaries, setReflectionSummaries] = useState([]);
+  const [loadingReflections, setLoadingReflections] = useState(false);
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -52,6 +54,28 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchReflectionSummaries = async () => {
+    setLoadingReflections(true);
+    try {
+      const response = await fetch('http://localhost:3001/api/reflection/admin/all', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setReflectionSummaries(data.data || []);
+      } else {
+        console.error('Failed to fetch reflection summaries:', data.message);
+      }
+    } catch (err) {
+      console.error('Fetch reflection summaries error:', err);
+    } finally {
+      setLoadingReflections(false);
+    }
+  };
+
   const handleSlotAdded = (newSlot) => {
     setAvailableSlots(prev => [...prev, newSlot]);
   };
@@ -72,6 +96,8 @@ const AdminDashboard = () => {
       fetchBookings();
     } else if (activeTab === 'slots') {
       fetchSlots();
+    } else if (activeTab === 'reflections') {
+      fetchReflectionSummaries();
     }
   }, [activeTab]);
 
@@ -175,6 +201,14 @@ const AdminDashboard = () => {
             }`}
         >
           Session Bookings
+        </button>
+        <button
+          onClick={() => setActiveTab('reflections')}
+          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'reflections' ? 'bg-white shadow text-primary' : 'text-gray-500 hover:text-primary'
+            }`}
+        >
+          <Heart size={16} />
+          Reflection Summaries
         </button>
         <button
           onClick={() => setActiveTab('slots')}
@@ -380,6 +414,148 @@ const AdminDashboard = () => {
               {availableSlots.length === 0 && (
                 <div className="col-span-full text-center py-12 text-gray-400">
                   No slots available. Click "Add Slot" to create your first time slot.
+                </div>
+              )}
+            </div>
+          </div>
+        ) : activeTab === 'reflections' ? (
+          <div className="p-8">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-bold">Reflection Summaries</h2>
+              <div className="text-sm text-gray-500">
+                AI-generated summaries to help prepare for sessions
+              </div>
+            </div>
+            
+            {/* Disclaimer */}
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-8">
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-amber-600 text-sm font-bold">!</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-amber-800 mb-2">Important Disclaimer</h4>
+                  <p className="text-amber-700 text-sm leading-relaxed">
+                    These AI-generated summaries are for preparation purposes only. They do not replace professional judgment, 
+                    diagnosis, or therapeutic assessment. Always rely on your clinical expertise and direct client interaction 
+                    for all therapeutic decisions.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Reflection Summaries List */}
+            <div className="space-y-4">
+              {loadingReflections ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="animate-spin text-primary" size={32} />
+                  <span className="ml-3 text-gray-500">Loading reflection summaries...</span>
+                </div>
+              ) : reflectionSummaries.length > 0 ? (
+                <div className="space-y-4">
+                  {reflectionSummaries.map((session) => (
+                    <div key={session._id} className="bg-white border border-gray-200 rounded-xl p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="font-semibold text-gray-800">
+                            {session.userId?.firstName} {session.userId?.lastName}
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            {session.userId?.email}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            Session: {new Date(session.startedAt).toLocaleDateString()} at {new Date(session.startedAt).toLocaleTimeString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            session.status === 'completed' 
+                              ? 'bg-green-100 text-green-800' 
+                              : session.status === 'active'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {session.status}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {session.responses?.length || 0} responses
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {session.aiSummary ? (
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="font-medium text-gray-800 mb-2">Summary</h4>
+                            <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                              {session.aiSummary.summary}
+                            </p>
+                          </div>
+                          
+                          {session.aiSummary.keyThemes && session.aiSummary.keyThemes.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-gray-800 mb-2">Key Themes</h4>
+                              <div className="flex flex-wrap gap-2">
+                                {session.aiSummary.keyThemes.map((theme, index) => (
+                                  <span key={index} className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
+                                    {theme}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {session.aiSummary.possibleApproaches && session.aiSummary.possibleApproaches.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-gray-800 mb-2">Possible Therapeutic Approaches</h4>
+                              <div className="flex flex-wrap gap-2">
+                                {session.aiSummary.possibleApproaches.map((approach, index) => (
+                                  <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                    {approach}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {session.aiSummary.suggestedQuestions && session.aiSummary.suggestedQuestions.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-gray-800 mb-2">Suggested Opening Questions</h4>
+                              <ul className="text-sm text-gray-600 space-y-1">
+                                {session.aiSummary.suggestedQuestions.map((question, index) => (
+                                  <li key={index} className="flex items-start gap-2">
+                                    <span className="text-gray-400 mt-1">•</span>
+                                    <span>"{question}"</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500">
+                          <p className="text-sm">No summary generated yet</p>
+                          {session.status === 'active' && (
+                            <p className="text-xs mt-1">Session is still in progress</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  <Heart size={48} className="mx-auto mb-4 text-gray-300" />
+                  <h3 className="text-lg font-medium mb-2">No Reflection Summaries Yet</h3>
+                  <p className="mb-4">
+                    When clients complete pre-session reflections, their summaries will appear here to help you prepare for sessions.
+                  </p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 max-w-md mx-auto">
+                    <p className="text-sm text-blue-800">
+                      Summaries are automatically generated when clients complete their reflection sessions and include neutral themes, 
+                      possible therapeutic approaches, and suggested opening questions.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>

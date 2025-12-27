@@ -21,7 +21,7 @@ export const bookingController = {
         nextDay.setDate(nextDay.getDate() + 1);
         
         query.date = {
-          
+
           $gte: targetDate,
           $lt: nextDay
         };
@@ -72,7 +72,8 @@ export const bookingController = {
         personalInfo,
         sessionContent,
         sessionMode,
-        location
+        location,
+        reflectionSessionId
       } = req.body;
       
       // Validate required fields
@@ -193,6 +194,7 @@ export const bookingController = {
         sessionContent,
         sessionMode,
         location: sessionMode === 'offline' ? location : undefined,
+        reflectionSessionId: reflectionSessionId || null, // Include reflection session ID if provided
         payment: {
           amount: paymentAmount,
           currency: 'INR',

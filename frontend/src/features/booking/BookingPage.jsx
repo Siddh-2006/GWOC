@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, CheckCircle, AlertCircle, Loader2, User, MessageSquare } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, AlertCircle, Loader2, User, MessageSquare, Heart } from 'lucide-react';
 import { useBookingStore } from '../../store/useBookingStore';
 import { bookingApi } from './booking.api';
 import useAuthStore from '../../store/useAuthStore';
+import ReflectionFlow from '../../components/reflection/ReflectionFlow';
 
 const BookingPage = () => {
   const { user } = useAuthStore();
@@ -14,7 +15,9 @@ const BookingPage = () => {
   } = useBookingStore();
 
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [step, setStep] = useState(1); // 1: Select Slot, 2: Personal Info, 3: Session Details, 4: Confirmation
+  const [step, setStep] = useState(0); // 0: Reflection (optional), 1: Select Slot, 2: Personal Info, 3: Session Details, 4: Confirmation
+  const [showReflection, setShowReflection] = useState(false);
+  const [reflectionSessionId, setReflectionSessionId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -119,6 +122,19 @@ const BookingPage = () => {
     setSelectedSlot(null); // Reset selected slot when date changes
   };
 
+  // Handle reflection completion
+  const handleReflectionComplete = (sessionId) => {
+    setReflectionSessionId(sessionId);
+    setShowReflection(false);
+    setStep(1); // Move to slot selection
+  };
+
+  // Handle reflection skip
+  const handleReflectionSkip = () => {
+    setShowReflection(false);
+    setStep(1); // Move to slot selection
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -178,7 +194,8 @@ const BookingPage = () => {
         personalInfo: formData.personalInfo,
         sessionContent: formData.sessionContent,
         sessionMode: formData.sessionMode,
-        location: formData.sessionMode === 'offline' ? formData.location : undefined
+        location: formData.sessionMode === 'offline' ? formData.location : undefined,
+        reflectionSessionId: reflectionSessionId // Include reflection session ID if available
       };
 
       const appointment = await bookingApi.createBooking(bookingData);
@@ -214,6 +231,76 @@ const BookingPage = () => {
       </div>
 
       <div className="glass-card p-8 md:p-12">
+        {/* Step 0: Optional Reflection */}
+        {step === 0 && (
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Heart className="text-primary" size={32} />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">Take a Moment to Reflect</h3>
+              <p className="text-gray-600 max-w-2xl mx-auto mb-8">
+                Before we begin, would you like to take a few minutes to reflect on what brings you here today? 
+                This optional step helps us understand how to better support you during your session.
+              </p>
+              
+              <div className="bg-blue-50 p-6 rounded-2xl mb-8 text-left max-w-2xl mx-auto">
+                <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                  <MessageSquare size={20} />
+                  How it works:
+                </h4>
+                <ul className="space-y-2 text-sm text-blue-800">
+                  <li>• Answer a few gentle questions about your thoughts and feelings</li>
+                  <li>• Skip any question that doesn't feel right</li>
+                  <li>• Your responses help us prepare for a more meaningful conversation</li>
+                  <li>• Everything is confidential and secure</li>
+                </ul>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+                <button
+                  onClick={() => setShowReflection(true)}
+                  className="btn-primary flex items-center justify-center gap-2 flex-1"
+                >
+                  <Heart size={20} />
+                  Start Reflection
+                </button>
+                <button
+                  onClick={handleReflectionSkip}
+                  className="py-3 px-6 text-gray-600 font-medium border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex-1"
+                >
+                  Skip for Now
+                </button>
+              </div>
+              
+              <p className="text-xs text-gray-500 mt-4">
+                You can always come back to this later
+              </p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Reflection Flow Modal */}
+        {showReflection && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="relative">
+                {/* Close button */}
+                <button
+                  onClick={handleReflectionSkip}
+                  className="absolute top-4 right-4 z-10 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  ×
+                </button>
+                <ReflectionFlow
+                  onComplete={handleReflectionComplete}
+                  onSkip={handleReflectionSkip}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Step 1: Select Date and Time Slot */}
         {step === 1 && (
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>

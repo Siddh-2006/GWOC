@@ -82,6 +82,13 @@ const BookingSchema = new mongoose.Schema({
     }
   },
   
+  // Reflection Session Reference (optional)
+  reflectionSessionId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ReflectionSession',
+    default: null
+  },
+  
   // Booking Status
   status: { 
     type: String, 
