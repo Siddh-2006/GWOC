@@ -30,8 +30,6 @@ export const submitContactForm = async (req, res) => {
     // Log email results but don't fail the request if emails fail
     if (!emailResult.success) {
       console.error('Email sending failed:', emailResult.errors);
-    } else {
-      console.log('Both emails sent successfully - Admin notification and user confirmation');
     }
 
     res.status(201).json({

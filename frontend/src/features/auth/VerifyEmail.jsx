@@ -53,9 +53,7 @@ const VerifyEmail = () => {
     clearError();
     
     try {
-      console.log('Verifying email with:', { email, otp: otpValue });
       const response = await authApi.verifyEmail({ email, otp: otpValue });
-      console.log('Verification response:', response);
       
       if (response.success) {
         setSuccess(true);
@@ -77,13 +75,9 @@ const VerifyEmail = () => {
     clearError();
     
     try {
-      console.log('Resending OTP for:', email);
       const response = await authApi.resendOTP(email);
-      console.log('Resend response:', response);
       
       if (response.success) {
-        // Show success message or toast
-        console.log('OTP resent successfully');
       } else {
         setError(response.message || 'Failed to resend OTP');
       }

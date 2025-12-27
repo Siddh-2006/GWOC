@@ -34,20 +34,12 @@ const Signup = () => {
     clearError();
     
     try {
-      console.log('Sending signup request:', { 
-        firstName: formData.firstName, 
-        lastName: formData.lastName, 
-        email: formData.email 
-      });
-      
       const response = await authApi.signup({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password
       });
-
-      console.log('Signup response:', response);
 
       if (response.success) {
         // Redirect to email verification with email in state

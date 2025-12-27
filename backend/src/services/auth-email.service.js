@@ -66,10 +66,8 @@ export const sendOTPEmail = async (email, otp, type = 'registration') => {
     });
 
     // Verify transporter configuration before sending
-    console.log('🔍 Verifying email transporter...');
     try {
       await transporter.verify();
-      console.log('✅ Email transporter verified successfully');
     } catch (verifyError) {
       console.error('❌ Email transporter verification failed:', {
         message: verifyError.message,
@@ -174,14 +172,7 @@ export const sendOTPEmail = async (email, otp, type = 'registration') => {
       }
     };
 
-    console.log(`📧 Attempting to send ${type} email to ${email}...`);
-    console.log(`📧 Using sender: ${emailUser}`);
-    
     const result = await transporter.sendMail(mailOptions);
-    
-    console.log('✅ OTP email sent successfully!');
-    console.log(`📧 Message ID: ${result.messageId}`);
-    console.log(`📧 Response: ${result.response}`);
     
     // Also log the OTP for development
     if (process.env.NODE_ENV !== 'production') {

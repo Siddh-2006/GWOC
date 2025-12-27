@@ -27,7 +27,6 @@ export const sendBookingConfirmation = async (booking, slot, status) => {
     const emailPassword = process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS;
     
     if (!emailUser || !emailPassword) {
-      console.log('Email not configured for booking confirmations');
       return { success: false, error: 'Email not configured' };
     }
 
@@ -174,7 +173,6 @@ export const sendBookingConfirmation = async (booking, slot, status) => {
     };
 
     const result = await transporter.sendMail(mailOptions);
-    console.log(`✅ Booking ${status} email sent to user:`, result.messageId);
     
     return { success: true, messageId: result.messageId };
 
@@ -269,7 +267,6 @@ export const sendBookingNotification = async (booking, slot, user) => {
     };
 
     const result = await transporter.sendMail(mailOptions);
-    console.log('✅ Booking notification sent to admin:', result.messageId);
     
     return { success: true, messageId: result.messageId };
 
@@ -342,7 +339,6 @@ export const sendBookingReminder = async (booking, slot) => {
     };
 
     const result = await transporter.sendMail(mailOptions);
-    console.log('✅ Session reminder sent:', result.messageId);
     
     return { success: true, messageId: result.messageId };
 

@@ -25,7 +25,6 @@ class EmailService {
         }
       });
 
-      console.log('Email service initialized with user:', process.env.EMAIL_USER);
     }
     return this.transporter;
   }
@@ -35,7 +34,6 @@ class EmailService {
     try {
       const transporter = this.getTransporter();
       await transporter.verify();
-      console.log('✅ Email service connection verified successfully');
       return { success: true };
     } catch (error) {
       console.error('❌ Email service connection failed:', error.message);
@@ -84,7 +82,6 @@ class EmailService {
     try {
       const transporter = this.getTransporter();
       await transporter.sendMail(mailOptions);
-      console.log('Admin notification email sent successfully');
       return { success: true };
     } catch (error) {
       console.error('Error sending admin notification email:', error);
@@ -147,7 +144,6 @@ class EmailService {
     try {
       const transporter = this.getTransporter();
       await transporter.sendMail(mailOptions);
-      console.log('User confirmation email sent successfully');
       return { success: true };
     } catch (error) {
       console.error('Error sending user confirmation email:', error);

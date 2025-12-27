@@ -18,9 +18,7 @@ const ForgotPassword = () => {
     clearError();
     
     try {
-      console.log('Sending forgot password request for:', email);
       const response = await authApi.forgotPassword(email);
-      console.log('Forgot password response:', response);
       
       if (response.success) {
         navigate('/reset-password', { state: { email } });
@@ -28,7 +26,6 @@ const ForgotPassword = () => {
         setError(response.message || 'Failed to send reset email');
       }
     } catch (err) {
-      console.error('Forgot password error:', err);
       const errorMessage = err.response?.data?.message || err.message || 'Something went wrong. Please try again.';
       setError(errorMessage);
     } finally {

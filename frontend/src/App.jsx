@@ -22,7 +22,6 @@ import Login from './features/auth/Login';
 import VerifyEmail from './features/auth/VerifyEmail';
 import ForgotPassword from './features/auth/ForgotPassword';
 import ResetPassword from './features/auth/ResetPassword';
-import TestAuth from './pages/TestAuth';
 
 import useAuthStore from './store/useAuthStore';
 
@@ -77,7 +76,6 @@ function App() {
           />
 
           <Route path="/corporate" element={<Corporate />} />
-          <Route path="/test-auth" element={<TestAuth />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
           <Route path="/confidentiality" element={<ConfidentialityPolicy />} />

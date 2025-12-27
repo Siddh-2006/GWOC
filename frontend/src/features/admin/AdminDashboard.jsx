@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, X, Clock, User, Filter, Plus, Calendar, Loader2, Building2, MessageSquare, Bug, Eye, Mail, Phone, Heart } from 'lucide-react';
+import { Check, X, Clock, User, Filter, Plus, Calendar, Loader2, Building2, MessageSquare, Eye, Mail, Phone, Heart } from 'lucide-react';
 import { useBookingStore } from '../../store/useBookingStore';
 import { bookingApi } from '../booking/booking.api';
 import { CorporateInquiries } from '../../components/admin/CorporateInquiries';
 import ContactMessages from '../../components/admin/ContactMessages';
-import ContactDebug from '../../components/admin/ContactDebug';
 
 const AdminDashboard = () => {
   const {
@@ -180,14 +179,6 @@ const AdminDashboard = () => {
           <MessageSquare size={16} />
           Contact Messages
         </button>
-        <button
-          onClick={() => setActiveTab('debug')}
-          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'debug' ? 'bg-white shadow text-primary' : 'text-gray-500 hover:text-primary'
-            }`}
-        >
-          <Bug size={16} />
-          Debug
-        </button>
       </div>
 
       {error && (
@@ -333,8 +324,6 @@ const AdminDashboard = () => {
           <CorporateInquiries />
         ) : activeTab === 'contacts' ? (
           <ContactMessages />
-        ) : activeTab === 'debug' ? (
-          <ContactDebug />
         ) : null}
       </div>
 

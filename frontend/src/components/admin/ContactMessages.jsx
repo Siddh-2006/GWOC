@@ -30,7 +30,6 @@ const ContactMessages = () => {
   const [pagination, setPagination] = useState({});
 
   useEffect(() => {
-    console.log('ContactMessages component mounted, fetching data...');
     fetchMessages();
     fetchStats();
   }, [filters]);
@@ -38,32 +37,17 @@ const ContactMessages = () => {
   const fetchMessages = async () => {
     try {
       setLoading(true);
-      console.log('Fetching messages with filters:', filters);
       
       const params = { ...filters };
       if (params.status === 'all') delete params.status;
       
       const response = await contactAPI.getContactMessages(params);
-      console.log('Messages response:', response);
       
       setMessages(response.data.contacts);
       setPagination(response.data.pagination);
     } catch (error) {
       console.error('Error fetching messages:', error);
-      // Try the debug endpoint as fallback
-      try {
-        console.log('Trying debug endpoint...');
-        const debugResponse = await fetch('http://localhost:3001/api/contact/messages-debug');
-        const debugData = await debugResponse.json();
-        console.log('Debug response:', debugData);
-        
-        if (debugData.success) {
-          setMessages(debugData.data.contacts);
-          setPagination(debugData.data.pagination || { current: 1, pages: 1, total: debugData.data.contacts.length });
-        }
-      } catch (debugError) {
-        console.error('Debug endpoint also failed:', debugError);
-      }
+      setError('Failed to fetch messages. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -71,25 +55,11 @@ const ContactMessages = () => {
 
   const fetchStats = async () => {
     try {
-      console.log('Fetching stats...');
       const response = await contactAPI.getContactStats();
-      console.log('Stats response:', response);
       setStats(response.data);
     } catch (error) {
       console.error('Error fetching stats:', error);
-      // Try the debug endpoint as fallback
-      try {
-        console.log('Trying debug stats endpoint...');
-        const debugResponse = await fetch('http://localhost:3001/api/contact/stats-debug');
-        const debugData = await debugResponse.json();
-        console.log('Debug stats response:', debugData);
-        
-        if (debugData.success) {
-          setStats(debugData.data);
-        }
-      } catch (debugError) {
-        console.error('Debug stats endpoint also failed:', debugError);
-      }
+      setError('Failed to fetch statistics. Please try again.');
     }
   };
 
