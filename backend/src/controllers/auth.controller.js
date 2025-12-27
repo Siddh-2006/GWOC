@@ -112,7 +112,9 @@ export const signUp = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Sign up error:', error);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('❌ Sign up error:', error.message);
+    }
     
     // Handle specific email configuration errors
     if (error.message.includes('Email configuration missing')) {
@@ -192,7 +194,9 @@ export const signIn = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Sign in error:', error);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('❌ Sign in error:', error.message);
+    }
     res.status(500).json({
       success: false,
       message: 'Internal server error'
@@ -242,7 +246,9 @@ export const refreshToken = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Refresh token error:', error);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('❌ Refresh token error:', error.message);
+    }
     res.status(401).json({
       success: false,
       message: 'Invalid refresh token'

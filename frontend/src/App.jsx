@@ -12,7 +12,6 @@ import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
 import BlogPage from './pages/BlogPage';
 
-
 import PrivacyPolicy from './pages/policies/PrivacyPolicy';
 import RefundPolicy from './pages/policies/RefundPolicy';
 import ConfidentialityPolicy from './pages/policies/ConfidentialityPolicy';
@@ -34,7 +33,6 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 
   return children;
 };
-
 
 // Placeholder components until pages are created
 const Placeholder = ({ title }) => (

@@ -14,21 +14,17 @@ import contentRoutes from './api/content.routes.js';
 
 dotenv.config();
 
-// Debug: Check if .env is loaded
-console.log('Environment check:');
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('SKIP_EMAIL:', process.env.SKIP_EMAIL);
-console.log('EMAIL_USER:', process.env.EMAIL_USER ? 'SET' : 'NOT SET');
-console.log('PORT:', process.env.PORT);
-console.log('---');
-
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mindsettler')
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .then(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('✅ Connected to MongoDB');
+    }
+  })
+  .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // Middleware
 app.use(helmet());
@@ -50,5 +46,7 @@ app.get('/health', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`🚀 Server running on port ${PORT}`);
+  }
 });
