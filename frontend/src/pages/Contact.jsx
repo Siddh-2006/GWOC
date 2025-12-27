@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send, Instagram } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Instagram, Loader2 } from 'lucide-react';
+import contactAPI from '../services/contact.api.js';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -10,12 +11,28 @@ const Contact = () => {
     message: ''
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, you'd send this to your backend
-    console.log('Contact form submitted:', formData);
-    setSubmitted(true);
+    setLoading(true);
+    setError('');
+
+    try {
+      await contactAPI.submitContactForm(formData);
+      setSubmitted(true);
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (error) {
+      setError(error.message || 'Failed to send message. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (error) setError(''); // Clear error when user starts typing
   };
 
   return (
@@ -129,6 +146,13 @@ const Contact = () => {
           ) : (
             <div className="glass-card p-8 md:p-12">
               <h3 className="text-2xl font-bold text-primary mb-8">Send a Message</h3>
+              
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+                  {error}
+                </div>
+              )}
+              
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -139,7 +163,8 @@ const Contact = () => {
                       className="w-full px-4 py-3 rounded-xl border border-purple-100 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                       placeholder="John Doe"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      disabled={loading}
                     />
                   </div>
                   <div>
@@ -150,7 +175,8 @@ const Contact = () => {
                       className="w-full px-4 py-3 rounded-xl border border-purple-100 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                       placeholder="john@example.com"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      disabled={loading}
                     />
                   </div>
                 </div>
@@ -163,7 +189,8 @@ const Contact = () => {
                     className="w-full px-4 py-3 rounded-xl border border-purple-100 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                     placeholder="How can we help?"
                     value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                    onChange={(e) => handleInputChange('subject', e.target.value)}
+                    disabled={loading}
                   />
                 </div>
 
@@ -175,13 +202,27 @@ const Contact = () => {
                     className="w-full px-4 py-3 rounded-xl border border-purple-100 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none"
                     placeholder="Write your message here..."
                     value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    onChange={(e) => handleInputChange('message', e.target.value)}
+                    disabled={loading}
                   />
                 </div>
 
-                <button type="submit" className="btn-primary w-full py-4 flex items-center justify-center gap-2 text-lg">
-                  <Send size={20} />
-                  Send Message
+                <button 
+                  type="submit" 
+                  className="btn-primary w-full py-4 flex items-center justify-center gap-2 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 size={20} className="animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send size={20} />
+                      Send Message
+                    </>
+                  )}
                 </button>
               </form>
             </div>
