@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Target, Eye, Volume2, VolumeX } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+import { Volume2, VolumeX } from 'lucide-react';
 
 const About = () => {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -54,100 +54,299 @@ const About = () => {
     setIsMuted(!isMuted);
   };
 
+  // Animation variants for gentle fade-in with upward motion
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        duration: 1.0,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  // Section component with scroll-triggered animation
+  const AnimatedSection = ({ children, className = "" }) => {
+    const ref = useRef(null);
+    const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+    return (
+      <motion.div
+        ref={ref}
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
+        variants={fadeInUp}
+        className={className}
+      >
+        {children}
+      </motion.div>
+    );
+  };
+
   return (
-    <div className="py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold text-primary mb-6">About MindSettler</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            A platform born from a passion for psycho-education and a commitment to mental well-being for all.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center mb-24">
-          <div 
-            className="relative" 
-            ref={containerRef}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <div className="relative w-full aspect-square" style={{ perspective: "1000px" }}>
-              <motion.div
-                className="w-full h-full relative"
-                style={{ transformStyle: "preserve-3d" }}
-                initial={{ rotateY: 0, rotateZ: 3 }}
-                animate={{ 
-                  rotateY: isFlipped ? 180 : 0,
-                  rotateZ: isFlipped ? 0 : 3
-                }}
-                transition={{ duration: 0.8, ease: "easeInOut" }}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20">
+      <div className="flex min-h-screen">
+        {/* LEFT PANEL - Static/Sticky with Original Flip Animation */}
+        <div className="hidden lg:flex lg:w-2/5 xl:w-1/3 sticky top-0 h-screen">
+          <div className="relative w-full flex items-center justify-center p-12">
+            {/* Soft gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-100/40 via-purple-50/30 to-green-100/40" />
+            
+            {/* Portrait container with flip animation */}
+            <div className="relative z-10 text-center">
+              <div 
+                className="relative mb-8" 
+                ref={containerRef}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
               >
-                {/* Front Face */}
-                <div 
-                  className="absolute inset-0 w-full h-full bg-purple-100 rounded-[4rem] overflow-hidden"
-                  style={{ backfaceVisibility: "hidden" }}
-                >
-                  <img 
-                    src="/assets/pranika.jpg" 
-                    alt="Parnika - Founder of MindSettler" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                {/* Back Face */}
-                <div 
-                  className="absolute inset-0 w-full h-full bg-black rounded-[4rem] overflow-hidden group"
-                  style={{ 
-                    backfaceVisibility: "hidden", 
-                    transform: "rotateY(180deg)" 
-                  }}
-                >
-                  <video 
-                    ref={videoRef}
-                    src="/assets/pranika1.mp4" 
-                    className="w-full h-full object-cover"
-                    muted={isMuted}
-                    playsInline
-                    onEnded={() => setIsFlipped(false)}
-                  />
-                  
-                  {/* Sound Toggle Button */}
-                  <button
-                    onClick={toggleMute}
-                    className="absolute bottom-6 right-6 p-3 bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-sm transition-all transform hover:scale-110 z-10"
-                    aria-label={isMuted ? "Unmute video" : "Mute video"}
+                <div className="relative w-80 h-80 mx-auto" style={{ perspective: "1000px" }}>
+                  <motion.div
+                    className="w-full h-full relative"
+                    style={{ transformStyle: "preserve-3d" }}
+                    initial={{ rotateY: 0, rotateZ: 3 }}
+                    animate={{ 
+                      rotateY: isFlipped ? 180 : 0,
+                      rotateZ: isFlipped ? 0 : 3
+                    }}
+                    transition={{ duration: 0.8, ease: "easeInOut" }}
                   >
-                    {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                  </button>
+                    {/* Front Face - Photo */}
+                    <div 
+                      className="absolute inset-0 w-full h-full rounded-full overflow-hidden shadow-2xl shadow-blue-200/30"
+                      style={{ backfaceVisibility: "hidden" }}
+                    >
+                      <img 
+                        src="/assets/pranika.jpg" 
+                        alt="Parnika - Founder of MindSettler" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    {/* Back Face - Video */}
+                    <div 
+                      className="absolute inset-0 w-full h-full rounded-full overflow-hidden shadow-2xl shadow-blue-200/30"
+                      style={{ 
+                        backfaceVisibility: "hidden", 
+                        transform: "rotateY(180deg)" 
+                      }}
+                    >
+                      <video 
+                        ref={videoRef}
+                        src="/assets/pranika1.mp4" 
+                        className="w-full h-full object-cover"
+                        muted={isMuted}
+                        playsInline
+                        onEnded={() => setIsFlipped(false)}
+                      />
+                      
+                      {/* Sound Toggle Button */}
+                      <button
+                        onClick={toggleMute}
+                        className="absolute bottom-6 right-6 p-3 bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-sm transition-all transform hover:scale-110 z-10"
+                        aria-label={isMuted ? "Unmute video" : "Mute video"}
+                      >
+                        {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                      </button>
+                    </div>
+                  </motion.div>
+                </div>
+              </div>
+              
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1.0, delay: 0.5 }}
+                className="space-y-4"
+              >
+                <blockquote className="text-2xl font-light text-slate-700 leading-relaxed italic">
+                  "Understanding is the first form of care."
+                </blockquote>
+                <div className="text-slate-500">
+                  <p className="font-medium">Parnika</p>
+                  <p className="text-sm">Founder, MindSettler</p>
                 </div>
               </motion.div>
             </div>
-            <div className="absolute -bottom-8 -right-8 w-48 h-48 bg-secondary/10 rounded-full blur-2xl -z-10" />
           </div>
-          <div>
-            <h2 className="text-3xl font-bold text-primary mb-6">Our Brand</h2>
-            <p className="text-gray-600 mb-6 leading-relaxed">
-              MindSettler is more than just a counseling service; it's a movement toward mental clarity. We believe that understanding the "why" behind our thoughts is the first step toward settling them.
-            </p>
-            <p className="text-gray-600 mb-10 leading-relaxed">
-              Founded by Parnika, MindSettler focuses on bridging the gap between clinical psychology and everyday understanding, providing tools that are accessible, human, and effective.
-            </p>
-            <div className="grid grid-cols-2 gap-8">
-              <div>
-                <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center mb-4">
-                  <Target className="text-primary" />
-                </div>
-                <h4 className="font-bold mb-2">Our Mission</h4>
-                <p className="text-sm text-gray-500">To make therapy less intimidating and more educational.</p>
+        </div>
+
+        {/* RIGHT PANEL - Scrollable Content */}
+        <div className="flex-1 lg:w-3/5 xl:w-2/3" ref={containerRef}>
+          <div className="max-w-4xl mx-auto px-6 lg:px-12 py-20 lg:py-32">
+            
+            {/* Mobile Portrait - Only shown on smaller screens */}
+            <div className="lg:hidden mb-16 text-center">
+              <div className="w-48 h-48 mx-auto rounded-full overflow-hidden shadow-xl shadow-blue-200/30 mb-6">
+                <img 
+                  src="/assets/pranika.jpg" 
+                  alt="Parnika - Founder of MindSettler" 
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <div>
-                <div className="w-12 h-12 bg-pink-100 rounded-2xl flex items-center justify-center mb-4">
-                  <Eye className="text-secondary" />
-                </div>
-                <h4 className="font-bold mb-2">Our Vision</h4>
-                <p className="text-sm text-gray-500">A world where mental wellness is a standard part of life.</p>
+              <blockquote className="text-xl font-light text-slate-700 leading-relaxed italic mb-4">
+                "Understanding is the first form of care."
+              </blockquote>
+              <div className="text-slate-500">
+                <p className="font-medium">Parnika</p>
+                <p className="text-sm">Founder, MindSettler</p>
               </div>
             </div>
+
+            {/* Opening Statement */}
+            <AnimatedSection className="mb-20">
+              <h1 className="text-4xl lg:text-5xl font-light text-slate-800 mb-8 leading-tight">
+                What MindSettler Is
+              </h1>
+              <div className="space-y-6 text-lg leading-relaxed text-slate-600">
+                <p>
+                  MindSettler is a psycho-education and mental well-being platform that focuses on understanding before action.
+                </p>
+                <p>
+                  We support awareness and human-led guidance through both online and offline sessions, creating space for reflection without pressure.
+                </p>
+              </div>
+            </AnimatedSection>
+
+            {/* Aim */}
+            <AnimatedSection className="mb-20">
+              <h2 className="text-3xl font-light text-slate-800 mb-8">Our Aim</h2>
+              <div className="space-y-6 text-lg leading-relaxed text-slate-600">
+                <p>
+                  To make mental health understanding less intimidating.
+                </p>
+                <p>
+                  To create space for reflection without pressure, prioritizing clarity over urgency.
+                </p>
+                <p className="text-xl font-medium text-slate-700 italic">
+                  Understanding comes first.
+                </p>
+              </div>
+            </AnimatedSection>
+
+            {/* Goal */}
+            <AnimatedSection className="mb-20">
+              <h2 className="text-3xl font-light text-slate-800 mb-8">Our Goal</h2>
+              <div className="space-y-6 text-lg leading-relaxed text-slate-600">
+                <p>
+                  Guide individuals toward informed, human support while normalizing the process of seeking guidance.
+                </p>
+                <p>
+                  Provide safe, confidential pathways to sessions that honor each person's unique journey.
+                </p>
+                <p className="text-xl font-medium text-slate-700 italic">
+                  We walk alongside, we don't push forward.
+                </p>
+              </div>
+            </AnimatedSection>
+
+            {/* Founder's Story */}
+            <AnimatedSection className="mb-20">
+              <h2 className="text-3xl font-light text-slate-800 mb-8">Parnika's Story</h2>
+              <div className="space-y-6 text-lg leading-relaxed text-slate-600">
+                <p>
+                  MindSettler was born from observation, not crisis. Parnika recognized the lack of safe spaces for reflection and the need for calm, human-centered mental health support.
+                </p>
+                <p>
+                  The intention was always to create a platform built with care, not speed—a place where understanding unfolds naturally.
+                </p>
+                <p className="text-xl font-medium text-slate-700 italic">
+                  MindSettler was built with care, not speed.
+                </p>
+              </div>
+            </AnimatedSection>
+
+            {/* Philosophy of Care */}
+            <AnimatedSection className="mb-20">
+              <h2 className="text-3xl font-light text-slate-800 mb-8">Our Philosophy of Care</h2>
+              <div className="grid md:grid-cols-3 gap-8 text-center">
+                <div className="p-6 bg-white/60 rounded-2xl shadow-sm">
+                  <h3 className="text-xl font-medium text-slate-700 mb-3">Psycho-education</h3>
+                  <p className="text-slate-600">Not diagnosis</p>
+                </div>
+                <div className="p-6 bg-white/60 rounded-2xl shadow-sm">
+                  <h3 className="text-xl font-medium text-slate-700 mb-3">Understanding</h3>
+                  <p className="text-slate-600">Not fixing</p>
+                </div>
+                <div className="p-6 bg-white/60 rounded-2xl shadow-sm">
+                  <h3 className="text-xl font-medium text-slate-700 mb-3">Reflection</h3>
+                  <p className="text-slate-600">Not reaction</p>
+                </div>
+              </div>
+            </AnimatedSection>
+
+            {/* What MindSettler Is / Is Not */}
+            <AnimatedSection className="mb-20">
+              <h2 className="text-3xl font-light text-slate-800 mb-8">What We Are & What We're Not</h2>
+              <div className="grid md:grid-cols-2 gap-12">
+                <div>
+                  <h3 className="text-2xl font-medium text-green-700 mb-6">MindSettler Is</h3>
+                  <ul className="space-y-4 text-lg text-slate-600">
+                    <li>• A psycho-education space</li>
+                    <li>• A guided well-being platform</li>
+                    <li>• A human-led support system</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-medium text-slate-500 mb-6">MindSettler Is Not</h3>
+                  <ul className="space-y-4 text-lg text-slate-600">
+                    <li>• An emergency service</li>
+                    <li>• An AI therapy tool</li>
+                    <li>• An instant solution platform</li>
+                  </ul>
+                </div>
+              </div>
+            </AnimatedSection>
+
+            {/* Confidentiality & Trust */}
+            <AnimatedSection className="mb-20">
+              <h2 className="text-3xl font-light text-slate-800 mb-8">Confidentiality & Trust</h2>
+              <div className="bg-blue-50/50 p-8 rounded-2xl">
+                <div className="space-y-6 text-lg leading-relaxed text-slate-600">
+                  <p>
+                    Privacy is central to everything we do. All sessions are completely confidential.
+                  </p>
+                  <p>
+                    We never share individual data, and our corporate services are entirely non-reporting.
+                  </p>
+                  <p className="text-xl font-medium text-slate-700">
+                    Your trust is the foundation of our work.
+                  </p>
+                </div>
+              </div>
+            </AnimatedSection>
+
+            {/* Who MindSettler Is For */}
+            <AnimatedSection className="mb-20">
+              <h2 className="text-3xl font-light text-slate-800 mb-8">Who MindSettler Is For</h2>
+              <div className="space-y-6 text-lg leading-relaxed text-slate-600">
+                <p>
+                  People feeling confused or overwhelmed who are exploring mental health gently.
+                </p>
+                <p>
+                  First-time help-seekers and individuals who value calm structure over urgent solutions.
+                </p>
+                <p>
+                  Anyone who believes that understanding themselves is worth the time it takes.
+                </p>
+              </div>
+            </AnimatedSection>
+
+            {/* Closing Statement */}
+            <AnimatedSection className="mb-20">
+              <div className="text-center py-12">
+                <div className="space-y-8 text-xl leading-relaxed text-slate-600">
+                  <p>No rush.</p>
+                  <p>Use at your own pace.</p>
+                  <p className="text-2xl font-light text-slate-700 italic">
+                    Understanding unfolds differently for everyone.
+                  </p>
+                </div>
+              </div>
+            </AnimatedSection>
+
           </div>
         </div>
       </div>
