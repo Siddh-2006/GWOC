@@ -27,4 +27,10 @@ router.get('/:mediaId', mediaController.getMedia);
 // POST /api/media/:mediaId/like - Like media
 router.post('/:mediaId/like', mediaController.likeMedia);
 
+// POST /api/media/:mediaId/comment - Add comment to media
+router.post('/:mediaId/comment', mediaController.addComment);
+
+// POST /api/media/:mediaId/share - Share media
+router.post('/:mediaId/share', mediaController.shareMedia);
+
 export default router;

@@ -11,7 +11,6 @@ const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
     description: '',
     contentType: 'qa',
     category: 'general',
-    difficulty: 'beginner',
     tags: '',
     estimatedReadTime: '',
     content: {
@@ -93,7 +92,6 @@ const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
           description: '',
           contentType: 'qa',
           category: 'general',
-          difficulty: 'beginner',
           tags: '',
           estimatedReadTime: '',
           content: {
@@ -349,8 +347,8 @@ const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
             />
           </div>
 
-          {/* Content Type, Category, Difficulty */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Content Type and Category */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Content Type
@@ -376,20 +374,6 @@ const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
               >
                 {categories.map(category => (
                   <option key={category.value} value={category.value}>{category.label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Difficulty
-              </label>
-              <select
-                value={formData.difficulty}
-                onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-                {difficulties.map(difficulty => (
-                  <option key={difficulty.value} value={difficulty.value}>{difficulty.label}</option>
                 ))}
               </select>
             </div>

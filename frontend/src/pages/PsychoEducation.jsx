@@ -55,7 +55,6 @@ const PsychoEducation = () => {
         search: searchTerm,
         contentType: selectedType !== 'all' ? selectedType : undefined,
         category: selectedCategory !== 'all' ? selectedCategory : undefined,
-        difficulty: selectedDifficulty !== 'all' ? selectedDifficulty : undefined,
         page: resetPage ? 1 : page,
         limit: 12
       };
@@ -80,14 +79,14 @@ const PsychoEducation = () => {
 
   useEffect(() => {
     fetchContent(true);
-  }, [searchTerm, selectedType, selectedCategory, selectedDifficulty]);
+  }, [searchTerm, selectedType, selectedCategory]);
 
   const handleLike = async (contentId) => {
     try {
-      await psychoEducationApi.likeContent(contentId);
+      const response = await psychoEducationApi.likeContent(contentId);
       setContent(prev => prev.map(item => 
         item._id === contentId 
-          ? { ...item, likes: item.likes + 1 }
+          ? { ...item, likes: response.data.likes, hasLiked: response.data.hasLiked }
           : item
       ));
     } catch (err) {
@@ -97,10 +96,10 @@ const PsychoEducation = () => {
 
   const handleMarkHelpful = async (contentId) => {
     try {
-      await psychoEducationApi.markHelpful(contentId);
+      const response = await psychoEducationApi.markHelpful(contentId);
       setContent(prev => prev.map(item => 
         item._id === contentId 
-          ? { ...item, helpful: item.helpful + 1 }
+          ? { ...item, helpful: response.data.helpful, hasMarkedHelpful: response.data.hasMarkedHelpful }
           : item
       ));
     } catch (err) {
@@ -258,16 +257,6 @@ const PsychoEducation = () => {
                   <option key={category.value} value={category.value}>{category.label}</option>
                 ))}
               </select>
-
-              <select
-                value={selectedDifficulty}
-                onChange={(e) => setSelectedDifficulty(e.target.value)}
-                className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-                {difficulties.map(difficulty => (
-                  <option key={difficulty.value} value={difficulty.value}>{difficulty.label}</option>
-                ))}
-              </select>
             </div>
           </div>
         </motion.div>
@@ -304,9 +293,6 @@ const PsychoEducation = () => {
                     {item.contentType === 'qa' ? 'Q&A' : item.contentType}
                   </span>
                 </div>
-                <span className={`text-xs px-2 py-1 rounded-full ${getDifficultyColor(item.difficulty)}`}>
-                  {item.difficulty}
-                </span>
               </div>
 
               {/* Title */}
@@ -361,7 +347,7 @@ const PsychoEducation = () => {
                     className="flex items-center gap-1 text-gray-500 hover:text-red-500 transition-colors"
                   >
                     <Heart size={16} />
-                    <span className="text-sm">{item.likes}</span>
+                    <span className="text-sm">{Array.isArray(item.likes) ? item.likes.length : item.likes}</span>
                   </button>
                   
                   <button
@@ -372,7 +358,7 @@ const PsychoEducation = () => {
                     className="flex items-center gap-1 text-gray-500 hover:text-green-500 transition-colors"
                   >
                     <ThumbsUp size={16} />
-                    <span className="text-sm">{item.helpful}</span>
+                    <span className="text-sm">{Array.isArray(item.helpful) ? item.helpful.length : item.helpful}</span>
                   </button>
                 </div>
 

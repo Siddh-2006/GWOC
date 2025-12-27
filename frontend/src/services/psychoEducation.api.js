@@ -37,6 +37,16 @@ export const psychoEducationApi = {
     return response.data;
   },
 
+  addComment: async (contentId, content) => {
+    const response = await api.post(`/psycho-education/${contentId}/comment`, { content });
+    return response.data;
+  },
+
+  shareContent: async (contentId) => {
+    const response = await api.post(`/psycho-education/${contentId}/share`);
+    return response.data;
+  },
+
   // Admin endpoints
   createContent: async (contentData) => {
     const response = await api.post('/psycho-education', contentData);

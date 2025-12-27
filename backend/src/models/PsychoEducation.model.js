@@ -1,5 +1,22 @@
 import mongoose from 'mongoose';
 
+const commentSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Auth',
+    required: true
+  },
+  content: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
 const psychoEducationSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -53,11 +70,6 @@ const psychoEducationSchema = new mongoose.Schema({
     enum: ['anxiety', 'depression', 'relationships', 'stress', 'self-care', 'mindfulness', 'general'],
     required: true
   },
-  difficulty: {
-    type: String,
-    enum: ['beginner', 'intermediate', 'advanced'],
-    default: 'beginner'
-  },
   estimatedReadTime: {
     type: Number // in minutes
   },
@@ -76,11 +88,16 @@ const psychoEducationSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  likes: {
-    type: Number,
-    default: 0
-  },
-  helpful: {
+  likes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Auth'
+  }],
+  comments: [commentSchema],
+  helpful: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Auth'
+  }],
+  shares: {
     type: Number,
     default: 0
   },

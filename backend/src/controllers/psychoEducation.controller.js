@@ -295,6 +295,14 @@ export const psychoEducationController = {
   likeContent: async (req, res) => {
     try {
       const { contentId } = req.params;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required to like content'
+        });
+      }
 
       const content = await PsychoEducation.findById(contentId);
       if (!content) {
@@ -304,13 +312,25 @@ export const psychoEducationController = {
         });
       }
 
-      content.likes += 1;
+      const hasLiked = content.likes.includes(userId);
+      
+      if (hasLiked) {
+        // Unlike
+        content.likes = content.likes.filter(id => id.toString() !== userId);
+      } else {
+        // Like
+        content.likes.push(userId);
+      }
+
       await content.save();
 
       res.json({
         success: true,
-        message: 'Content liked successfully',
-        data: { likes: content.likes }
+        message: hasLiked ? 'Content unliked successfully' : 'Content liked successfully',
+        data: { 
+          likes: content.likes.length,
+          hasLiked: !hasLiked
+        }
       });
     } catch (error) {
       console.error('Like content error:', error);
@@ -326,6 +346,14 @@ export const psychoEducationController = {
   markHelpful: async (req, res) => {
     try {
       const { contentId } = req.params;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required to mark as helpful'
+        });
+      }
 
       const content = await PsychoEducation.findById(contentId);
       if (!content) {
@@ -335,19 +363,118 @@ export const psychoEducationController = {
         });
       }
 
-      content.helpful += 1;
+      const hasMarkedHelpful = content.helpful.includes(userId);
+      
+      if (hasMarkedHelpful) {
+        // Remove helpful mark
+        content.helpful = content.helpful.filter(id => id.toString() !== userId);
+      } else {
+        // Mark as helpful
+        content.helpful.push(userId);
+      }
+
       await content.save();
 
       res.json({
         success: true,
-        message: 'Content marked as helpful',
-        data: { helpful: content.helpful }
+        message: hasMarkedHelpful ? 'Removed helpful mark' : 'Content marked as helpful',
+        data: { 
+          helpful: content.helpful.length,
+          hasMarkedHelpful: !hasMarkedHelpful
+        }
       });
     } catch (error) {
       console.error('Mark helpful error:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to mark as helpful',
+        error: error.message
+      });
+    }
+  },
+
+  // Add comment to content
+  addComment: async (req, res) => {
+    try {
+      const { contentId } = req.params;
+      const { content: commentContent } = req.body;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required to comment'
+        });
+      }
+
+      if (!commentContent || !commentContent.trim()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Comment content is required'
+        });
+      }
+
+      const content = await PsychoEducation.findById(contentId);
+      if (!content) {
+        return res.status(404).json({
+          success: false,
+          message: 'Content not found'
+        });
+      }
+
+      const comment = {
+        userId,
+        content: commentContent.trim(),
+        createdAt: new Date()
+      };
+
+      content.comments.push(comment);
+      await content.save();
+
+      // Populate the comment with user info
+      await content.populate('comments.userId', 'firstName lastName');
+
+      res.status(201).json({
+        success: true,
+        message: 'Comment added successfully',
+        data: content.comments[content.comments.length - 1]
+      });
+    } catch (error) {
+      console.error('Add comment error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to add comment',
+        error: error.message
+      });
+    }
+  },
+
+  // Share content (increment share count)
+  shareContent: async (req, res) => {
+    try {
+      const { contentId } = req.params;
+
+      const content = await PsychoEducation.findById(contentId);
+      if (!content) {
+        return res.status(404).json({
+          success: false,
+          message: 'Content not found'
+        });
+      }
+
+      content.shares += 1;
+      await content.save();
+
+      res.json({
+        success: true,
+        message: 'Content shared successfully',
+        data: { shares: content.shares }
+      });
+    } catch (error) {
+      console.error('Share content error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to share content',
         error: error.message
       });
     }

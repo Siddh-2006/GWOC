@@ -386,28 +386,22 @@ const AdminDashboard = () => {
           <ContactMessages />
         ) : activeTab === 'media' ? (
           <div className="p-8">
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="text-xl font-bold">Media & Resources Management</h3>
-              <button className="btn-primary py-2 px-4 flex items-center gap-2 text-sm">
-                <Plus size={18} />
-                Add Media
-              </button>
-            </div>
-            <div className="text-center py-12 text-gray-400">
-              Media management coming soon...
+            <div className="text-center py-12">
+              <h3 className="text-xl font-bold mb-4">Media & Resources Management</h3>
+              <p className="text-gray-500 mb-4">Manage media content from the Resources page.</p>
+              <a href="/resources" className="btn-primary inline-flex items-center gap-2">
+                Go to Resources Page
+              </a>
             </div>
           </div>
         ) : activeTab === 'psycho-education' ? (
           <div className="p-8">
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="text-xl font-bold">Psycho-Education Content</h3>
-              <button className="btn-primary py-2 px-4 flex items-center gap-2 text-sm">
-                <Plus size={18} />
-                Add Content
-              </button>
-            </div>
-            <div className="text-center py-12 text-gray-400">
-              Psycho-education management coming soon...
+            <div className="text-center py-12">
+              <h3 className="text-xl font-bold mb-4">Psycho-Education Content</h3>
+              <p className="text-gray-500 mb-4">Manage psycho-education content from the dedicated page.</p>
+              <a href="/psycho-education" className="btn-primary inline-flex items-center gap-2">
+                Go to Psycho-Education Page
+              </a>
             </div>
           </div>
         ) : null}

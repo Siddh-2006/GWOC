@@ -30,4 +30,10 @@ router.post('/:contentId/like', psychoEducationController.likeContent);
 // POST /api/psycho-education/:contentId/helpful - Mark as helpful
 router.post('/:contentId/helpful', psychoEducationController.markHelpful);
 
+// POST /api/psycho-education/:contentId/comment - Add comment to content
+router.post('/:contentId/comment', psychoEducationController.addComment);
+
+// POST /api/psycho-education/:contentId/share - Share content
+router.post('/:contentId/share', psychoEducationController.shareContent);
+
 export default router;

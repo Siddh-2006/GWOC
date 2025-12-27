@@ -261,6 +261,14 @@ export const mediaController = {
   likeMedia: async (req, res) => {
     try {
       const { mediaId } = req.params;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required to like media'
+        });
+      }
 
       const media = await Media.findById(mediaId);
       if (!media) {
@@ -270,19 +278,118 @@ export const mediaController = {
         });
       }
 
-      media.likes += 1;
+      const hasLiked = media.likes.includes(userId);
+      
+      if (hasLiked) {
+        // Unlike
+        media.likes = media.likes.filter(id => id.toString() !== userId);
+      } else {
+        // Like
+        media.likes.push(userId);
+      }
+
       await media.save();
 
       res.json({
         success: true,
-        message: 'Media liked successfully',
-        data: { likes: media.likes }
+        message: hasLiked ? 'Media unliked successfully' : 'Media liked successfully',
+        data: { 
+          likes: media.likes.length,
+          hasLiked: !hasLiked
+        }
       });
     } catch (error) {
       console.error('Like media error:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to like media',
+        error: error.message
+      });
+    }
+  },
+
+  // Add comment to media
+  addComment: async (req, res) => {
+    try {
+      const { mediaId } = req.params;
+      const { content } = req.body;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required to comment'
+        });
+      }
+
+      if (!content || !content.trim()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Comment content is required'
+        });
+      }
+
+      const media = await Media.findById(mediaId);
+      if (!media) {
+        return res.status(404).json({
+          success: false,
+          message: 'Media not found'
+        });
+      }
+
+      const comment = {
+        userId,
+        content: content.trim(),
+        createdAt: new Date()
+      };
+
+      media.comments.push(comment);
+      await media.save();
+
+      // Populate the comment with user info
+      await media.populate('comments.userId', 'firstName lastName');
+
+      res.status(201).json({
+        success: true,
+        message: 'Comment added successfully',
+        data: media.comments[media.comments.length - 1]
+      });
+    } catch (error) {
+      console.error('Add comment error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to add comment',
+        error: error.message
+      });
+    }
+  },
+
+  // Share media (increment share count)
+  shareMedia: async (req, res) => {
+    try {
+      const { mediaId } = req.params;
+
+      const media = await Media.findById(mediaId);
+      if (!media) {
+        return res.status(404).json({
+          success: false,
+          message: 'Media not found'
+        });
+      }
+
+      media.shares += 1;
+      await media.save();
+
+      res.json({
+        success: true,
+        message: 'Media shared successfully',
+        data: { shares: media.shares }
+      });
+    } catch (error) {
+      console.error('Share media error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to share media',
         error: error.message
       });
     }

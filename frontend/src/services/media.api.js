@@ -32,6 +32,16 @@ export const mediaApi = {
     return response.data;
   },
 
+  addComment: async (mediaId, content) => {
+    const response = await api.post(`/media/${mediaId}/comment`, { content });
+    return response.data;
+  },
+
+  shareMedia: async (mediaId) => {
+    const response = await api.post(`/media/${mediaId}/share`);
+    return response.data;
+  },
+
   // Admin endpoints
   createMedia: async (mediaData) => {
     const response = await api.post('/media', mediaData);

@@ -10,7 +10,6 @@ const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
     title: '',
     description: '',
     type: 'video',
-    category: 'resource',
     fileUrl: '',
     thumbnailUrl: '',
     tags: '',
@@ -60,7 +59,6 @@ const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
           title: '',
           description: '',
           type: 'video',
-          category: 'resource',
           fileUrl: '',
           thumbnailUrl: '',
           tags: '',
@@ -136,36 +134,20 @@ const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
             />
           </div>
 
-          {/* Type and Category */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Media Type
-              </label>
-              <select
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-                {mediaTypes.map(type => (
-                  <option key={type.value} value={type.value}>{type.label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-                {categories.map(category => (
-                  <option key={category.value} value={category.value}>{category.label}</option>
-                ))}
-              </select>
-            </div>
+          {/* Type */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Media Type
+            </label>
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            >
+              {mediaTypes.map(type => (
+                <option key={type.value} value={type.value}>{type.label}</option>
+              ))}
+            </select>
           </div>
 
           {/* File URL */}

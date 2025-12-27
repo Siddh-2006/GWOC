@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Download, Heart, Eye, Search, Filter, Grid, List, Clock, Tag, Plus, Settings } from 'lucide-react';
+import { Play, Download, Heart, Eye, Search, Filter, Grid, List, Clock, Tag, Plus, Settings, MessageCircle, Share } from 'lucide-react';
 import { mediaApi } from '../services/media.api';
 import useAuthStore from '../store/useAuthStore';
 import AddMediaModal from '../components/admin/AddMediaModal';
@@ -42,7 +42,6 @@ const Resources = () => {
       const params = {
         search: searchTerm,
         type: selectedType !== 'all' ? selectedType : undefined,
-        category: selectedCategory !== 'all' ? selectedCategory : undefined,
         page: resetPage ? 1 : page,
         limit: 12
       };
@@ -67,14 +66,14 @@ const Resources = () => {
 
   useEffect(() => {
     fetchMedia(true);
-  }, [searchTerm, selectedType, selectedCategory]);
+  }, [searchTerm, selectedType]);
 
   const handleLike = async (mediaId) => {
     try {
-      await mediaApi.likeMedia(mediaId);
+      const response = await mediaApi.likeMedia(mediaId);
       setMedia(prev => prev.map(item => 
         item._id === mediaId 
-          ? { ...item, likes: item.likes + 1 }
+          ? { ...item, likes: response.data.likes, hasLiked: response.data.hasLiked }
           : item
       ));
     } catch (err) {
@@ -171,16 +170,6 @@ const Resources = () => {
               >
                 {mediaTypes.map(type => (
                   <option key={type.value} value={type.value}>{type.label}</option>
-                ))}
-              </select>
-
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-                {categories.map(category => (
-                  <option key={category.value} value={category.value}>{category.label}</option>
                 ))}
               </select>
 
@@ -296,12 +285,13 @@ const Resources = () => {
                         className="flex items-center gap-1 text-gray-500 hover:text-red-500 transition-colors"
                       >
                         <Heart size={16} />
-                        <span className="text-sm">{item.likes}</span>
+                        <span className="text-sm">{Array.isArray(item.likes) ? item.likes.length : item.likes}</span>
                       </button>
                       
-                      <span className="text-xs text-gray-400 capitalize">
-                        {item.category}
-                      </span>
+                      <button className="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition-colors">
+                        <MessageCircle size={16} />
+                        <span className="text-sm">{item.comments?.length || 0}</span>
+                      </button>
                     </div>
                   </div>
                 </motion.div>
@@ -386,12 +376,13 @@ const Resources = () => {
                             className="flex items-center gap-1 text-gray-500 hover:text-red-500 transition-colors"
                           >
                             <Heart size={16} />
-                            <span className="text-sm">{item.likes}</span>
+                            <span className="text-sm">{Array.isArray(item.likes) ? item.likes.length : item.likes}</span>
                           </button>
                           
-                          <span className="text-xs text-gray-400 capitalize">
-                            {item.category}
-                          </span>
+                          <button className="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition-colors">
+                            <MessageCircle size={16} />
+                            <span className="text-sm">{item.comments?.length || 0}</span>
+                          </button>
                         </div>
                       </div>
                     </div>
