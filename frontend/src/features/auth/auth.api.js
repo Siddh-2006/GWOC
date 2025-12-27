@@ -40,5 +40,18 @@ export const authApi = {
     const refreshToken = localStorage.getItem('refreshToken');
     const response = await apiClient.post('/api/auth/logout', { refreshToken });
     return response.data;
+  },
+
+  validateToken: async () => {
+    const response = await apiClient.get('/api/auth/validate');
+    return response.data;
+  },
+
+  refreshTokens: async () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) throw new Error('No refresh token available');
+    
+    const response = await apiClient.post('/api/auth/refresh-token', { refreshToken });
+    return response.data;
   }
 };

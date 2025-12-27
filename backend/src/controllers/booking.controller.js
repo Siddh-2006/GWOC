@@ -21,6 +21,7 @@ export const bookingController = {
         nextDay.setDate(nextDay.getDate() + 1);
         
         query.date = {
+          
           $gte: targetDate,
           $lt: nextDay
         };
@@ -128,6 +129,30 @@ export const bookingController = {
         });
       }
       
+      // Validate location for offline sessions
+      if (sessionMode === 'offline') {
+        if (!location || !location.trim()) {
+          return res.status(400).json({
+            success: false,
+            message: 'Location is required for offline sessions'
+          });
+        }
+        
+        // Validate that location is in Surat area
+        const normalizedLocation = location.toLowerCase();
+        const isSuratLocation = normalizedLocation.includes('surat') || 
+                               normalizedLocation.includes('gujarat') ||
+                               ['adajan', 'vesu', 'citylight', 'piplod', 'althan', 'ghod dod', 'ring road', 'udhna', 'katargam']
+                                 .some(area => normalizedLocation.includes(area));
+        
+        if (!isSuratLocation) {
+          return res.status(400).json({
+            success: false,
+            message: 'Please provide a location in Surat, Gujarat area. MindSettler operates in Surat only.'
+          });
+        }
+      }
+      
       // Check if slot is available
       const slot = await Slot.findById(slotId);
       if (!slot || !slot.isAvailable || slot.isBlocked) {
@@ -178,7 +203,7 @@ export const bookingController = {
 
       await booking.save();
       
-      // Mark slot as unavailable and link to booking
+      // Mark slot as temporarily unavailable during pending status
       slot.isAvailable = false;
       slot.bookingId = booking._id;
       await slot.save();
@@ -320,11 +345,15 @@ export const bookingController = {
         });
       }
       
+      // Use original slot time by default, allow admin to override if needed
+      const finalDate = confirmedDate || booking.slotId.date;
+      const finalTime = confirmedTime || booking.slotId.startTime;
+      
       // Update booking with admin confirmation
       booking.status = 'confirmed';
       booking.adminResponse = {
-        confirmedDate: confirmedDate || booking.slotId.date,
-        confirmedTime: confirmedTime || booking.slotId.startTime,
+        confirmedDate: finalDate,
+        confirmedTime: finalTime,
         meetingLink: booking.sessionMode === 'online' ? meetingLink : undefined,
         notes,
         confirmedBy: adminId,
@@ -332,6 +361,13 @@ export const bookingController = {
       };
       
       await booking.save();
+      
+      // Mark the original slot as permanently booked (remove from availability)
+      if (booking.slotId) {
+        booking.slotId.isAvailable = false;
+        booking.slotId.bookingId = booking._id;
+        await booking.slotId.save();
+      }
       
       // Send confirmation email to user
       try {
@@ -344,7 +380,7 @@ export const bookingController = {
       
       res.json({
         success: true,
-        message: 'Booking confirmed successfully',
+        message: 'Booking confirmed successfully. Slot has been marked as booked.',
         data: booking
       });
     } catch (error) {
@@ -385,7 +421,7 @@ export const bookingController = {
       booking.status = 'cancelled';
       await booking.save();
       
-      // Make slot available again
+      // Make slot available again if booking is cancelled
       if (booking.slotId) {
         booking.slotId.isAvailable = true;
         booking.slotId.bookingId = null;

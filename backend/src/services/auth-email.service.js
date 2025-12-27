@@ -105,7 +105,7 @@ export const sendOTPEmail = async (email, otp, type = 'registration') => {
             </div>
             <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
               <p style="color: #64748b; margin: 0; font-size: 12px;">
-                MindSettler Studio, Pune, Maharashtra, India<br>
+                MindSettler Studio, Surat, Gujarat, India<br>
                 This email was sent to ${email}
               </p>
             </div>
@@ -140,7 +140,7 @@ export const sendOTPEmail = async (email, otp, type = 'registration') => {
             </div>
             <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
               <p style="color: #64748b; margin: 0; font-size: 12px;">
-                MindSettler Studio, Pune, Maharashtra, India<br>
+                MindSettler Studio, Surat, Gujarat, India<br>
                 This email was sent to ${email}
               </p>
             </div>

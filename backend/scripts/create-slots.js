@@ -19,7 +19,7 @@ const SlotSchema = new mongoose.Schema({
     offline: { type: Number, default: 1500 }
   },
   offlineLocation: {
-    address: { type: String, default: "MindSettler Studio, Pune, Maharashtra" },
+    address: { type: String, default: "MindSettler Studio, Surat, Gujarat" },
     coordinates: {
       latitude: Number,
       longitude: Number
@@ -101,7 +101,7 @@ const createTestSlots = async () => {
             offline: 1500
           },
           offlineLocation: {
-            address: "MindSettler Studio, Pune, Maharashtra",
+            address: "MindSettler Studio, Surat, Gujarat",
             instructions: "Please arrive 5 minutes early"
           },
           isBlocked: false,

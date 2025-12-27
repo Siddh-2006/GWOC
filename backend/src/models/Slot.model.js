@@ -72,7 +72,7 @@ const SlotSchema = new mongoose.Schema({
   offlineLocation: {
     address: {
       type: String,
-      default: "MindSettler Studio, Pune, Maharashtra"
+      default: "MindSettler Studio, Surat, Gujarat"
     },
     coordinates: {
       latitude: Number,

@@ -9,12 +9,10 @@ const seedPsychoEducationContent = async () => {
   try {
     // Connect to MongoDB
     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mindsettler');
-    console.log('✅ Connected to MongoDB');
 
     // Find or create admin user for content creation
     let adminUser = await Auth.findOne({ role: 'admin' });
     if (!adminUser) {
-      console.log('⚠️ No admin user found. Creating default admin...');
       adminUser = new Auth({
         firstName: 'Admin',
         lastName: 'User',
@@ -28,7 +26,6 @@ const seedPsychoEducationContent = async () => {
 
     // Clear existing psycho-education content (optional)
     await PsychoEducation.deleteMany({});
-    console.log('🗑️ Cleared existing psycho-education content');
 
     const psychoEducationData = [
       // 1️⃣ Q&A Content (Clarifying, not advising)
@@ -357,7 +354,6 @@ const seedPsychoEducationContent = async () => {
 
     // Insert all psycho-education content
     const insertedContent = await PsychoEducation.insertMany(psychoEducationData);
-    console.log(`✅ Created ${insertedContent.length} psycho-education items`);
 
     // Display summary by content type
     const contentByType = {};
@@ -365,36 +361,10 @@ const seedPsychoEducationContent = async () => {
       contentByType[item.contentType] = (contentByType[item.contentType] || 0) + 1;
     });
 
-    console.log('\n📚 Content created by type:');
-    Object.entries(contentByType).forEach(([type, count]) => {
-      const typeLabel = type === 'qa' ? 'Q&A' : type.charAt(0).toUpperCase() + type.slice(1);
-      console.log(`  ${typeLabel}: ${count} items`);
-    });
-
-    console.log('\n🎯 Content categories covered:');
-    const categories = [...new Set(insertedContent.map(item => item.category))];
-    categories.forEach(category => {
-      console.log(`  • ${category.charAt(0).toUpperCase() + category.slice(1)}`);
-    });
-
-    console.log('\n🔒 Safety Guidelines Followed:');
-    console.log('  ✅ No prescriptive "you should" language');
-    console.log('  ✅ Focus on understanding, not fixing');
-    console.log('  ✅ Gentle, non-judgmental tone');
-    console.log('  ✅ Encourages professional help when appropriate');
-    console.log('  ✅ Normalizes human experiences');
-
-    console.log('\n💡 Usage in MindSettler:');
-    console.log('  • Home/Journey pages → Quotes & Tips');
-    console.log('  • Psycho-Education page → Q&A, Theory, Articles');
-    console.log('  • Resources page → All content types');
-    console.log('  • Session pages → Quotes for reassurance');
-
   } catch (error) {
     console.error('❌ Error seeding psycho-education content:', error);
   } finally {
     await mongoose.disconnect();
-    console.log('✅ Disconnected from MongoDB');
   }
 };
 
