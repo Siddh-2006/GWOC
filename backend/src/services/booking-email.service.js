@@ -96,7 +96,7 @@ export const sendBookingConfirmation = async (booking, slot, status) => {
           
           <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
             <p style="color: #64748b; margin: 0; font-size: 12px;">
-              MindSettler Studio, Pune, Maharashtra, India<br>
+              MindSettler Studio, Surat, Gujarat, India<br>
               This email was sent to ${booking.personalInfo.email}
             </p>
           </div>
@@ -134,7 +134,7 @@ export const sendBookingConfirmation = async (booking, slot, status) => {
                 `<p style="margin: 8px 0; color: #475569;"><strong>Meeting Link:</strong> <a href="${booking.adminResponse.meetingLink}" style="color: #10b981;">${booking.adminResponse.meetingLink}</a></p>` : 
                 ''}
               ${booking.sessionMode === 'offline' ? 
-                `<p style="margin: 8px 0; color: #475569;"><strong>Location:</strong> ${booking.location || 'MindSettler Studio, Pune'}</p>` : 
+                `<p style="margin: 8px 0; color: #475569;"><strong>Location:</strong> ${booking.location || 'MindSettler Studio, Surat'}</p>` : 
                 ''}
             </div>
             
@@ -157,7 +157,7 @@ export const sendBookingConfirmation = async (booking, slot, status) => {
           
           <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
             <p style="color: #64748b; margin: 0; font-size: 12px;">
-              MindSettler Studio, Pune, Maharashtra, India<br>
+              MindSettler Studio, Surat, Gujarat, India<br>
               This email was sent to ${booking.personalInfo.email}
             </p>
           </div>
@@ -326,7 +326,7 @@ export const sendBookingReminder = async (booking, slot) => {
               ` : ''}
               
               ${booking.sessionMode === 'offline' ? `
-              <p style="margin: 8px 0; color: #475569;"><strong>Location:</strong> ${booking.location || 'MindSettler Studio, Pune'}</p>
+              <p style="margin: 8px 0; color: #475569;"><strong>Location:</strong> ${booking.location || 'MindSettler Studio, Surat'}</p>
               ` : ''}
             </div>
             

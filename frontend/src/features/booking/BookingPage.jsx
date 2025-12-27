@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, CheckCircle, AlertCircle, Loader2, User, MessageSquare } from 'lucide-react';
 import { useBookingStore } from '../../store/useBookingStore';
@@ -18,6 +18,45 @@ const BookingPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  const locationDropdownRef = useRef(null);
+
+  // Surat location suggestions
+  const suratLocations = [
+    'MindSettler Studio, Surat, Gujarat',
+    'Adajan, Surat, Gujarat',
+    'Vesu, Surat, Gujarat', 
+    'Citylight, Surat, Gujarat',
+    'Piplod, Surat, Gujarat',
+    'Althan, Surat, Gujarat',
+    'Ghod Dod Road, Surat, Gujarat',
+    'Ring Road, Surat, Gujarat',
+    'Udhna, Surat, Gujarat',
+    'Katargam, Surat, Gujarat'
+  ];
+
+  // Location validation function
+  const validateLocation = (location) => {
+    const normalizedLocation = location.toLowerCase();
+    const isSuratLocation = normalizedLocation.includes('surat') || 
+                           normalizedLocation.includes('gujarat') ||
+                           suratLocations.some(loc => 
+                             normalizedLocation.includes(loc.toLowerCase().split(',')[0])
+                           );
+    return isSuratLocation;
+  };
+
+  // Filter location suggestions based on input
+  const filterLocationSuggestions = (input) => {
+    if (!input.trim()) return suratLocations.slice(0, 5);
+    
+    const filtered = suratLocations.filter(location =>
+      location.toLowerCase().includes(input.toLowerCase())
+    );
+    return filtered.length > 0 ? filtered : suratLocations.slice(0, 3);
+  };
 
   const [formData, setFormData] = useState({
     // Personal Information (pre-fill from user profile if available)
@@ -60,6 +99,21 @@ const BookingPage = () => {
     fetchSlots(selectedDate);
   }, [selectedDate]);
 
+  // Handle click outside to close location dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (locationDropdownRef.current && !locationDropdownRef.current.contains(event.target)) {
+        setShowLocationSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const handleDateChange = (date) => {
     setSelectedDate(date);
     setSelectedSlot(null); // Reset selected slot when date changes
@@ -94,6 +148,22 @@ const BookingPage = () => {
       setError('Please describe what you would like to talk about');
       setLoading(false);
       return;
+    }
+    
+    // Validate location for offline sessions
+    if (formData.sessionMode === 'offline') {
+      if (!formData.location.trim()) {
+        setError('Please specify a location for offline session');
+        setLoading(false);
+        return;
+      }
+      
+      // Validate that location is in Surat area
+      if (!validateLocation(formData.location)) {
+        setError('Please provide a location in Surat, Gujarat area. MindSettler operates in Surat only.');
+        setLoading(false);
+        return;
+      }
     }
     
     if (!formData.agreedToTerms) {
@@ -414,7 +484,14 @@ const BookingPage = () => {
                     <button
                       key={mode}
                       type="button"
-                      onClick={() => setFormData({ ...formData, sessionMode: mode })}
+                      onClick={() => {
+                        const newFormData = { ...formData, sessionMode: mode };
+                        // Set default location for offline sessions
+                        if (mode === 'offline' && !formData.location) {
+                          newFormData.location = 'MindSettler Studio, Surat, Gujarat';
+                        }
+                        setFormData(newFormData);
+                      }}
                       className={`p-4 rounded-xl border-2 transition-all text-left ${formData.sessionMode === mode 
                         ? 'border-primary bg-primary/5 text-primary' 
                         : 'border-purple-50 hover:border-purple-200'
@@ -424,7 +501,7 @@ const BookingPage = () => {
                       <div className="text-sm text-gray-600">
                         {mode === 'online' 
                           ? 'Video call via Google Meet' 
-                          : 'In-person at MindSettler Studio'}
+                          : 'In-person at MindSettler Studio, Surat'}
                       </div>
                       <div className="text-sm font-medium text-green-600 mt-2">
                         ₹{selectedSlot?.pricing?.[mode] || (mode === 'online' ? 1200 : 1500)}
@@ -435,19 +512,116 @@ const BookingPage = () => {
                       No session modes available for selected slot
                     </div>
                   )}
-                </div>
+                </div> 
               </div>
 
               {formData.sessionMode === 'offline' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Location</label>
+                <div className="relative" ref={locationDropdownRef}>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Preferred Location in Surat *
+                  </label>
                   <input
                     type="text"
+                    required
                     className="w-full px-4 py-3 rounded-xl border border-purple-100 focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    placeholder="MindSettler Studio, Pune (default) or specify your preference"
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData({ ...formData, location: value });
+                      setLocationSuggestions(filterLocationSuggestions(value));
+                      setShowLocationSuggestions(true);
+                      setSelectedSuggestionIndex(-1);
+                    }}
+                    onFocus={() => {
+                      setLocationSuggestions(filterLocationSuggestions(formData.location));
+                      setShowLocationSuggestions(true);
+                      setSelectedSuggestionIndex(-1);
+                    }}
+                    onBlur={(e) => {
+                      // Only hide if not clicking on a suggestion
+                      if (!e.relatedTarget || !e.relatedTarget.closest('.location-suggestions')) {
+                        setTimeout(() => {
+                          setShowLocationSuggestions(false);
+                          setSelectedSuggestionIndex(-1);
+                        }, 150);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (!showLocationSuggestions || locationSuggestions.length === 0) return;
+                      
+                      if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        setSelectedSuggestionIndex(prev => 
+                          prev < locationSuggestions.length - 1 ? prev + 1 : 0
+                        );
+                      } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        setSelectedSuggestionIndex(prev => 
+                          prev > 0 ? prev - 1 : locationSuggestions.length - 1
+                        );
+                      } else if (e.key === 'Enter' && selectedSuggestionIndex >= 0) {
+                        e.preventDefault();
+                        setFormData({ ...formData, location: locationSuggestions[selectedSuggestionIndex] });
+                        setShowLocationSuggestions(false);
+                        setSelectedSuggestionIndex(-1);
+                      } else if (e.key === 'Escape') {
+                        setShowLocationSuggestions(false);
+                        setSelectedSuggestionIndex(-1);
+                      }
+                    }}
+                    placeholder="MindSettler Studio, Surat"
                   />
+                  
+                  {/* Location Suggestions Dropdown */}
+                  {showLocationSuggestions && (
+                    <div className="location-suggestions absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+                      {locationSuggestions.length > 0 ? (
+                        locationSuggestions.map((suggestion, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            className={`w-full px-4 py-3 text-left hover:bg-purple-50 active:bg-purple-100 focus:bg-purple-50 focus:outline-none text-sm border-none bg-transparent cursor-pointer transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg ${
+                              index === selectedSuggestionIndex ? 'bg-purple-100' : ''
+                            }`}
+                            onMouseDown={(e) => {
+                              // Prevent input blur when clicking suggestion
+                              e.preventDefault();
+                            }}
+                            onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setFormData({ ...formData, location: suggestion });
+                              setShowLocationSuggestions(false);
+                              setSelectedSuggestionIndex(-1);
+                            }}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-purple-500">📍</span>
+                              <span>{suggestion}</span>
+                            </div>
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                          No Surat locations found. Try "Surat" or area names like "Adajan", "Vesu"
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  <p className="text-xs text-gray-500 mt-1">
+                    Default: MindSettler Studio, Surat. Please specify a location within Surat, Gujarat area.
+                  </p>
+                  
+                  {/* Location validation indicator */}
+                  {formData.location && (
+                    <p className={`text-xs mt-1 ${validateLocation(formData.location) ? 'text-green-600' : 'text-red-600'}`}>
+                      {validateLocation(formData.location) 
+                        ? '✓ Valid Surat location' 
+                        : '⚠ Please provide a location in Surat, Gujarat'}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -490,7 +664,8 @@ const BookingPage = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading || !formData.agreedToTerms || !formData.sessionContent.topics}
+                  disabled={loading || !formData.agreedToTerms || !formData.sessionContent.topics || 
+                           (formData.sessionMode === 'offline' && (!formData.location.trim() || !validateLocation(formData.location)))}
                   className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? <Loader2 className="animate-spin" size={20} /> : 'Request Appointment'}

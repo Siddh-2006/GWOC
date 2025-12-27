@@ -27,8 +27,8 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     
-    // If error is 401 and not already retrying
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // If error is 401 and not already retrying and not a refresh token request
+    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/refresh-token')) {
       originalRequest._retry = true;
       
       try {
@@ -44,11 +44,19 @@ apiClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
-        // Refresh token expired or invalid
+        // Refresh token expired or invalid - clear all auth data
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        
+        // Only redirect to login if not already on auth pages
+        const currentPath = window.location.pathname;
+        const authPages = ['/login', '/signup', '/verify-email', '/forgot-password', '/reset-password'];
+        
+        if (!authPages.includes(currentPath)) {
+          window.location.href = '/login';
+        }
+        
         return Promise.reject(refreshError);
       }
     }

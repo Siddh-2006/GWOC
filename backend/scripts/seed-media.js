@@ -9,12 +9,10 @@ const seedMediaContent = async () => {
   try {
     // Connect to MongoDB
     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mindsettler');
-    console.log('✅ Connected to MongoDB');
 
     // Find or create admin user for content creation
     let adminUser = await Auth.findOne({ role: 'admin' });
     if (!adminUser) {
-      console.log('⚠️ No admin user found. Creating default admin...');
       adminUser = new Auth({
         firstName: 'Admin',
         lastName: 'User',
@@ -28,7 +26,6 @@ const seedMediaContent = async () => {
 
     // Clear existing media content (optional)
     await Media.deleteMany({});
-    console.log('🗑️ Cleared existing media content');
 
     const mediaData = [
       // Video Content
@@ -238,7 +235,6 @@ const seedMediaContent = async () => {
 
     // Insert all media content
     const insertedMedia = await Media.insertMany(mediaData);
-    console.log(`✅ Created ${insertedMedia.length} media items`);
 
     // Display summary by type
     const mediaByType = {};
@@ -246,37 +242,10 @@ const seedMediaContent = async () => {
       mediaByType[item.type] = (mediaByType[item.type] || 0) + 1;
     });
 
-    console.log('\n📺 Media created by type:');
-    Object.entries(mediaByType).forEach(([type, count]) => {
-      console.log(`  ${type.charAt(0).toUpperCase() + type.slice(1)}: ${count} items`);
-    });
-
-    // Display summary by category
-    const mediaByCategory = {};
-    insertedMedia.forEach(item => {
-      mediaByCategory[item.category] = (mediaByCategory[item.category] || 0) + 1;
-    });
-
-    console.log('\n📚 Media by category:');
-    Object.entries(mediaByCategory).forEach(([category, count]) => {
-      console.log(`  ${category.charAt(0).toUpperCase() + category.slice(1)}: ${count} items`);
-    });
-
-    console.log('\n🎯 Content Focus Areas:');
-    console.log('  ✅ Understanding over fixing');
-    console.log('  ✅ Normalizing human experiences');
-    console.log('  ✅ Educational without pathologizing');
-    console.log('  ✅ Gentle, compassionate approach');
-    console.log('  ✅ Diverse media formats for different learning styles');
-
-    console.log('\n💡 Note: File URLs are placeholder examples.');
-    console.log('   In production, replace with actual hosted content URLs.');
-
   } catch (error) {
-    console.error('❌ Error seeding media content:', error);
+    // Error seeding media content
   } finally {
     await mongoose.disconnect();
-    console.log('✅ Disconnected from MongoDB');
   }
 };
 

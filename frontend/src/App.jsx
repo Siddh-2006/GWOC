@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 import Chatbot from './features/chatbot/Chatbot';
@@ -27,10 +28,21 @@ import ResetPassword from './features/auth/ResetPassword';
 
 import useAuthStore from './store/useAuthStore';
 
+// Loading component for auth initialization
+const AuthLoader = () => (
+  <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+      <p className="text-gray-600">Initializing session...</p>
+    </div>
+  </div>
+);
+
 // Protected Route Component
 const ProtectedRoute = ({ children, adminOnly = false }) => {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, isInitialized } = useAuthStore();
 
+  if (!isInitialized) return <AuthLoader />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (adminOnly && user?.role !== 'admin') return <Navigate to="/" replace />;
 
@@ -46,6 +58,17 @@ const Placeholder = ({ title }) => (
 );
 
 function App() {
+  const { initializeAuth, isInitialized } = useAuthStore();
+
+  // Initialize auth on app startup
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
+
+  // Show loading screen while initializing auth
+  if (!isInitialized) {
+    return <AuthLoader />;
+  }
   return (
     <Router>
       <ScrollToTop />

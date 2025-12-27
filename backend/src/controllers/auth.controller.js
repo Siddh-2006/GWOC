@@ -511,6 +511,48 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
+// Validate current token
+export const validateToken = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await Auth.findById(userId);
+
+    if (!user || !user.isActive || !user.isEmailVerified) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid user session'
+      });
+    }
+
+    // Return user data if token is valid
+    res.json({
+      success: true,
+      message: 'Token is valid',
+      data: {
+        user: {
+          _id: user._id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          isActive: user.isActive,
+          isEmailVerified: user.isEmailVerified,
+          lastLogin: user.lastLogin,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Token validation error:', error);
+    res.status(401).json({
+      success: false,
+      message: 'Invalid token'
+    });
+  }
+};
+
 // Reset password - Verify OTP and update password
 export const resetPassword = async (req, res) => {
   try {

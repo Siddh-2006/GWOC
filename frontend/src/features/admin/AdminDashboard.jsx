@@ -80,8 +80,11 @@ const AdminDashboard = () => {
       setLoading(true);
       await bookingApi.admin.confirmBooking(bookingId, confirmationData);
       
-      // Refresh the bookings list
+      // Refresh both bookings and slots lists to show updated availability
       await fetchBookings();
+      if (activeTab === 'slots') {
+        await fetchSlots();
+      }
       
       // Close the modal and reset form
       setSelectedBooking(null);
@@ -306,8 +309,9 @@ const AdminDashboard = () => {
                                 <button
                                   onClick={() => {
                                     setSelectedBooking(booking);
+                                    // Pre-fill with original slot time (admin can change if needed)
                                     setConfirmationData({
-                                      confirmedDate: booking.slotId?.date || '',
+                                      confirmedDate: booking.slotId?.date ? new Date(booking.slotId.date).toISOString().split('T')[0] : '',
                                       confirmedTime: booking.slotId?.startTime || '',
                                       meetingLink: booking.sessionMode === 'online' ? '' : undefined,
                                       notes: ''
@@ -503,25 +507,41 @@ const AdminDashboard = () => {
               {selectedBooking.status === 'pending' && (
                 <div className="bg-green-50 p-4 rounded-xl">
                   <h4 className="font-semibold mb-3">Confirm Booking</h4>
+                  <div className="bg-blue-50 p-3 rounded-lg mb-4 text-sm text-blue-700">
+                    <p><strong>Default:</strong> Booking will be confirmed with original slot time.</p>
+                    <p><strong>Optional:</strong> You can modify the date/time below if needed.</p>
+                  </div>
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Confirmed Date</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Confirmed Date <span className="text-gray-400">(Optional - defaults to original)</span>
+                        </label>
                         <input
                           type="date"
-                          value={confirmationData.confirmedDate ? new Date(confirmationData.confirmedDate).toISOString().split('T')[0] : ''}
+                          value={confirmationData.confirmedDate}
                           onChange={(e) => setConfirmationData({...confirmationData, confirmedDate: e.target.value})}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                          placeholder="Leave empty to use original date"
                         />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Original: {selectedBooking.slotId ? formatDate(selectedBooking.slotId.date) : 'N/A'}
+                        </p>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Confirmed Time</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Confirmed Time <span className="text-gray-400">(Optional - defaults to original)</span>
+                        </label>
                         <input
                           type="time"
                           value={confirmationData.confirmedTime}
                           onChange={(e) => setConfirmationData({...confirmationData, confirmedTime: e.target.value})}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                          placeholder="Leave empty to use original time"
                         />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Original: {selectedBooking.slotId ? `${formatTime(selectedBooking.slotId.startTime)} - ${formatTime(selectedBooking.slotId.endTime)}` : 'N/A'}
+                        </p>
                       </div>
                     </div>
                     
@@ -546,6 +566,10 @@ const AdminDashboard = () => {
                         placeholder="Any additional notes for the client..."
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent h-20"
                       />
+                    </div>
+                    
+                    <div className="bg-yellow-50 p-3 rounded-lg text-sm text-yellow-700">
+                      <p><strong>Note:</strong> Confirming this booking will permanently mark the original time slot as "booked" and remove it from availability.</p>
                     </div>
                     
                     <div className="flex gap-3">

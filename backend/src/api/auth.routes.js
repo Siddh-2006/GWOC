@@ -8,7 +8,8 @@ import {
   getProfile,
   updateProfile,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  validateToken
 } from '../controllers/auth.controller.js';
 import { authenticateToken } from '../middleware/auth.middleware.js';
 
@@ -22,6 +23,7 @@ router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 
 // Protected routes
+router.get('/validate', authenticateToken, validateToken);
 router.post('/logout', authenticateToken, logout);
 router.post('/logout-all', authenticateToken, logoutAll);
 router.get('/profile', authenticateToken, getProfile);

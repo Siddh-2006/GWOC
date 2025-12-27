@@ -97,7 +97,7 @@ const Contact = () => {
               </div>
               <div>
                 <h4 className="font-bold text-primary text-lg">Our Studio</h4>
-                <p className="text-gray-500">MindSettler Studio, Pune, Maharashtra, India</p>
+                <p className="text-gray-500">MindSettler Studio, Surat, Gujarat, India</p>
               </div>
             </div>
           </div>

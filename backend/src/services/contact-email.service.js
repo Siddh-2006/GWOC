@@ -135,7 +135,7 @@ class EmailService {
           </div>
           
           <div style="text-align: center; padding: 20px; color: #64748b; font-size: 12px;">
-            <p>MindSettler Studio, Pune, Maharashtra, India</p>
+            <p>MindSettler Studio, Surat, Gujarat, India</p>
           </div>
         </div>
       `
