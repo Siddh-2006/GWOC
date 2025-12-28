@@ -10,6 +10,10 @@
   --color-white: #FFFFFF;
   --color-bg: #FFF5F8;
 
+  --color-lavender: #F3E8FF;
+  --color-peach-light: #FFF5F0;
+  --color-off-white: #FAFAFA;
+
   --color-primary: var(--color-purple);
   --color-secondary: var(--color-pink);
   --color-accent: var(--color-pink-soft);
@@ -40,6 +44,10 @@
 
   .glass-card {
     @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl rounded-2xl;
+  }
+
+  .hub-card {
+    @apply rounded-[2.5rem] bg-white transition-all duration-500 hover:shadow-2xl border border-purple-50 p-8 md:p-10;
   }
 
   .link-underline {

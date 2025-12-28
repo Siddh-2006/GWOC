@@ -13,10 +13,13 @@ import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
 import BlogPage from './pages/BlogPage';
 import Resources from './pages/Resources';
-import PsychoEducation from './pages/PsychoEducation';
 import Profile from './pages/Profile';
 import ProfileSimple from './pages/ProfileSimple';
 import { Corporate } from './pages/Corporate';
+
+import PsychoEducationHub from './pages/PsychoEducationHub';
+import PsychoEducation from './pages/PsychoEducation';
+import ResourceReader from './features/psycho-education/ResourceReader';
 
 import PrivacyPolicy from './pages/policies/PrivacyPolicy';
 import RefundPolicy from './pages/policies/RefundPolicy';
@@ -78,7 +81,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
-          <Route path="/psycho-education" element={<PsychoEducation />} />
+          <Route path="/psycho-education" element={<PsychoEducationHub />} />
+          <Route path="/psycho-education/library" element={<PsychoEducation />} />
+          <Route path="/psycho-education/read/:slug" element={<ResourceReader />} />
           <Route path="/how-it-works" element={<Placeholder title="How It Works" />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/blog" element={<BlogPage />} />
