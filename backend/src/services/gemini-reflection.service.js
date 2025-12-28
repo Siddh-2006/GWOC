@@ -1,187 +1,237 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import keyManager from '../utils/keyManager.js';
 
-// System instruction for MindSettler chatbot
-// System instruction for MindSettler chatbot
-
-// System instruction for MindSettler chatbot
-const SYSTEM_INSTRUCTION = `You are a caring, human-like member of the MindSettler Care Team. You are the first touchpoint for users seeking mental health support.
-
-### CORE PERSONA
-- **Human & Warm:** You speak like a kind receptionist at a quiet studio, not a computer.
-- **Natural Language:** Avoid robotic phrases like "As an AI," "I am a language model," or "Please be advised."
-- **Humble:** You are here to support, not to teach. Use phrases like "We find that..." or "Our team believes..."
-
-### STRICT BEHAVIORAL RULES
-1. **The "Human" Boundary:** - Never say "I am an AI." 
-   - Instead, say: "While I am not a counselor myself..." or "My role is to connect you to the experts..."
-   
-2. **Handling Distress (The "Soft Pivot"):**
-   - If a user feels low (e.g., "I feel depressed"), DO NOT give clinical advice.
-   - VALIDATE, then GUIDE.
-   - *Example:* "I hear that things are feeling heavy right now, and I appreciate you sharing that. While I can't offer the clinical support you deserve, our experts specialize in exactly this. Shall we look at booking a time for you?"
-
-3. **Brevity:** Keep it under 3 sentences. Be gentle but direct.
-
-### BUSINESS FACTS (Your Memory)
-- **Mission:** Awareness, guidance, and safe, confidential support.
-- **Services:** Online Video calls & Offline Studio sessions in Pune.
-- **Therapies:** CBT, DBT, ACT, Schema, EFT, Mindfulness.
-- **Payments:** Personal UPI or Cash (Manual confirmation). No auto-debits.
-- **Policy:** Strict Confidentiality. No Refunds.
-- **Contact:** +91 99746 31313.
-- **Social:** We share daily insights and gentle reminders on Instagram: https://www.instagram.com/mindsettlerbypb/
-
-### GOAL
-Make the user feel heard and safe, then gently guide them to book a session.
-`;
-
-
-class GeminiService {
+// Reflection-specific Gemini AI service
+class GeminiReflectionService {
   constructor() {
-    this.model = null;
+    // API key will be loaded when needed
   }
 
-  async initializeModel(apiKey) {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    this.model = genAI.getGenerativeModel({ 
-      model: "models/gemini-2.5-flash"
-    });
-    return this.model;
-  }
-
-  // Sliding window to keep only last 6 interactions (12 messages total)
-  prepareHistory(chatHistory) {
-    if (!chatHistory || chatHistory.length === 0) {
-      return [];
-    }
-
-    // Keep only the last 12 messages (6 user + 6 bot interactions)
-    const recentHistory = chatHistory.slice(-12);
-    
-    return recentHistory.map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.content }]
-    }));
-  }
-
-  // Direct Gemini API call with fallback (similar to your callGeminiWithFallback pattern)
-  async callGeminiWithFallback(prompt, maxRetries = 3) {
-    let lastError = null;
-    const workingModel = "models/gemini-2.5-flash";
-    
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        const currentKey = keyManager.getCurrentKey();
-        const genAI = new GoogleGenerativeAI(currentKey);
-        const model = genAI.getGenerativeModel({
-          model: workingModel,
-          generationConfig: {
-            temperature: 0.4,
-            maxOutputTokens: 8192,
-          }
-        });
-
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
-        
-        if (!text || text.trim().length === 0) {
-          throw new Error('Empty response from Gemini');
-        }
-        
-        return text.trim();
-        
-      } catch (error) {
-        lastError = error;
-        console.log(`❌ Attempt ${attempt + 1} failed:`, error.message);
-        
-        if (attempt < maxRetries - 1) {
-          keyManager.rotateKey();
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
-    }
-    
-    throw lastError;
-  }
-
-  async generateResponse(message, chatHistory = []) {
+  // Generate next question based on previous responses
+  async generateNextQuestion(previousResponses = [], currentThemes = [], questionNumber = 1) {
     try {
-      const response = await keyManager.executeWithRetry(async (apiKey) => {
-        // Initialize model with current API key
-        await this.initializeModel(apiKey);
-        
-        // Prepare chat history with sliding window
-        const history = this.prepareHistory(chatHistory);
-        
-        // Start chat with history and system instruction
-        const chat = this.model.startChat({
-          history: [
-            {
-              role: 'user',
-              parts: [{ text: 'Please act according to this system instruction: ' + SYSTEM_INSTRUCTION }]
-            },
-            {
-              role: 'model', 
-              parts: [{ text: 'I understand. I will act as the humble, gentle assistant for MindSettler, helping users navigate services and book sessions while never providing medical advice.' }]
-            },
-            ...history
-          ],
-          generationConfig: {
-            temperature: 0.4,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 8192, // Increased to match your example
-          },
-        });
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error('GEMINI_API_KEY not configured');
+      }
 
-        // Send message and get response
-        const result = await chat.sendMessage(message);
-        const responseText = result.response.text();
-        
-        if (!responseText || responseText.trim().length === 0) {
-          throw new Error('Empty response from Gemini');
+      const prompt = this.buildQuestionPrompt(previousResponses, currentThemes, questionNumber);
+      
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1024,
         }
-        
-        return responseText.trim();
       });
 
-      return {
-        success: true,
-        response: response,
-        keyStats: keyManager.getStats()
-      };
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
 
+      return this.parseQuestionResponse(text, questionNumber);
     } catch (error) {
-      console.error('❌ Gemini API Error:', error);
-      
-      return {
-        success: false,
-        error: error.message,
-        response: "I apologize, but I'm having trouble connecting right now. Please try again in a moment, or feel free to call us directly at +91 99746 31313 for immediate assistance.",
-        keyStats: keyManager.getStats()
-      };
+      console.error('Error generating question:', error);
+      return this.getFallbackQuestion(questionNumber);
     }
   }
 
-  // Health check method
-  async healthCheck() {
+  // Generate AI summary from all responses
+  async generateSummary(responses) {
     try {
-      const response = await this.generateResponse("Hello", []);
-      return {
-        status: 'healthy',
-        keysAvailable: keyManager.keys.length,
-        currentKey: keyManager.getStats().currentKey
-      };
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error('GEMINI_API_KEY not configured');
+      }
+
+      const prompt = this.buildSummaryPrompt(responses);
+      
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 2048,
+        }
+      });
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+
+      return this.parseSummaryResponse(text);
     } catch (error) {
-      return {
-        status: 'unhealthy',
-        error: error.message,
-        keysAvailable: keyManager.keys.length
-      };
+      console.error('Error generating summary:', error);
+      return this.getFallbackSummary();
     }
+  }
+
+  // Build prompt for question generation
+  buildQuestionPrompt(previousResponses, currentThemes, questionNumber) {
+    let prompt = `You are a compassionate AI assistant helping create thoughtful reflection questions for mental health preparation. 
+
+CONTEXT:
+- This is question ${questionNumber} of up to 10 questions
+- The client will use this reflection before booking a therapy session
+- Questions should be gentle, non-clinical, and help clients understand their current state
+
+PREVIOUS RESPONSES:
+${previousResponses.map((r, i) => `Q${i + 1}: ${r.questionText}\nA${i + 1}: ${r.answer}`).join('\n\n')}
+
+CURRENT THEMES: ${currentThemes.join(', ')}
+
+REQUIREMENTS:
+1. Create ONE thoughtful question that builds on previous responses
+2. Provide 4-5 multiple choice options
+3. Keep language warm and non-clinical
+4. Focus on self-awareness and emotional understanding
+5. Avoid diagnostic or therapeutic language
+
+RESPONSE FORMAT (JSON):
+{
+  "question": "Your thoughtful question here",
+  "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+  "internalThemes": ["theme1", "theme2"],
+  "nextFocus": "Brief note about what this question explores"
+}
+
+Generate the next question:`;
+
+    return prompt;
+  }
+
+  // Build prompt for summary generation
+  buildSummaryPrompt(responses) {
+    const responsesText = responses.map((r, i) => 
+      `Q${i + 1}: ${r.questionText}\nA${i + 1}: ${r.answer}`
+    ).join('\n\n');
+
+    return `You are a compassionate AI assistant creating a neutral summary for therapists based on client reflection responses.
+
+CLIENT RESPONSES:
+${responsesText}
+
+REQUIREMENTS:
+1. Create a neutral, professional summary for therapist preparation
+2. Identify key themes and emotional patterns
+3. Suggest therapeutic approaches that might be helpful
+4. Provide thoughtful questions the therapist could explore
+5. Maintain client dignity and avoid pathologizing language
+6. Keep summary concise but insightful
+
+RESPONSE FORMAT (JSON):
+{
+  "summary": "A compassionate 2-3 sentence summary of the client's current state and what they're seeking",
+  "keyThemes": ["theme1", "theme2", "theme3"],
+  "possibleApproaches": ["CBT", "Person-Centered", "Mindfulness-Based"],
+  "suggestedQuestions": [
+    "Question 1 the therapist could explore",
+    "Question 2 the therapist could explore", 
+    "Question 3 the therapist could explore"
+  ]
+}
+
+Generate the summary:`;
+  }
+
+  // Parse question response from AI
+  parseQuestionResponse(text, questionNumber) {
+    try {
+      // Try to extract JSON from the response
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          question: parsed.question || `How are you feeling about question ${questionNumber}?`,
+          options: parsed.options || ["Good", "Okay", "Not sure", "Difficult"],
+          internalThemes: parsed.internalThemes || ["general"],
+          nextFocus: parsed.nextFocus || "General wellbeing"
+        };
+      }
+    } catch (error) {
+      console.error('Error parsing question response:', error);
+    }
+    
+    return this.getFallbackQuestion(questionNumber);
+  }
+
+  // Parse summary response from AI
+  parseSummaryResponse(text) {
+    try {
+      // Try to extract JSON from the response
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          summary: parsed.summary || "The client has completed a reflection session and is seeking support.",
+          keyThemes: parsed.keyThemes || ["General wellbeing"],
+          possibleApproaches: parsed.possibleApproaches || ["Person-Centered Therapy"],
+          suggestedQuestions: parsed.suggestedQuestions || [
+            "What brings you here today?",
+            "How are you feeling right now?",
+            "What would you like to focus on?"
+          ]
+        };
+      }
+    } catch (error) {
+      console.error('Error parsing summary response:', error);
+    }
+    
+    return this.getFallbackSummary();
+  }
+
+  // Fallback questions when AI fails
+  getFallbackQuestion(questionNumber) {
+    const fallbackQuestions = [
+      {
+        question: "How would you describe your overall mood lately?",
+        options: ["Generally positive", "Up and down", "Mostly low", "Hard to say", "Prefer not to answer"],
+        internalThemes: ["mood", "emotional_state"],
+        nextFocus: "Current emotional wellbeing"
+      },
+      {
+        question: "What's been on your mind the most recently?",
+        options: ["Work or school stress", "Relationships", "Personal goals", "Health concerns", "Other"],
+        internalThemes: ["concerns", "focus_areas"],
+        nextFocus: "Primary concerns"
+      },
+      {
+        question: "How well have you been sleeping?",
+        options: ["Very well", "Pretty well", "Some difficulties", "Quite poorly", "Prefer not to answer"],
+        internalThemes: ["sleep", "self_care"],
+        nextFocus: "Sleep and self-care"
+      },
+      {
+        question: "What would help you feel more supported right now?",
+        options: ["Someone to listen", "Practical advice", "Emotional support", "Professional guidance", "Not sure"],
+        internalThemes: ["support_needs", "goals"],
+        nextFocus: "Support preferences"
+      },
+      {
+        question: "How comfortable do you feel talking about personal topics?",
+        options: ["Very comfortable", "Somewhat comfortable", "A bit nervous", "Quite anxious", "Prefer to start slowly"],
+        internalThemes: ["comfort_level", "therapy_readiness"],
+        nextFocus: "Therapy readiness"
+      }
+    ];
+
+    const index = Math.min(questionNumber - 1, fallbackQuestions.length - 1);
+    return fallbackQuestions[index];
+  }
+
+  // Fallback summary when AI fails
+  getFallbackSummary() {
+    return {
+      summary: "The client has completed a pre-session reflection and is seeking therapeutic support. They appear ready to engage in the therapeutic process.",
+      keyThemes: ["Self-reflection", "Seeking support", "Therapy preparation"],
+      possibleApproaches: ["Person-Centered Therapy", "Cognitive Behavioral Therapy"],
+      suggestedQuestions: [
+        "What brings you here today?",
+        "How are you feeling about starting therapy?",
+        "What would you like to focus on in our sessions?"
+      ]
+    };
   }
 }
 
-export const geminiService = new GeminiService();
+export const geminiService = new GeminiReflectionService();

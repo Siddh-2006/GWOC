@@ -7,11 +7,6 @@ import mongoose from 'mongoose';
 // Configure environment variables first
 dotenv.config({ path: '.env' });
 
-console.log('🔍 Environment check after dotenv.config():');
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('PORT:', process.env.PORT);
-console.log('GEMINI_API_KEY exists:', !!process.env.GEMINI_API_KEY);
-
 // Import routes
 import authRoutes from './api/auth.routes.js';
 import otpRoutes from './api/otp.routes.js';
