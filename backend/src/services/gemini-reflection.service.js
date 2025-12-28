@@ -8,62 +8,96 @@ class GeminiReflectionService {
 
   // Generate next question based on previous responses
   async generateNextQuestion(previousResponses = [], currentThemes = [], questionNumber = 1) {
-    try {
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        throw new Error('GEMINI_API_KEY not configured');
-      }
+    // Use models available in v1 API free tier
+    const fallbackModels = [
+      "gemini-2.5-flash",
+      "gemini-1.5-flash",
+      "gemini-pro"
+    ];
 
-      const prompt = this.buildQuestionPrompt(previousResponses, currentThemes, questionNumber);
-      
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash",
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1024,
+    for (let modelIndex = 0; modelIndex < fallbackModels.length; modelIndex++) {
+      try {
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+          throw new Error('GEMINI_API_KEY not configured');
         }
-      });
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+        const prompt = this.buildQuestionPrompt(previousResponses, currentThemes, questionNumber);
+        
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ 
+          model: fallbackModels[modelIndex],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 1024,
+          }
+        }, { apiVersion: 'v1' });
 
-      return this.parseQuestionResponse(text, questionNumber);
-    } catch (error) {
-      console.error('Error generating question:', error);
-      return this.getFallbackQuestion(questionNumber);
+        const result = await model.generateContent(prompt);
+        const response = result.response;
+        const text = response.text();
+
+        return this.parseQuestionResponse(text, questionNumber);
+      } catch (error) {
+        console.error(`Error generating question with ${fallbackModels[modelIndex]}:`, error.message);
+        
+        // If this was the last model, return fallback
+        if (modelIndex === fallbackModels.length - 1) {
+          return this.getFallbackQuestion(questionNumber);
+        }
+        // Otherwise, try next model
+        continue;
+      }
     }
+    
+    return this.getFallbackQuestion(questionNumber);
   }
 
   // Generate AI summary from all responses
   async generateSummary(responses) {
-    try {
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        throw new Error('GEMINI_API_KEY not configured');
-      }
+    // Use models available in v1 API free tier
+    const fallbackModels = [
+      "gemini-2.5-flash",
+      "gemini-1.5-flash",
+      "gemini-pro"
+    ];
 
-      const prompt = this.buildSummaryPrompt(responses);
-      
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash",
-        generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: 2048,
+    for (let modelIndex = 0; modelIndex < fallbackModels.length; modelIndex++) {
+      try {
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+          throw new Error('GEMINI_API_KEY not configured');
         }
-      });
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+        const prompt = this.buildSummaryPrompt(responses);
+        
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ 
+          model: fallbackModels[modelIndex],
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 2048,
+          }
+        }, { apiVersion: 'v1' });
 
-      return this.parseSummaryResponse(text);
-    } catch (error) {
-      console.error('Error generating summary:', error);
-      return this.getFallbackSummary();
+        const result = await model.generateContent(prompt);
+        const response = result.response;
+        const text = response.text();
+
+        return this.parseSummaryResponse(text);
+      } catch (error) {
+        console.error(`Error generating summary with ${fallbackModels[modelIndex]}:`, error.message);
+        
+        // If this was the last model, return fallback
+        if (modelIndex === fallbackModels.length - 1) {
+          return this.getFallbackSummary();
+        }
+        // Otherwise, try next model
+        continue;
+      }
     }
+    
+    return this.getFallbackSummary();
   }
 
   // Build prompt for question generation

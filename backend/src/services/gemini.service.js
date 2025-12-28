@@ -40,9 +40,10 @@ class GeminiService {
 
   async initializeModel(apiKey) {
     const genAI = new GoogleGenerativeAI(apiKey);
+    // Use gemini-2.5-flash which is available in v1 API on free tier
     this.model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash"
-    });
+      model: "gemini-2.5-flash"
+    }, { apiVersion: 'v1' });
     return this.model;
   }
 
@@ -64,22 +65,29 @@ class GeminiService {
   // Direct Gemini API call with fallback
   async callGeminiWithFallback(prompt, maxRetries = 3) {
     let lastError = null;
-    const workingModel = "gemini-1.5-flash";
+    // Use models available in v1 API free tier
+    const fallbackModels = [
+      "gemini-2.5-flash",
+      "gemini-1.5-flash",
+      "gemini-pro"
+    ];
     
     for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const modelToTry = fallbackModels[attempt % fallbackModels.length];
+      
       try {
         const currentKey = keyManager.getCurrentKey();
         const genAI = new GoogleGenerativeAI(currentKey);
         const model = genAI.getGenerativeModel({
-          model: workingModel,
+          model: modelToTry,
           generationConfig: {
             temperature: 0.4,
             maxOutputTokens: 8192,
           }
-        });
+        }, { apiVersion: 'v1' });
 
         const result = await model.generateContent(prompt);
-        const response = await result.response;
+        const response = result.response;
         const text = response.text();
         
         if (!text || text.trim().length === 0) {
@@ -90,7 +98,7 @@ class GeminiService {
         
       } catch (error) {
         lastError = error;
-        console.log(`❌ Attempt ${attempt + 1} failed:`, error.message);
+        console.log(`❌ Attempt ${attempt + 1} failed with ${modelToTry}:`, error.message);
         
         if (attempt < maxRetries - 1) {
           keyManager.rotateKey();
