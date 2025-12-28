@@ -8,7 +8,7 @@ import AddMediaModal from '../components/admin/AddMediaModal';
 const Resources = () => {
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'admin';
-  
+
   const [media, setMedia] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,14 +47,14 @@ const Resources = () => {
       };
 
       const response = await mediaApi.getPublishedMedia(params);
-      
+
       if (resetPage) {
         setMedia(response.data);
         setPage(1);
       } else {
         setMedia(prev => [...prev, ...response.data]);
       }
-      
+
       setHasMore(response.pagination.page < response.pagination.pages);
     } catch (err) {
       setError('Failed to load media content');
@@ -71,8 +71,8 @@ const Resources = () => {
   const handleLike = async (mediaId) => {
     try {
       const response = await mediaApi.likeMedia(mediaId);
-      setMedia(prev => prev.map(item => 
-        item._id === mediaId 
+      setMedia(prev => prev.map(item =>
+        item._id === mediaId
           ? { ...item, likes: response.data.likes, hasLiked: response.data.hasLiked }
           : item
       ));
@@ -112,7 +112,7 @@ const Resources = () => {
   };
 
   return (
-    <div className="min-h-screen bg-bg py-20">
+    <div className="min-h-screen bg-bg py-20 pt-30">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <motion.div
@@ -218,8 +218,8 @@ const Resources = () => {
                   {/* Thumbnail */}
                   <div className="relative aspect-video bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
                     {item.thumbnailUrl ? (
-                      <img 
-                        src={item.thumbnailUrl} 
+                      <img
+                        src={item.thumbnailUrl}
                         alt={item.title}
                         className="w-full h-full object-cover"
                       />
@@ -228,7 +228,7 @@ const Resources = () => {
                         {getMediaIcon(item.type)}
                       </div>
                     )}
-                    
+
                     {/* Duration overlay for videos */}
                     {item.duration && (
                       <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
@@ -259,7 +259,7 @@ const Resources = () => {
                     <h3 className="font-bold text-gray-800 mb-2 line-clamp-2">
                       {item.title}
                     </h3>
-                    
+
                     <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                       {item.description}
                     </p>
@@ -287,7 +287,7 @@ const Resources = () => {
                         <Heart size={16} />
                         <span className="text-sm">{Array.isArray(item.likes) ? item.likes.length : item.likes}</span>
                       </button>
-                      
+
                       <button className="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition-colors">
                         <MessageCircle size={16} />
                         <span className="text-sm">{item.comments?.length || 0}</span>
@@ -311,8 +311,8 @@ const Resources = () => {
                     {/* Thumbnail */}
                     <div className="w-32 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
                       {item.thumbnailUrl ? (
-                        <img 
-                          src={item.thumbnailUrl} 
+                        <img
+                          src={item.thumbnailUrl}
                           alt={item.title}
                           className="w-full h-full object-cover rounded-xl"
                         />
@@ -346,7 +346,7 @@ const Resources = () => {
                       <h3 className="font-bold text-gray-800 mb-2">
                         {item.title}
                       </h3>
-                      
+
                       <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                         {item.description}
                       </p>
@@ -378,7 +378,7 @@ const Resources = () => {
                             <Heart size={16} />
                             <span className="text-sm">{Array.isArray(item.likes) ? item.likes.length : item.likes}</span>
                           </button>
-                          
+
                           <button className="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition-colors">
                             <MessageCircle size={16} />
                             <span className="text-sm">{item.comments?.length || 0}</span>

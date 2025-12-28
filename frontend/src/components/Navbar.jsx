@@ -167,8 +167,30 @@ const Navbar = () => {
             <Link to="/booking" className="p-2 bg-secondary text-white rounded-xl shadow-lg shadow-secondary/20">
               <Calendar size={22} />
             </Link>
-            <button onClick={() => setIsOpen(!isOpen)} className="text-primary p-2">
-              {isOpen ? <X size={28} /> : <Menu size={28} />}
+            <button onClick={() => setIsOpen(!isOpen)} className="text-primary p-2 w-10 h-10 relative flex items-center justify-center">
+              <div className="w-6 h-5 relative flex flex-col justify-between">
+                <motion.span
+                  animate={{
+                    rotate: isOpen ? 45 : 0,
+                    y: isOpen ? 8 : 0
+                  }}
+                  className="w-full h-0.5 bg-primary rounded-full origin-center"
+                />
+                <motion.span
+                  animate={{
+                    opacity: isOpen ? 0 : 1,
+                    x: isOpen ? -10 : 0
+                  }}
+                  className="w-full h-0.5 bg-primary rounded-full transition-opacity"
+                />
+                <motion.span
+                  animate={{
+                    rotate: isOpen ? -45 : 0,
+                    y: isOpen ? -8 : 0
+                  }}
+                  className="w-full h-0.5 bg-primary rounded-full origin-center"
+                />
+              </div>
             </button>
           </div>
         </div>

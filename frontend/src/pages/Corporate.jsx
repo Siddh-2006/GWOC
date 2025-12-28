@@ -13,7 +13,7 @@ import { CorporateForm } from '../components/CorporateForm';
  */
 export const Corporate = () => {
   return (
-    <div className="min-h-screen bg-bg pt-5" >
+    <div className="min-h-screen bg-bg pt-10" >
       {/* Intro - Calm headline with mountain/river continuation */}
       <CorporateIntro />
 

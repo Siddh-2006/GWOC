@@ -99,10 +99,10 @@ const Profile = () => {
   // Gentle fade-in animation
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { 
+      transition: {
         duration: 0.8,
         ease: "easeOut"
       }
@@ -145,9 +145,9 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20 pt-28">
       <div className="max-w-4xl mx-auto px-6 py-12">
-        
+
         {/* Debug Info */}
         <div className="mb-8 p-4 bg-white rounded-lg">
           <h3 className="font-bold mb-2">Debug Info:</h3>
@@ -183,13 +183,13 @@ const Profile = () => {
           variants={staggerChildren}
           className="mb-16"
         >
-          <motion.h2 
+          <motion.h2
             variants={fadeInUp}
             className="text-2xl font-light text-slate-800 mb-8 text-center"
           >
             Your Journey So Far
           </motion.h2>
-          
+
           <div className="space-y-6">
             {journeyStages.map((stage, index) => (
               <motion.div
@@ -223,13 +223,13 @@ const Profile = () => {
         >
           <div className="bg-white/60 rounded-2xl p-8 backdrop-blur-sm">
             <h2 className="text-2xl font-light text-slate-800 mb-6">Sessions</h2>
-            
+
             <div className="space-y-4 mb-6">
               <div className="flex justify-between items-center">
                 <span className="text-slate-600">Attended:</span>
                 <span className="text-slate-800 font-medium">{attendedSessions}</span>
               </div>
-              
+
               <div className="flex justify-between items-center">
                 <span className="text-slate-600">Upcoming:</span>
                 <span className="text-slate-800 font-medium">
@@ -262,7 +262,7 @@ const Profile = () => {
         >
           <div className="bg-white/60 rounded-2xl p-8 backdrop-blur-sm">
             <h2 className="text-2xl font-light text-slate-800 mb-6">Resources You've Explored</h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex items-center gap-4 p-4 bg-blue-50/50 rounded-xl">
                 <BookOpen className="text-blue-600" size={24} />
@@ -271,7 +271,7 @@ const Profile = () => {
                   <p className="text-sm text-slate-600">Understanding concepts</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-4 p-4 bg-green-50/50 rounded-xl">
                 <Heart className="text-green-600" size={24} />
                 <div>
@@ -280,7 +280,7 @@ const Profile = () => {
                 </div>
               </div>
             </div>
-            
+
             <p className="text-slate-600 mt-6 text-center italic">
               You explored these topics recently.
             </p>
@@ -315,13 +315,13 @@ const Profile = () => {
               className="bg-white/60 rounded-2xl p-8 backdrop-blur-sm"
             >
               <h3 className="text-xl font-light text-slate-800 mb-6">Personal Details</h3>
-              
+
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between items-center py-2">
                   <span className="text-slate-600">Name:</span>
                   <span className="text-slate-800">{user?.firstName} {user?.lastName}</span>
                 </div>
-                
+
                 <div className="flex justify-between items-center py-2">
                   <span className="text-slate-600">Email:</span>
                   <span className="text-slate-800">{user?.email}</span>
@@ -334,13 +334,13 @@ const Profile = () => {
                   <Shield className="text-green-600" size={20} />
                   <h4 className="font-medium text-slate-800">Privacy & Trust</h4>
                 </div>
-                
+
                 <div className="space-y-3 text-sm text-slate-600">
                   <p>You remain in control of your data.</p>
                   <p>All sessions are completely confidential.</p>
                   <p>We never share individual information.</p>
                 </div>
-                
+
                 <div className="mt-6 pt-4 border-t border-slate-200">
                   <p className="text-xs text-slate-500 text-center">
                     Your privacy is central to everything we do.

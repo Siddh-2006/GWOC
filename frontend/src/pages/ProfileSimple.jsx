@@ -11,7 +11,7 @@ const ProfileSimple = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [saving, setSaving] = useState(false);
-  
+
   // Editable profile data
   const [profileData, setProfileData] = useState({
     firstName: '',
@@ -25,7 +25,7 @@ const ProfileSimple = () => {
 
   // Positive emoji options only
   const positiveEmojis = [
-    '😊', '😄', '😃', '🙂', '😌', '🤗', '🥰', '😇', 
+    '😊', '😄', '😃', '🙂', '😌', '🤗', '🥰', '😇',
     '🤓', '🧠', '💪', '🌟', '✨', '🎯', '🚀', '🌈',
     '🌸', '🌺', '🦋', '🌻', '🍀', '🌙', '☀️', '⭐'
   ];
@@ -36,7 +36,7 @@ const ProfileSimple = () => {
         if (user) {
           const userBookings = await bookingApi.getUserBookings();
           setBookings(userBookings || []);
-          
+
           // Initialize profile data with user data
           setProfileData({
             firstName: user.firstName || '',
@@ -68,22 +68,22 @@ const ProfileSimple = () => {
         setSaving(false);
         return;
       }
-      
+
       // Clean the data - only send non-empty fields
       const cleanData = {};
-      
+
       // Always include required fields
       if (profileData.firstName) cleanData.firstName = profileData.firstName.trim();
       if (profileData.lastName) cleanData.lastName = profileData.lastName.trim();
-      
+
       // Only include optional fields if they have values
       if (profileData.avatar) cleanData.avatar = profileData.avatar;
       if (profileData.bio && profileData.bio.trim()) cleanData.bio = profileData.bio.trim();
       if (profileData.location && profileData.location.trim()) cleanData.location = profileData.location.trim();
       if (profileData.interests && profileData.interests.trim()) cleanData.interests = profileData.interests.trim();
-      
+
       const response = await authApi.updateProfile(cleanData);
-      
+
       if (response.success) {
         setUser(response.data.user);
         setIsEditing(false);
@@ -100,7 +100,7 @@ const ProfileSimple = () => {
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       alert(errorMessage);
     } finally {
       setSaving(false);
@@ -151,23 +151,23 @@ const ProfileSimple = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20 pt-28">
       <div className="max-w-7xl mx-auto px-6 py-12">
-        
+
         {/* Main Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
+
           {/* Left Panel */}
           <div className="lg:col-span-4">
             <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
-              
+
               {/* Avatar Section */}
               <div className="text-center mb-8">
                 <div className="relative inline-block mb-6">
                   <div className="w-32 h-32 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center text-6xl shadow-lg mx-auto border-4 border-white">
                     {profileData.avatar}
                   </div>
-                  
+
                   {/* Edit Avatar Button */}
                   <button
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -175,15 +175,15 @@ const ProfileSimple = () => {
                   >
                     <Edit2 size={16} />
                   </button>
-                  
+
                   {/* Emoji Picker */}
                   {showEmojiPicker && (
                     <>
-                      <div 
-                        className="fixed inset-0 z-40" 
+                      <div
+                        className="fixed inset-0 z-40"
                         onClick={() => setShowEmojiPicker(false)}
                       ></div>
-                      
+
                       <div className="absolute top-full mt-4 left-1/2 transform -translate-x-1/2 bg-white rounded-2xl shadow-2xl p-6 z-50 border-2 border-purple-100 w-80">
                         <p className="text-sm text-gray-600 mb-4 text-center font-medium">Choose your avatar</p>
                         <div className="grid grid-cols-8 gap-2">
@@ -191,9 +191,8 @@ const ProfileSimple = () => {
                             <button
                               key={emoji}
                               onClick={() => handleEmojiSelect(emoji)}
-                              className={`w-10 h-10 text-xl hover:bg-purple-50 rounded-xl transition-all flex items-center justify-center hover:scale-110 ${
-                                profileData.avatar === emoji ? 'bg-purple-100 ring-2 ring-purple-400' : ''
-                              }`}
+                              className={`w-10 h-10 text-xl hover:bg-purple-50 rounded-xl transition-all flex items-center justify-center hover:scale-110 ${profileData.avatar === emoji ? 'bg-purple-100 ring-2 ring-purple-400' : ''
+                                }`}
                             >
                               {emoji}
                             </button>
@@ -208,19 +207,19 @@ const ProfileSimple = () => {
                   {profileData.firstName} {profileData.lastName}
                 </h1>
                 <p className="text-slate-600 mb-4">{profileData.email}</p>
-                
+
                 {profileData.bio && (
                   <p className="text-slate-700 italic leading-relaxed mb-4">
                     "{profileData.bio}"
                   </p>
                 )}
-                
+
                 {profileData.location && (
                   <p className="text-slate-600 text-sm mb-2">
                     📍 {profileData.location}
                   </p>
                 )}
-                
+
                 {profileData.interests && (
                   <p className="text-slate-600 text-sm">
                     ✨ {profileData.interests}
@@ -264,7 +263,7 @@ const ProfileSimple = () => {
 
           {/* Right Panel */}
           <div className="lg:col-span-8 space-y-8">
-            
+
             {/* Welcome Message */}
             <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
               <h2 className="text-2xl font-light text-slate-800 mb-4">
@@ -279,7 +278,7 @@ const ProfileSimple = () => {
             {isEditing && (
               <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
                 <h3 className="text-xl font-light text-slate-800 mb-6">Edit Your Details</h3>
-                
+
                 <div className="space-y-6">
                   {/* Basic Information */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -292,7 +291,7 @@ const ProfileSimple = () => {
                         className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-slate-600 mb-2">Last Name</label>
                       <input
@@ -355,7 +354,7 @@ const ProfileSimple = () => {
             {/* Journey Section */}
             <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
               <h2 className="text-2xl font-light text-slate-800 mb-8">Your Journey So Far</h2>
-              
+
               <div className="space-y-6">
                 <div className="flex items-start gap-6 p-6 bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-2xl">
                   <div className="text-3xl mt-1">🌱</div>
@@ -364,7 +363,7 @@ const ProfileSimple = () => {
                     <p className="text-slate-600 leading-relaxed">You found this space for understanding.</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-6 p-6 bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-2xl">
                   <div className="text-3xl mt-1">📚</div>
                   <div className="flex-1">
@@ -372,7 +371,7 @@ const ProfileSimple = () => {
                     <p className="text-slate-600 leading-relaxed">You began learning about yourself.</p>
                   </div>
                 </div>
-                
+
                 {bookings.length > 0 && (
                   <div className="flex items-start gap-6 p-6 bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-2xl">
                     <div className="text-3xl mt-1">🤝</div>
@@ -382,7 +381,7 @@ const ProfileSimple = () => {
                     </div>
                   </div>
                 )}
-                
+
                 <div className="flex items-start gap-6 p-6 bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-2xl">
                   <div className="text-3xl mt-1">🌸</div>
                   <div className="flex-1">
@@ -396,7 +395,7 @@ const ProfileSimple = () => {
             {/* Sessions Overview */}
             <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
               <h2 className="text-2xl font-light text-slate-800 mb-6">Sessions</h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-2xl">
                   <div className="text-3xl font-bold text-purple-600 mb-2">
@@ -404,7 +403,7 @@ const ProfileSimple = () => {
                   </div>
                   <div className="text-slate-600">Sessions Attended</div>
                 </div>
-                
+
                 <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-2xl">
                   <div className="text-lg font-medium text-slate-800 mb-2">
                     {bookings.find(b => b.status === 'confirmed') ? 'Session Scheduled' : 'No Upcoming Sessions'}
@@ -429,7 +428,7 @@ const ProfileSimple = () => {
             {/* Resources Explored */}
             <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
               <h2 className="text-2xl font-light text-slate-800 mb-6">Resources You've Explored</h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex items-center gap-4 p-6 bg-gradient-to-r from-blue-50/50 to-purple-50/50 rounded-2xl">
                   <BookOpen className="text-blue-600" size={32} />
@@ -438,7 +437,7 @@ const ProfileSimple = () => {
                     <p className="text-sm text-slate-600">Understanding concepts</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-4 p-6 bg-gradient-to-r from-green-50/50 to-blue-50/50 rounded-2xl">
                   <Heart className="text-green-600" size={32} />
                   <div>
@@ -447,7 +446,7 @@ const ProfileSimple = () => {
                   </div>
                 </div>
               </div>
-              
+
               <p className="text-slate-600 mt-8 text-center italic">
                 You explored these topics recently.
               </p>
@@ -459,14 +458,14 @@ const ProfileSimple = () => {
                 <Shield className="text-green-600" size={24} />
                 <h3 className="text-xl font-light text-slate-800">Privacy & Trust</h3>
               </div>
-              
+
               <div className="space-y-4 text-slate-600">
                 <p>You remain in control of your data.</p>
                 <p>All sessions are completely confidential.</p>
                 <p>We never share individual information.</p>
                 <p>Optional fields help us personalize your experience but can be left empty.</p>
               </div>
-              
+
               <div className="mt-8 pt-6 border-t border-slate-200">
                 <p className="text-sm text-slate-500 text-center">
                   Your privacy is central to everything we do.

@@ -36,7 +36,7 @@ const Contact = () => {
   };
 
   return (
-    <div className="py-20 px-6 sm:px-8 lg:px-10 max-w-7xl mx-auto">
+    <div className="py-20 px-6 sm:px-8 lg:px-10 max-w-7xl mx-auto pt-32">
       <div className="text-center mb-20">
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
@@ -146,13 +146,13 @@ const Contact = () => {
           ) : (
             <div className="glass-card p-8 md:p-12">
               <h3 className="text-2xl font-bold text-primary mb-8">Send a Message</h3>
-              
+
               {error && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
                   {error}
                 </div>
               )}
-              
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -207,8 +207,8 @@ const Contact = () => {
                   />
                 </div>
 
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="btn-primary w-full py-4 flex items-center justify-center gap-2 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={loading}
                 >
