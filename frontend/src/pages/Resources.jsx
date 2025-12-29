@@ -5,7 +5,9 @@ import { mediaApi } from '../services/media.api';
 import useAuthStore from '../store/useAuthStore';
 import AddMediaModal from '../components/admin/AddMediaModal';
 import MediaPlayer from '../components/MediaPlayer';
+import PostViewer from '../components/PostViewer';
 import InlineVideoPlayer from '../components/InlineVideoPlayer';
+import ImageWithFallback from '../components/ImageWithFallback';
 
 const Resources = () => {
   const { user } = useAuthStore();
@@ -23,6 +25,7 @@ const Resources = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [showPlayer, setShowPlayer] = useState(false);
+  const [showPostViewer, setShowPostViewer] = useState(false);
 
   const mediaTypes = [
     { value: 'all', label: 'All Types' },
@@ -71,6 +74,23 @@ const Resources = () => {
   useEffect(() => {
     fetchMedia(true);
   }, [searchTerm, selectedType]);
+
+  // Debug: Log media data to see what we're getting
+  useEffect(() => {
+    if (media.length > 0) {
+      console.log('📊 Media data loaded:', media.length, 'items');
+      const posts = media.filter(item => item.type === 'post');
+      console.log('📝 Posts found:', posts.length);
+      posts.forEach((post, index) => {
+        console.log(`Post ${index + 1}: ${post.title}`);
+        console.log(`- Thumbnail: ${post.thumbnailUrl ? '✅ Present' : '❌ Missing'}`);
+        console.log(`- Assets: ${post.assets ? post.assets.length + ' items' : '❌ None'}`);
+        if (post.thumbnailUrl) {
+          console.log(`- URL: ${post.thumbnailUrl}`);
+        }
+      });
+    }
+  }, [media]);
 
   const handleLike = async (mediaId) => {
     try {
@@ -145,7 +165,13 @@ const Resources = () => {
 
   const handleMediaClick = async (mediaItem) => {
     setSelectedMedia(mediaItem);
-    setShowPlayer(true);
+    
+    // Use PostViewer for posts, MediaPlayer for other media types
+    if (mediaItem.type === 'post') {
+      setShowPostViewer(true);
+    } else {
+      setShowPlayer(true);
+    }
     
     // Track view
     try {
@@ -163,6 +189,7 @@ const Resources = () => {
 
   const handleClosePlayer = () => {
     setShowPlayer(false);
+    setShowPostViewer(false);
     setSelectedMedia(null);
   };
 
@@ -207,19 +234,32 @@ const Resources = () => {
         >
           <div className="flex justify-between items-center mb-6">
             <div className="flex-1">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+              <motion.h1 
+                className="text-4xl md:text-5xl font-bold text-gray-800 mb-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
                 Resources
-              </h1>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Discover mental health content, videos, and resources curated for your wellbeing journey.
-              </p>
+              </motion.h1>
+              <motion.p 
+                className="text-lg text-gray-600 max-w-2xl mx-auto"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                Explore our curated collection of mental health resources, educational content, and wellness materials.
+              </motion.p>
             </div>
             {isAdmin && (
               <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowAddModal(true)}
-                className="btn-primary flex items-center gap-2 ml-6 px-4 py-2 rounded-xl"
+                className="btn-primary flex items-center gap-2 ml-6 px-4 py-2 rounded-xl shadow-lg"
               >
                 <Plus size={20} />
                 Add
@@ -309,291 +349,589 @@ const Resources = () => {
           transition={{ delay: 0.2 }}
         >
           {viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ staggerChildren: 0.1 }}
+            >
               {media.map((item, index) => (
                 <motion.div
                   key={item._id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                  initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ 
+                    delay: index * 0.1,
+                    type: "spring",
+                    stiffness: 100,
+                    damping: 15
+                  }}
+                  whileHover={{ 
+                    y: -8,
+                    transition: { type: "spring", stiffness: 300, damping: 20 }
+                  }}
+                  className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group cursor-pointer"
                   onClick={() => handleMediaClick(item)}
                 >
-                  {/* Instagram-style Square Thumbnail/Video Container */}
-                  <div className="relative aspect-square bg-gradient-to-br from-purple-100 to-pink-100 overflow-hidden">
-                    {(item.type === 'video' || item.type === 'vlog') && item.fileUrl ? (
-                      <InlineVideoPlayer
-                        src={item.fileUrl}
-                        poster={item.thumbnailUrl}
-                        className="w-full h-full"
-                      />
-                    ) : item.thumbnailUrl ? (
-                      <img
-                        src={item.thumbnailUrl}
-                        alt={item.title}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-purple-200">
-                        <div className="text-primary text-2xl">
-                          {getMediaIcon(item.type)}
+                  {/* Professional Post Card */}
+                  {item.type === 'post' ? (
+                    <>
+                      {/* Post Thumbnail */}
+                      <div className="relative aspect-[4/3] bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden">
+                        <ImageWithFallback
+                          src={item.thumbnailUrl || (item.assets && item.assets[0]?.fileUrl)}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                          fallbackIcon="📄"
+                        />
+                        
+                        {/* Content Type Badge */}
+                        <div className="absolute top-3 left-3 bg-primary/90 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm">
+                          Article
                         </div>
-                      </div>
-                    )}
 
-                    {/* Instagram-style Overlay Gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        {/* Multiple Images Indicator */}
+                        {item.assets && item.assets.length > 1 && (
+                          <div className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm flex items-center gap-1">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z"/>
+                            </svg>
+                            {item.assets.length}
+                          </div>
+                        )}
 
-                    {/* Type Badge - Instagram style */}
-                    <div className="absolute top-2 left-2 bg-black/60 text-white text-xs font-medium px-2 py-1 rounded-full backdrop-blur-sm capitalize">
-                      {item.type}
-                    </div>
-
-                    {/* Duration Badge - Instagram style */}
-                    {item.duration && (
-                      <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
-                        {formatDuration(item.duration)}
-                      </div>
-                    )}
-
-                    {/* Play Button Overlay - Only for non-video items */}
-                    {!(item.type === 'video' || item.type === 'vlog') && (
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                        <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/50">
-                          <Play size={20} className="text-white ml-0.5" />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Instagram-style Action Overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="flex items-center justify-between text-white">
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleLike(item._id);
-                            }}
-                            className="flex items-center gap-1 hover:scale-110 transition-transform"
+                        {/* Hover Overlay */}
+                        <motion.div 
+                          className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
+                          initial={{ opacity: 0 }}
+                          whileHover={{ opacity: 1 }}
+                        >
+                          <motion.div
+                            className="bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                           >
-                            <Heart size={16} className="fill-white" />
-                            <span className="text-xs font-medium">{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
-                          </button>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedMedia(item);
-                              setShowPlayer(true);
-                              setShowComments(true);
-                            }}
-                            className="flex items-center gap-1 hover:scale-110 transition-transform"
-                          >
-                            <MessageCircle size={16} />
-                            <span className="text-xs font-medium">{item.comments?.length || 0}</span>
-                          </button>
-                        </div>
-
-                        <div className="flex items-center gap-1 text-xs">
-                          <Eye size={12} />
-                          {item.views || 0}
-                        </div>
+                            <Eye size={20} className="text-primary" />
+                          </motion.div>
+                        </motion.div>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Instagram-style Compact Content */}
-                  <div className="p-3">
-                    <h3 className="font-semibold text-gray-800 text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors">
-                      {item.title}
-                    </h3>
+                      {/* Post Content */}
+                      <div className="p-5">
+                        {/* Title */}
+                        <motion.h3 
+                          className="font-bold text-gray-800 text-lg mb-3 line-clamp-2 group-hover:text-primary transition-colors"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 }}
+                        >
+                          {item.title}
+                        </motion.h3>
 
-                    {/* Instagram-style Tags */}
-                    {item.tags && item.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-2">
-                        {item.tags.slice(0, 2).map(tag => (
-                          <span key={tag} className="text-xs text-primary font-medium">
-                            #{tag}
-                          </span>
-                        ))}
-                        {item.tags.length > 2 && (
-                          <span className="text-xs text-gray-400">+{item.tags.length - 2}</span>
+                        {/* Description */}
+                        <motion.p 
+                          className="text-gray-600 mb-4 line-clamp-3 text-sm leading-relaxed"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
+                        >
+                          {item.description}
+                        </motion.p>
+
+                        {/* Tags */}
+                        {item.tags && item.tags.length > 0 && (
+                          <motion.div 
+                            className="flex flex-wrap gap-2 mb-4"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.4 }}
+                          >
+                            {item.tags.slice(0, 3).map((tag, tagIndex) => (
+                              <motion.span
+                                key={tag}
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.4 + tagIndex * 0.1 }}
+                                className="text-xs px-3 py-1 bg-primary/10 text-primary rounded-full font-medium hover:bg-primary/20 transition-colors cursor-pointer"
+                              >
+                                {tag}
+                              </motion.span>
+                            ))}
+                            {item.tags.length > 3 && (
+                              <span className="text-xs px-3 py-1 bg-gray-100 text-gray-500 rounded-full">
+                                +{item.tags.length - 3}
+                              </span>
+                            )}
+                          </motion.div>
+                        )}
+
+                        {/* Meta Information */}
+                        <motion.div 
+                          className="flex items-center justify-between pt-4 border-t border-gray-100"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.5 }}
+                        >
+                          <div className="flex items-center gap-4 text-sm text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <Eye size={16} />
+                              <span>{item.views || 0}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Heart size={16} />
+                              <span>{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
+                            </div>
+                            {item.comments && item.comments.length > 0 && (
+                              <div className="flex items-center gap-1">
+                                <MessageCircle size={16} />
+                                <span>{item.comments.length}</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="text-xs text-gray-400">
+                            {new Date(item.createdAt).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </div>
+                        </motion.div>
+                      </div>
+                    </>
+                  ) : (
+                    /* Other Media Types (Video, Audio, etc.) */
+                    <>
+                      {/* Regular Media Card */}
+                      <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-50 to-blue-50 overflow-hidden">
+                        {(item.type === 'video' || item.type === 'vlog') && item.fileUrl ? (
+                          <InlineVideoPlayer
+                            src={item.fileUrl}
+                            poster={item.thumbnailUrl}
+                            className="w-full h-full"
+                          />
+                        ) : item.thumbnailUrl ? (
+                          <motion.img
+                            src={item.thumbnailUrl}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                            whileHover={{ scale: 1.1 }}
+                            transition={{ duration: 0.6, ease: "easeOut" }}
+                            onError={(e) => {
+                              console.log('Image failed to load:', e.target.src);
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-blue-100">
+                            <motion.div 
+                              className="text-primary text-3xl"
+                              animate={{ 
+                                rotate: [0, 10, -10, 0],
+                                scale: [1, 1.1, 1]
+                              }}
+                              transition={{ 
+                                duration: 3,
+                                repeat: Infinity,
+                                repeatType: "reverse"
+                              }}
+                            >
+                              {getMediaIcon(item.type)}
+                            </motion.div>
+                          </div>
+                        )}
+
+                        {/* Fallback for failed images */}
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-blue-100" style={{ display: 'none' }}>
+                          <motion.div 
+                            className="text-primary text-3xl"
+                            animate={{ 
+                              rotate: [0, 10, -10, 0],
+                              scale: [1, 1.1, 1]
+                            }}
+                            transition={{ 
+                              duration: 3,
+                              repeat: Infinity,
+                              repeatType: "reverse"
+                            }}
+                          >
+                            {getMediaIcon(item.type)}
+                          </motion.div>
+                        </div>
+
+                        {/* Overlay Gradient */}
+                        <motion.div 
+                          className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                          initial={{ opacity: 0 }}
+                          whileHover={{ opacity: 1 }}
+                        />
+
+                        {/* Type Badge */}
+                        <motion.div 
+                          className="absolute top-3 left-3 bg-primary/90 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm capitalize"
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 }}
+                        >
+                          {item.type === 'vlog' ? 'Video Blog' : item.type}
+                        </motion.div>
+
+                        {/* Duration Badge */}
+                        {item.duration && (
+                          <motion.div 
+                            className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                          >
+                            {formatDuration(item.duration)}
+                          </motion.div>
+                        )}
+
+                        {/* Play Button Overlay */}
+                        {!(item.type === 'video' || item.type === 'vlog') && (
+                          <motion.div 
+                            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
+                            whileHover={{ scale: 1.1 }}
+                          >
+                            <motion.div
+                              className="w-14 h-14 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg border border-white/20"
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <Play size={20} className="text-primary ml-0.5" />
+                            </motion.div>
+                          </motion.div>
                         )}
                       </div>
-                    )}
 
-                    {/* Instagram-style Action Bar */}
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                      <div className="flex items-center gap-4">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleLike(item._id);
-                          }}
-                          className="text-gray-500 hover:text-red-500 transition-colors"
+                      {/* Regular Media Content */}
+                      <div className="p-5">
+                        <motion.h3 
+                          className="font-bold text-gray-800 text-lg mb-3 line-clamp-2 group-hover:text-primary transition-colors"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 }}
                         >
-                          <Heart size={16} />
-                        </button>
+                          {item.title}
+                        </motion.h3>
 
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedMedia(item);
-                            setShowPlayer(true);
-                            setShowComments(true);
-                          }}
-                          className="text-gray-500 hover:text-blue-500 transition-colors"
+                        <motion.p 
+                          className="text-gray-600 mb-4 line-clamp-3 text-sm leading-relaxed"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
                         >
-                          <MessageCircle size={16} />
-                        </button>
+                          {item.description}
+                        </motion.p>
 
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleShare(item._id);
-                          }}
-                          className="text-gray-500 hover:text-green-500 transition-colors"
+                        {/* Tags */}
+                        {item.tags && item.tags.length > 0 && (
+                          <motion.div 
+                            className="flex flex-wrap gap-2 mb-4"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.4 }}
+                          >
+                            {item.tags.slice(0, 3).map((tag, tagIndex) => (
+                              <motion.span
+                                key={tag}
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.4 + tagIndex * 0.1 }}
+                                className="text-xs px-3 py-1 bg-primary/10 text-primary rounded-full font-medium hover:bg-primary/20 transition-colors cursor-pointer"
+                              >
+                                {tag}
+                              </motion.span>
+                            ))}
+                            {item.tags.length > 3 && (
+                              <span className="text-xs px-3 py-1 bg-gray-100 text-gray-500 rounded-full">
+                                +{item.tags.length - 3}
+                              </span>
+                            )}
+                          </motion.div>
+                        )}
+
+                        {/* Actions */}
+                        <motion.div 
+                          className="flex items-center justify-between pt-4 border-t border-gray-100"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.5 }}
                         >
-                          <Share size={16} />
-                        </button>
-                      </div>
+                          <div className="flex items-center gap-4">
+                            <motion.button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleLike(item._id);
+                              }}
+                              whileHover={{ scale: 1.2 }}
+                              whileTap={{ scale: 0.8 }}
+                              className="flex items-center gap-2 text-gray-500 hover:text-red-500 transition-colors"
+                            >
+                              <Heart size={18} />
+                              <span className="text-sm font-medium">{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
+                            </motion.button>
 
-                      <span className="text-xs text-gray-400 flex items-center gap-1">
-                        <Eye size={12} />
-                        {item.views || 0}
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {media.map((item, index) => (
-                <motion.div
-                  key={item._id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="bg-white rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer"
-                  onClick={() => handleMediaClick(item)}
-                >
-                  <div className="flex gap-4">
-                    {/* Instagram-style Square Thumbnail */}
-                    <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden relative group/thumb">
-                      {(item.type === 'video' || item.type === 'vlog') && item.fileUrl ? (
-                        <InlineVideoPlayer
-                          src={item.fileUrl}
-                          poster={item.thumbnailUrl}
-                          className="w-full h-full rounded-xl"
-                        />
-                      ) : item.thumbnailUrl ? (
-                        <img
-                          src={item.thumbnailUrl}
-                          alt={item.title}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                        />
-                      ) : (
-                        <div className="text-primary text-xl">
-                          {getMediaIcon(item.type)}
-                        </div>
-                      )}
-                      
-                      {/* Play Overlay - Only for non-video items */}
-                      {!(item.type === 'video' || item.type === 'vlog') && (
-                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <div className="w-8 h-8 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center">
-                            <Play size={14} className="text-white ml-0.5" />
+                            <motion.button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedMedia(item);
+                                if (item.type === 'post') {
+                                  setShowPostViewer(true);
+                                } else {
+                                  setShowPlayer(true);
+                                }
+                              }}
+                              whileHover={{ scale: 1.2 }}
+                              whileTap={{ scale: 0.8 }}
+                              className="flex items-center gap-2 text-gray-500 hover:text-blue-500 transition-colors"
+                            >
+                              <MessageCircle size={18} />
+                              <span className="text-sm font-medium">{item.comments?.length || 0}</span>
+                            </motion.button>
                           </div>
-                        </div>
-                      )}
 
-                      {/* Duration Badge */}
-                      {item.duration && (
-                        <div className="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded-full">
-                          {formatDuration(item.duration)}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Instagram-style Compact Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs px-2 py-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded-full capitalize font-medium">
-                            {item.type}
-                          </span>
-                          {item.duration && (
-                            <span className="text-xs text-gray-500 flex items-center gap-1">
-                              <Clock size={12} />
-                              {formatDuration(item.duration)}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <Eye size={12} />
-                          {item.views || 0}
-                        </div>
-                      </div>
-
-                      <h3 className="font-semibold text-gray-800 text-sm mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-                        {item.title}
-                      </h3>
-
-                      <div className="flex items-center justify-between">
-                        {/* Instagram-style Tags */}
-                        <div className="flex items-center gap-1 flex-1">
-                          {item.tags && item.tags.length > 0 && (
-                            <div className="flex gap-1 flex-wrap">
-                              {item.tags.slice(0, 2).map(tag => (
-                                <span key={tag} className="text-xs text-primary font-medium">
-                                  #{tag}
-                                </span>
-                              ))}
-                              {item.tags.length > 2 && (
-                                <span className="text-xs text-gray-400">+{item.tags.length - 2}</span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Instagram-style Action Bar */}
-                        <div className="flex items-center gap-3 ml-4">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleLike(item._id);
-                            }}
-                            className="text-gray-500 hover:text-red-500 transition-colors"
-                          >
-                            <Heart size={14} />
-                          </button>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedMedia(item);
-                              setShowPlayer(true);
-                              setShowComments(true);
-                            }}
-                            className="text-gray-500 hover:text-blue-500 transition-colors"
-                          >
-                            <MessageCircle size={14} />
-                          </button>
-
-                          <button
+                          <motion.button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleShare(item._id);
                             }}
-                            className="text-gray-500 hover:text-green-500 transition-colors"
+                            whileHover={{ scale: 1.2 }}
+                            whileTap={{ scale: 0.8 }}
+                            className="flex items-center gap-2 text-gray-500 hover:text-green-500 transition-colors"
                           >
-                            <Share size={14} />
+                            <Share size={18} />
+                            <span className="text-sm font-medium">{item.shares || 0}</span>
+                          </motion.button>
+                        </motion.div>
+                      </div>
+                    </>
+                  )}
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <div className="max-w-lg mx-auto space-y-8">
+              {media.map((item, index) => (
+                <motion.div
+                  key={item._id}
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ 
+                    delay: index * 0.2,
+                    type: "spring",
+                    stiffness: 100,
+                    damping: 15
+                  }}
+                  className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 group cursor-pointer"
+                  onClick={() => handleMediaClick(item)}
+                >
+                  {/* Professional Full Post Layout */}
+                  {item.type === 'post' ? (
+                    <>
+                      {/* Professional Post Header */}
+                      <div className="p-5 border-b border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                              <span className="text-primary font-bold text-lg">📄</span>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-gray-800">Educational Article</h4>
+                              <p className="text-sm text-gray-500">Mental Health Resource</p>
+                            </div>
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            {new Date(item.createdAt).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Professional Post Image */}
+                      <div className="relative aspect-[16/9] bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden">
+                        <ImageWithFallback
+                          src={item.thumbnailUrl || (item.assets && item.assets[0]?.fileUrl)}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                          fallbackIcon="📄"
+                        />
+                        
+                        {/* Multiple Images Indicator */}
+                        {item.assets && item.assets.length > 1 && (
+                          <div className="absolute top-4 right-4 bg-primary/90 text-white text-sm px-3 py-1 rounded-full backdrop-blur-sm flex items-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z"/>
+                            </svg>
+                            {item.assets.length} Images
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Professional Post Content */}
+                      <div className="p-6">
+                        <h3 className="font-bold text-gray-800 text-xl mb-4 leading-tight">
+                          {item.title}
+                        </h3>
+
+                        <p className="text-gray-700 mb-6 leading-relaxed">
+                          {item.description}
+                        </p>
+
+                        {/* Professional Tags */}
+                        {item.tags && item.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-6">
+                            {item.tags.map((tag, tagIndex) => (
+                              <span
+                                key={tag}
+                                className="text-sm px-3 py-1 bg-primary/10 text-primary rounded-lg font-medium hover:bg-primary/20 transition-colors cursor-pointer"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Professional Meta */}
+                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                          <div className="flex items-center gap-6 text-sm text-gray-500">
+                            <div className="flex items-center gap-2">
+                              <Eye size={18} />
+                              <span>{item.views || 0} views</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Heart size={18} />
+                              <span>{Array.isArray(item.likes) ? item.likes.length : item.likes || 0} likes</span>
+                            </div>
+                            {item.comments && item.comments.length > 0 && (
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedMedia(item);
+                                  setShowPostViewer(true);
+                                }}
+                                className="flex items-center gap-2 hover:text-primary transition-colors"
+                              >
+                                <MessageCircle size={18} />
+                                <span>{item.comments.length} comments</span>
+                              </button>
+                            )}
+                          </div>
+                          
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedMedia(item);
+                              setShowPostViewer(true);
+                            }}
+                            className="text-primary hover:text-primary/80 font-medium text-sm"
+                          >
+                            Read More →
                           </button>
                         </div>
                       </div>
+                    </>
+                  ) : (
+                    /* Professional Media in List View */
+                    <div className="p-6">
+                      <div className="flex gap-6">
+                        <div className="w-32 h-24 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+                          {(item.type === 'video' || item.type === 'vlog') && item.fileUrl ? (
+                            <InlineVideoPlayer
+                              src={item.fileUrl}
+                              poster={item.thumbnailUrl}
+                              className="w-full h-full rounded-xl"
+                            />
+                          ) : item.thumbnailUrl ? (
+                            <img
+                              src={item.thumbnailUrl}
+                              alt={item.title}
+                              className="w-full h-full object-cover rounded-xl"
+                            />
+                          ) : (
+                            <div className="text-primary text-2xl">
+                              {getMediaIcon(item.type)}
+                            </div>
+                          )}
+                          
+                          {/* Content Type Badge */}
+                          <div className="absolute top-2 left-2 bg-primary/90 text-white text-xs px-2 py-1 rounded-md backdrop-blur-sm capitalize">
+                            {item.type === 'vlog' ? 'Video' : item.type}
+                          </div>
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-gray-800 text-lg mb-2 line-clamp-2">
+                            {item.title}
+                          </h3>
+                          <p className="text-gray-600 line-clamp-3 mb-4 leading-relaxed">
+                            {item.description}
+                          </p>
+                          
+                          {/* Tags */}
+                          {item.tags && item.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {item.tags.slice(0, 4).map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-md font-medium"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                              {item.tags.length > 4 && (
+                                <span className="text-xs px-2 py-1 bg-gray-100 text-gray-500 rounded-md">
+                                  +{item.tags.length - 4}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                              <div className="flex items-center gap-1">
+                                <Eye size={16} />
+                                <span>{item.views || 0}</span>
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleLike(item._id);
+                                }}
+                                className="flex items-center gap-1 hover:text-red-500 transition-colors"
+                              >
+                                <Heart size={16} className={Array.isArray(item.likes) && item.likes.length > 0 ? "fill-red-500 text-red-500" : ""} />
+                                <span>{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedMedia(item);
+                                  setShowPlayer(true);
+                                }}
+                                className="flex items-center gap-1 hover:text-blue-500 transition-colors"
+                              >
+                                <MessageCircle size={16} />
+                                <span>{item.comments?.length || 0}</span>
+                              </button>
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              {new Date(item.createdAt).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric',
+                                year: 'numeric'
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </motion.div>
               ))}
             </div>
@@ -661,10 +999,20 @@ const Resources = () => {
           onMediaAdded={handleMediaAdded}
         />
 
-        {/* Media Player Modal */}
+        {/* Media Player Modal for Videos/Audio/Documents */}
         <MediaPlayer
           media={selectedMedia}
           isOpen={showPlayer}
+          onClose={handleClosePlayer}
+          onLike={handleLike}
+          onComment={handleComment}
+          onShare={handleShare}
+        />
+
+        {/* Post Viewer Modal for Posts */}
+        <PostViewer
+          post={selectedMedia}
+          isOpen={showPostViewer}
           onClose={handleClosePlayer}
           onLike={handleLike}
           onComment={handleComment}
