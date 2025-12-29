@@ -121,7 +121,7 @@ const Profile = () => {
 
   if (!isInitialized || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20 flex items-center justify-center">
+      <div className="min-h-screen bg-pink-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-600">Loading your space...</p>
@@ -133,7 +133,7 @@ const Profile = () => {
   // If not authenticated, redirect to login
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20 flex items-center justify-center">
+      <div className="min-h-screen bg-pink-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-slate-600 mb-4">Please log in to view your profile.</p>
           <a href="/login" className="px-6 py-3 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition-colors">
@@ -145,7 +145,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20 pt-28">
+    <div className="min-h-screen bg-pink-50 pt-28">
       <div className="max-w-4xl mx-auto px-6 py-12">
 
         {/* Debug Info */}
@@ -166,7 +166,7 @@ const Profile = () => {
           className="mb-16"
         >
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-light text-slate-800 mb-4">
+            <h1 className="text-3xl font-semibold text-slate-800 mb-4">
               Welcome back, {user?.firstName || 'Friend'}
             </h1>
             <p className="text-xl text-slate-600 font-light">
@@ -185,7 +185,7 @@ const Profile = () => {
         >
           <motion.h2
             variants={fadeInUp}
-            className="text-2xl font-light text-slate-800 mb-8 text-center"
+            className="text-2xl font-semibold text-slate-800 mb-8 text-center"
           >
             Your Journey So Far
           </motion.h2>
@@ -195,7 +195,7 @@ const Profile = () => {
               <motion.div
                 key={stage.id}
                 variants={fadeInUp}
-                className="flex items-start gap-6 p-6 bg-white/60 rounded-2xl backdrop-blur-sm"
+                className="flex items-start gap-6 p-6 bg-purple-50 rounded-2xl"
               >
                 <div className="text-2xl mt-1">
                   {stage.icon}
@@ -221,8 +221,8 @@ const Profile = () => {
           variants={fadeInUp}
           className="mb-16"
         >
-          <div className="bg-white/60 rounded-2xl p-8 backdrop-blur-sm">
-            <h2 className="text-2xl font-light text-slate-800 mb-6">Sessions</h2>
+          <div className="bg-purple-50 rounded-2xl p-8">
+            <h2 className="text-2xl font-semibold text-slate-800 mb-6">Sessions</h2>
 
             <div className="space-y-4 mb-6">
               <div className="flex justify-between items-center">
@@ -260,8 +260,8 @@ const Profile = () => {
           variants={fadeInUp}
           className="mb-16"
         >
-          <div className="bg-white/60 rounded-2xl p-8 backdrop-blur-sm">
-            <h2 className="text-2xl font-light text-slate-800 mb-6">Resources You've Explored</h2>
+          <div className="bg-purple-50 rounded-2xl p-8">
+            <h2 className="text-2xl font-semibold text-slate-800 mb-6">Resources You've Explored</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex items-center gap-4 p-4 bg-blue-50/50 rounded-xl">
@@ -312,9 +312,9 @@ const Profile = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-white/60 rounded-2xl p-8 backdrop-blur-sm"
+              className="bg-purple-50 rounded-2xl p-8"
             >
-              <h3 className="text-xl font-light text-slate-800 mb-6">Personal Details</h3>
+              <h3 className="text-xl font-semibold text-slate-800 mb-6">Personal Details</h3>
 
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between items-center py-2">

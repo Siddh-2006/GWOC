@@ -126,9 +126,71 @@ const ProfileSimple = () => {
     setShowEmojiPicker(false);
   };
 
+  // Calculate journey stages for the map
+  const journeyStages = [
+    {
+      id: 'discovered',
+      title: 'Discovered',
+      description: 'You found us',
+      completed: true,
+      icon: '🌱',
+      level: 1
+    },
+    {
+      id: 'explored',
+      title: 'Explored',
+      description: 'Learning starts',
+      completed: true,
+      icon: '📚',
+      level: 2
+    }
+  ];
+
+  if (bookings.length > 0) {
+    journeyStages.push({
+      id: 'booked',
+      title: 'First Session',
+      description: 'Taking action',
+      completed: true,
+      icon: '🤝',
+      level: 3
+    });
+  }
+
+  journeyStages.push({
+    id: 'ongoing',
+    title: 'Reflection',
+    description: 'Continuing...',
+    completed: false,
+    icon: '🌸',
+    level: bookings.length > 0 ? 4 : 3
+  });
+
+  // Calculate path for the wavy line
+  const generatePath = () => {
+    const centerX = 200; // Assuming viewBox width 400
+    const amplitude = 60; // Deviation from center
+    const stepHeight = 128; // Height of each row (32 * 4 = 128px) matches h-32
+
+    return journeyStages.map((_, index) => {
+      const y = (index * stepHeight) + (stepHeight / 2);
+      const x = index % 2 === 0 ? centerX - amplitude : centerX + amplitude;
+
+      if (index === 0) return `M ${x} ${y}`;
+
+      const prevY = ((index - 1) * stepHeight) + (stepHeight / 2);
+      const prevX = (index - 1) % 2 === 0 ? centerX - amplitude : centerX + amplitude;
+
+      const cp1y = (prevY + y) / 2;
+      const cp2y = (prevY + y) / 2;
+
+      return `C ${prevX} ${cp1y}, ${x} ${cp2y}, ${x} ${y}`;
+    }).join(' ');
+  };
+
   if (!isInitialized || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20 flex items-center justify-center">
+      <div className="min-h-screen bg-pink-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-600">Loading your space...</p>
@@ -139,7 +201,7 @@ const ProfileSimple = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20 flex items-center justify-center">
+      <div className="min-h-screen bg-pink-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-slate-600 mb-4">Please log in to view your profile.</p>
           <a href="/login" className="px-6 py-3 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition-colors">
@@ -151,7 +213,7 @@ const ProfileSimple = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20 pt-28">
+    <div className="min-h-screen bg-pink-50 pt-28">
       <div className="max-w-7xl mx-auto px-6 py-12">
 
         {/* Main Layout */}
@@ -159,7 +221,7 @@ const ProfileSimple = () => {
 
           {/* Left Panel */}
           <div className="lg:col-span-4">
-            <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
+            <div className="bg-purple-100 rounded-3xl p-8 shadow-lg">
 
               {/* Avatar Section */}
               <div className="text-center mb-8">
@@ -265,8 +327,8 @@ const ProfileSimple = () => {
           <div className="lg:col-span-8 space-y-8">
 
             {/* Welcome Message */}
-            <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
-              <h2 className="text-2xl font-light text-slate-800 mb-4">
+            <div className="bg-purple-100 rounded-3xl p-8 shadow-lg">
+              <h2 className="text-2xl font-semibold text-slate-800 mb-4">
                 Welcome back, {profileData.firstName || 'Friend'}
               </h2>
               <p className="text-xl text-slate-600 font-light">
@@ -276,8 +338,8 @@ const ProfileSimple = () => {
 
             {/* Edit Profile Form */}
             {isEditing && (
-              <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
-                <h3 className="text-xl font-light text-slate-800 mb-6">Edit Your Details</h3>
+              <div className="bg-purple-100 rounded-3xl p-8 shadow-lg">
+                <h3 className="text-xl font-semibold text-slate-800 mb-6">Edit Your Details</h3>
 
                 <div className="space-y-6">
                   {/* Basic Information */}
@@ -351,50 +413,66 @@ const ProfileSimple = () => {
               </div>
             )}
 
-            {/* Journey Section */}
-            <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
-              <h2 className="text-2xl font-light text-slate-800 mb-8">Your Journey So Far</h2>
+            {/* Journey Section - Candy Crush Style */}
+            <div className="bg-purple-100 rounded-3xl p-8 shadow-lg relative overflow-hidden">
+              <h2 className="text-2xl font-semibold text-slate-800 mb-8 text-center">Your Journey Map</h2>
 
-              <div className="space-y-6">
-                <div className="flex items-start gap-6 p-6 bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-2xl">
-                  <div className="text-3xl mt-1">🌱</div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-medium text-slate-800 mb-2">Discovered MindSettler</h3>
-                    <p className="text-slate-600 leading-relaxed">You found this space for understanding.</p>
-                  </div>
-                </div>
+              <div className="relative flex flex-col items-center py-4">
+                {/* Wavy Path SVG */}
+                <svg className="absolute top-4 left-0 w-full h-full pointer-events-none z-0" viewBox={`0 0 400 ${journeyStages.length * 128}`}>
+                  <path
+                    d={generatePath()}
+                    fill="none"
+                    stroke="#E9D5FF"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                    strokeDasharray="20 20"
+                    className="drop-shadow-sm"
+                  />
+                </svg>
 
-                <div className="flex items-start gap-6 p-6 bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-2xl">
-                  <div className="text-3xl mt-1">📚</div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-medium text-slate-800 mb-2">Explored Psycho-Education</h3>
-                    <p className="text-slate-600 leading-relaxed">You began learning about yourself.</p>
-                  </div>
-                </div>
+                {journeyStages.map((stage, index) => (
+                  <div key={stage.id} className="relative z-10 flex items-center justify-center w-full h-32">
+                    
+                    {/* Content Container with Offset */}
+                    <div 
+                      className={`flex items-center gap-4 transition-transform duration-500 ${
+                        index % 2 === 0 ? '-translate-x-[60px] flex-row-reverse text-right' : 'translate-x-[60px] text-left'
+                      }`}
+                      style={{ width: '300px' }} // Fixed width to control layout around center
+                    >
+                      
+                      {/* Text Info */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-slate-700 text-lg truncate">{stage.title}</h3>
+                        <p className="text-sm text-slate-500 truncate">{stage.description}</p>
+                      </div>
 
-                {bookings.length > 0 && (
-                  <div className="flex items-start gap-6 p-6 bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-2xl">
-                    <div className="text-3xl mt-1">🤝</div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-medium text-slate-800 mb-2">Booked Sessions</h3>
-                      <p className="text-slate-600 leading-relaxed">You took steps toward understanding.</p>
+                      {/* Level Node */}
+                      <div className="relative group flex-shrink-0">
+                        <div className={`
+                          w-20 h-20 rounded-full flex items-center justify-center text-3xl shadow-[0_6px_0_rgb(0,0,0,0.1)] border-4 transition-transform transform hover:scale-110 active:scale-95 cursor-pointer
+                          ${stage.completed
+                            ? 'bg-gradient-to-b from-purple-400 to-purple-600 border-purple-200 text-white'
+                            : 'bg-slate-200 border-slate-300 text-slate-400 grayscale'}
+                        `}>
+                          {stage.icon}
+                        </div>
+
+                        {/* Level Number Badge */}
+                        <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full border-2 border-white flex items-center justify-center font-bold text-yellow-900 shadow-md text-sm">
+                          {stage.level}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                )}
-
-                <div className="flex items-start gap-6 p-6 bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-2xl">
-                  <div className="text-3xl mt-1">🌸</div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-medium text-slate-800 mb-2">Ongoing Reflection</h3>
-                    <p className="text-slate-600 leading-relaxed">Your journey continues at your own pace.</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
             {/* Sessions Overview */}
-            <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
-              <h2 className="text-2xl font-light text-slate-800 mb-6">Sessions</h2>
+            <div className="bg-purple-100 rounded-3xl p-8 shadow-lg">
+              <h2 className="text-2xl font-semibold text-slate-800 mb-6">Sessions</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-2xl">
@@ -417,17 +495,17 @@ const ProfileSimple = () => {
               <div className="text-center">
                 <a
                   href="/booking"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-purple-600 text-white rounded-2xl hover:bg-purple-700 transition-all font-medium hover:scale-105 shadow-lg"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-pink-600 text-white rounded-2xl hover:bg-purple-700 transition-all font-medium hover:scale-105 shadow-lg"
                 >
                   <Calendar size={20} />
-                  Book a Session
+                  Book Session
                 </a>
               </div>
             </div>
 
             {/* Resources Explored */}
-            <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
-              <h2 className="text-2xl font-light text-slate-800 mb-6">Resources You've Explored</h2>
+            <div className="bg-purple-100 rounded-3xl p-8 shadow-lg">
+              <h2 className="text-2xl font-semibold text-slate-800 mb-6">Resources You've Explored</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex items-center gap-4 p-6 bg-gradient-to-r from-blue-50/50 to-purple-50/50 rounded-2xl">
@@ -453,10 +531,10 @@ const ProfileSimple = () => {
             </div>
 
             {/* Privacy Section */}
-            <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
+            <div className="bg-purple-100 rounded-3xl p-8 shadow-lg">
               <div className="flex items-center gap-3 mb-6">
                 <Shield className="text-green-600" size={24} />
-                <h3 className="text-xl font-light text-slate-800">Privacy & Trust</h3>
+                <h3 className="text-xl font-semibold text-slate-800">Privacy & Trust</h3>
               </div>
 
               <div className="space-y-4 text-slate-600">
