@@ -1,33 +1,63 @@
 import React from 'react';
+import { motion } from "framer-motion";
 
 /**
  * Corporate Intro Section
- * Calm headline with mountain/river continuation theme
- * Sets the tone for human-centered, ethical approach
+ * Styled to match the HeroSlider component
  */
 export const CorporateIntro = () => {
   return (
-    <section className="min-h-[85vh] flex items-center relative overflow-hidden bg-gradient-to-br from-purple-50 via-white to-pink-50">
+    <section className="relative h-screen w-full overflow-hidden bg-black select-none">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <motion.img 
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 10, ease: "easeOut" }}
+          src="/assets/Corporate1.png" 
+          alt="Corporate Well-being" 
+          className="w-full h-full object-cover"
+        />
+        {/* Overlay - Purple/Indigo tint */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/60 via-black/50 to-purple-900/60 backdrop-blur-[2px]"></div>
+      </div>
 
-      <div className="max-w-7xl mx-auto px-8 z-10 relative text-center">
-        <div className="inline-block mb-6 px-6 py-2 rounded-full bg-white/50 backdrop-blur-sm border border-white/60 shadow-sm opacity-0 translate-y-4 fadeInUpDelay">
-          <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-bold tracking-wide text-sm uppercase">
+      {/* Content Layer */}
+      <div className="absolute inset-0 flex items-center justify-center px-6 md:px-20 lg:px-32 z-20">
+        <div className="max-w-5xl text-center text-white space-y-8">
+          {/* Subtitle Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="inline-block px-6 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-sm md:text-base font-bold tracking-wider uppercase text-purple-200"
+          >
             MindSettler Corporate Program
-          </span>
-        </div>
+          </motion.div>
 
-        <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-[#1a2b4b] mb-10 leading-[1.1] tracking-tight opacity-0 translate-y-8 fadeInUpDelay">
-          Nurturing well-being <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400">
+          {/* Main Title */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight tracking-tight drop-shadow-lg text-pink-300"
+          >
+            Nurturing well-being <br />
             in shared spaces
-          </span>
-        </h1>
+          </motion.h1>
 
-        <p className="text-xl md:text-2xl text-slate-600 leading-relaxed max-w-3xl mx-auto opacity-0 translate-y-8 fadeInUpDelayLong font-light">
-          We partner with organizations and communities to foster
-          connection through thoughtful, human-led conversations that create
-          supportive environments for everyone.
-        </p>
+          {/* Description */}
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.8 }}
+            className="text-xl md:text-2xl text-white font-light leading-relaxed max-w-3xl mx-auto drop-shadow-md"
+          >
+            We partner with organizations and communities to foster
+            connection through thoughtful, human-led conversations that create
+            supportive environments for everyone.
+          </motion.p>
+        </div>
       </div>
     </section>
   );
