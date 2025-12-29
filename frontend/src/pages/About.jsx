@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, useScroll, useSpring } from 'framer-motion';
 import { Volume2, VolumeX } from 'lucide-react';
 
 const About = () => {
@@ -54,6 +54,18 @@ const About = () => {
     setIsMuted(!isMuted);
   };
 
+  const contentRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: contentRef,
+    offset: ["start start", "end end"]
+  });
+  
+  const scaleY = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
   // Animation variants for gentle fade-in with upward motion
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
@@ -73,15 +85,25 @@ const About = () => {
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
-      <motion.div
-        ref={ref}
-        initial="hidden"
-        animate={isInView ? "visible" : "hidden"}
-        variants={fadeInUp}
-        className={className}
-      >
-        {children}
-      </motion.div>
+      <div className={`relative pl-0 lg:pl-12 ${className}`}>
+        {/* Timeline Dot */}
+        <motion.div 
+          className="absolute left-0 top-10 w-3 h-3 -ml-1 rounded-full bg-purple-500 z-10 hidden lg:block"
+          initial={{ scale: 0 }}
+          animate={isInView ? { scale: 1 } : { scale: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        />
+        
+        <motion.div
+          ref={ref}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          variants={fadeInUp}
+          className="bg-purple-100/50 p-8 rounded-3xl border border-purple-100 shadow-sm"
+        >
+          {children}
+        </motion.div>
+      </div>
     );
   };
 
@@ -95,14 +117,14 @@ const About = () => {
             <div className="absolute inset-0 bg-gradient-to-br from-blue-100/40 via-purple-50/30 to-green-100/40" />
             
             {/* Portrait container with flip animation */}
-            <div className="relative z-10 text-center">
+            <div className="relative z-10 text-center mt-24">
               <div 
-                className="relative mb-8" 
+                className="relative mb-8"  
                 ref={containerRef}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
               >
-                <div className="relative w-80 h-80 mx-auto" style={{ perspective: "1000px" }}>
+                <div className="relative w-80 h-[28rem] mx-auto" style={{ perspective: "1000px" }}>
                   <motion.div
                     className="w-full h-full relative"
                     style={{ transformStyle: "preserve-3d" }}
@@ -115,7 +137,7 @@ const About = () => {
                   >
                     {/* Front Face - Photo */}
                     <div 
-                      className="absolute inset-0 w-full h-full rounded-full overflow-hidden shadow-2xl shadow-blue-200/30"
+                      className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden shadow-2xl shadow-blue-200/30"
                       style={{ backfaceVisibility: "hidden" }}
                     >
                       <img 
@@ -127,7 +149,7 @@ const About = () => {
 
                     {/* Back Face - Video */}
                     <div 
-                      className="absolute inset-0 w-full h-full rounded-full overflow-hidden shadow-2xl shadow-blue-200/30"
+                      className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden shadow-2xl shadow-blue-200/30"
                       style={{ 
                         backfaceVisibility: "hidden", 
                         transform: "rotateY(180deg)" 
@@ -165,7 +187,7 @@ const About = () => {
                   "Understanding is the first form of care."
                 </blockquote>
                 <div className="text-slate-500">
-                  <p className="font-medium">Parnika</p>
+                  <p className="font-bold">Parnika</p>
                   <p className="text-sm">Founder, MindSettler</p>
                 </div>
               </motion.div>
@@ -174,12 +196,20 @@ const About = () => {
         </div>
 
         {/* RIGHT PANEL - Scrollable Content */}
-        <div className="flex-1 lg:w-3/5 xl:w-2/3" ref={containerRef}>
-          <div className="max-w-4xl mx-auto px-6 lg:px-12 py-20 lg:py-32">
+        <div className="flex-1 lg:w-3/5 xl:w-2/3 flex flex-col justify-center min-h-screen" ref={contentRef}>
+          <div className="max-w-4xl mx-auto px-6 lg:px-12 py-20 lg:py-24 relative">
             
+            {/* Timeline Line Container */}
+            <div className="absolute left-6 lg:left-12 top-[8.5rem] bottom-24 w-1 bg-slate-200 hidden lg:block">
+                <motion.div 
+                    className="absolute top-0 left-0 w-full bg-purple-500 origin-top"
+                    style={{ scaleY, height: "100%" }}
+                />
+            </div>
+
             {/* Mobile Portrait - Only shown on smaller screens */}
             <div className="lg:hidden mb-16 text-center">
-              <div className="w-48 h-48 mx-auto rounded-full overflow-hidden shadow-xl shadow-blue-200/30 mb-6">
+              <div className="w-56 h-80 mx-auto rounded-2xl overflow-hidden shadow-xl shadow-blue-200/30 mb-6">
                 <img 
                   src="/assets/pranika.jpg" 
                   alt="Parnika - Founder of MindSettler" 
@@ -190,14 +220,14 @@ const About = () => {
                 "Understanding is the first form of care."
               </blockquote>
               <div className="text-slate-500">
-                <p className="font-medium">Parnika</p>
+                <p className="font-bold">Parnika</p>
                 <p className="text-sm">Founder, MindSettler</p>
               </div>
             </div>
 
             {/* Opening Statement */}
             <AnimatedSection className="mb-20">
-              <h1 className="text-4xl lg:text-5xl font-light text-slate-800 mb-8 leading-tight">
+              <h1 className="text-4xl lg:text-5xl font-semibold text-pink-600 mb-8 leading-tight">
                 What MindSettler Is
               </h1>
               <div className="space-y-6 text-lg leading-relaxed text-slate-600">
@@ -212,7 +242,7 @@ const About = () => {
 
             {/* Aim */}
             <AnimatedSection className="mb-20">
-              <h2 className="text-3xl font-light text-slate-800 mb-8">Our Aim</h2>
+              <h2 className="text-3xl font-semibold text-pink-600 mb-8">Our Aim</h2>
               <div className="space-y-6 text-lg leading-relaxed text-slate-600">
                 <p>
                   To make mental health understanding less intimidating.
@@ -228,7 +258,7 @@ const About = () => {
 
             {/* Goal */}
             <AnimatedSection className="mb-20">
-              <h2 className="text-3xl font-light text-slate-800 mb-8">Our Goal</h2>
+              <h2 className="text-3xl font-semibold text-pink-600 mb-8">Our Goal</h2>
               <div className="space-y-6 text-lg leading-relaxed text-slate-600">
                 <p>
                   Guide individuals toward informed, human support while normalizing the process of seeking guidance.
@@ -244,7 +274,7 @@ const About = () => {
 
             {/* Founder's Story */}
             <AnimatedSection className="mb-20">
-              <h2 className="text-3xl font-light text-slate-800 mb-8">Parnika's Story</h2>
+              <h2 className="text-3xl font-semibold text-pink-600 mb-8">Parnika's Story</h2>
               <div className="space-y-6 text-lg leading-relaxed text-slate-600">
                 <p>
                   MindSettler was born from observation, not crisis. Parnika recognized the lack of safe spaces for reflection and the need for calm, human-centered mental health support.
@@ -260,7 +290,7 @@ const About = () => {
 
             {/* Philosophy of Care */}
             <AnimatedSection className="mb-20">
-              <h2 className="text-3xl font-light text-slate-800 mb-8">Our Philosophy of Care</h2>
+              <h2 className="text-3xl font-semibold text-pink-600 mb-8">Our Philosophy of Care</h2>
               <div className="grid md:grid-cols-3 gap-8 text-center">
                 <div className="p-6 bg-white/60 rounded-2xl shadow-sm">
                   <h3 className="text-xl font-medium text-slate-700 mb-3">Psycho-education</h3>
@@ -279,7 +309,7 @@ const About = () => {
 
             {/* What MindSettler Is / Is Not */}
             <AnimatedSection className="mb-20">
-              <h2 className="text-3xl font-light text-slate-800 mb-8">What We Are & What We're Not</h2>
+              <h2 className="text-3xl font-semibold text-pink-600 mb-8">What We Are & What We're Not</h2>
               <div className="grid md:grid-cols-2 gap-12">
                 <div>
                   <h3 className="text-2xl font-medium text-green-700 mb-6">MindSettler Is</h3>
@@ -302,8 +332,8 @@ const About = () => {
 
             {/* Confidentiality & Trust */}
             <AnimatedSection className="mb-20">
-              <h2 className="text-3xl font-light text-slate-800 mb-8">Confidentiality & Trust</h2>
-              <div className="bg-blue-50/50 p-8 rounded-2xl">
+              <h2 className="text-3xl font-semibold text-pink-600 mb-8">Confidentiality & Trust</h2>
+              <div>
                 <div className="space-y-6 text-lg leading-relaxed text-slate-600">
                   <p>
                     Privacy is central to everything we do. All sessions are completely confidential.
@@ -320,7 +350,7 @@ const About = () => {
 
             {/* Who MindSettler Is For */}
             <AnimatedSection className="mb-20">
-              <h2 className="text-3xl font-light text-slate-800 mb-8">Who MindSettler Is For</h2>
+              <h2 className="text-3xl font-semibold text-pink-600 mb-8">Who MindSettler Is For</h2>
               <div className="space-y-6 text-lg leading-relaxed text-slate-600">
                 <p>
                   People feeling confused or overwhelmed who are exploring mental health gently.
@@ -336,13 +366,28 @@ const About = () => {
 
             {/* Closing Statement */}
             <AnimatedSection className="mb-20">
-              <div className="text-center py-12">
-                <div className="space-y-8 text-xl leading-relaxed text-slate-600">
-                  <p>No rush.</p>
-                  <p>Use at your own pace.</p>
-                  <p className="text-2xl font-light text-slate-700 italic">
-                    Understanding unfolds differently for everyone.
-                  </p>
+              <div className="text-center py-8">
+                <div className="flex justify-center mb-8">
+                  <motion.div 
+                    initial={{ scale: 0 }}
+                    whileInView={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 200, delay: 0.5 }}
+                  >
+                    <img src="../../public/logo.png" alt="MindSettler" className="h-24 w-auto object-contain" />
+                  </motion.div>
+                </div>
+                
+                <div className="space-y-8">
+                  <div className="space-y-2">
+                    <p className="text-2xl text-slate-700 font-medium">No rush.</p>
+                    <p className="text-xl text-slate-600">Use at your own pace.</p>
+                  </div>
+                  
+                  <div className="w-24 h-1 bg-gradient-to-r from-purple-300 to-pink-300 mx-auto rounded-full opacity-50" />
+                  
+                  <blockquote className="text-3xl md:text-4xl font-serif italic text-purple-900/80 leading-relaxed">
+                    "Understanding unfolds differently for everyone."
+                  </blockquote>
                 </div>
               </div>
             </AnimatedSection>
