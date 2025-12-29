@@ -128,7 +128,7 @@ const ProfileSimple = () => {
 
   if (!isInitialized || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20 flex items-center justify-center">
+      <div className="min-h-screen bg-pink-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-600">Loading your space...</p>
@@ -139,7 +139,7 @@ const ProfileSimple = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20 flex items-center justify-center">
+      <div className="min-h-screen bg-pink-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-slate-600 mb-4">Please log in to view your profile.</p>
           <a href="/login" className="px-6 py-3 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition-colors">
@@ -151,7 +151,7 @@ const ProfileSimple = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20 pt-28">
+    <div className="min-h-screen bg-pink-50 pt-28">
       <div className="max-w-7xl mx-auto px-6 py-12">
 
         {/* Main Layout */}
@@ -159,7 +159,7 @@ const ProfileSimple = () => {
 
           {/* Left Panel */}
           <div className="lg:col-span-4">
-            <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
+            <div className="bg-purple-100 rounded-3xl p-8 shadow-lg">
 
               {/* Avatar Section */}
               <div className="text-center mb-8">
@@ -265,8 +265,8 @@ const ProfileSimple = () => {
           <div className="lg:col-span-8 space-y-8">
 
             {/* Welcome Message */}
-            <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
-              <h2 className="text-2xl font-light text-slate-800 mb-4">
+            <div className="bg-purple-100 rounded-3xl p-8 shadow-lg">
+              <h2 className="text-2xl font-semibold text-slate-800 mb-4">
                 Welcome back, {profileData.firstName || 'Friend'}
               </h2>
               <p className="text-xl text-slate-600 font-light">
@@ -276,8 +276,8 @@ const ProfileSimple = () => {
 
             {/* Edit Profile Form */}
             {isEditing && (
-              <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
-                <h3 className="text-xl font-light text-slate-800 mb-6">Edit Your Details</h3>
+              <div className="bg-purple-100 rounded-3xl p-8 shadow-lg">
+                <h3 className="text-xl font-semibold text-slate-800 mb-6">Edit Your Details</h3>
 
                 <div className="space-y-6">
                   {/* Basic Information */}
@@ -352,8 +352,8 @@ const ProfileSimple = () => {
             )}
 
             {/* Journey Section */}
-            <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
-              <h2 className="text-2xl font-light text-slate-800 mb-8">Your Journey So Far</h2>
+            <div className="bg-purple-100 rounded-3xl p-8 shadow-lg">
+              <h2 className="text-2xl font-semibold text-slate-800 mb-8">Your Journey So Far</h2>
 
               <div className="space-y-6">
                 <div className="flex items-start gap-6 p-6 bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-2xl">
@@ -393,8 +393,8 @@ const ProfileSimple = () => {
             </div>
 
             {/* Sessions Overview */}
-            <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
-              <h2 className="text-2xl font-light text-slate-800 mb-6">Sessions</h2>
+            <div className="bg-purple-100 rounded-3xl p-8 shadow-lg">
+              <h2 className="text-2xl font-semibold text-slate-800 mb-6">Sessions</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-2xl">
@@ -417,17 +417,17 @@ const ProfileSimple = () => {
               <div className="text-center">
                 <a
                   href="/booking"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-purple-600 text-white rounded-2xl hover:bg-purple-700 transition-all font-medium hover:scale-105 shadow-lg"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-pink-600 text-white rounded-2xl hover:bg-purple-700 transition-all font-medium hover:scale-105 shadow-lg"
                 >
                   <Calendar size={20} />
-                  Book a Session
+                  Book Session
                 </a>
               </div>
             </div>
 
             {/* Resources Explored */}
-            <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
-              <h2 className="text-2xl font-light text-slate-800 mb-6">Resources You've Explored</h2>
+            <div className="bg-purple-100 rounded-3xl p-8 shadow-lg">
+              <h2 className="text-2xl font-semibold text-slate-800 mb-6">Resources You've Explored</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex items-center gap-4 p-6 bg-gradient-to-r from-blue-50/50 to-purple-50/50 rounded-2xl">
@@ -453,10 +453,10 @@ const ProfileSimple = () => {
             </div>
 
             {/* Privacy Section */}
-            <div className="bg-white/60 rounded-3xl p-8 backdrop-blur-sm shadow-lg">
+            <div className="bg-purple-100 rounded-3xl p-8 shadow-lg">
               <div className="flex items-center gap-3 mb-6">
                 <Shield className="text-green-600" size={24} />
-                <h3 className="text-xl font-light text-slate-800">Privacy & Trust</h3>
+                <h3 className="text-xl font-semibold text-slate-800">Privacy & Trust</h3>
               </div>
 
               <div className="space-y-4 text-slate-600">
