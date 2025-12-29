@@ -111,15 +111,15 @@ const About = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20">
       <div className="flex min-h-screen">
         {/* LEFT PANEL - Static/Sticky with Original Flip Animation */}
-        <div className="hidden lg:flex lg:w-2/5 xl:w-1/3 sticky top-0 h-screen">
-          <div className="relative w-full flex items-center justify-center p-12">
+        <div className="hidden lg:flex lg:w-2/5 xl:w-1/3 sticky top-0 h-screen overflow-hidden">
+          <div className="relative w-full flex flex-col items-center justify-center p-6 lg:p-12">
             {/* Soft gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-100/40 via-purple-50/30 to-green-100/40" />
             
             {/* Portrait container with flip animation */}
-            <div className="relative z-10 text-center mt-24">
+            <div className="relative z-10 text-center">
               <div 
-                className="relative mb-8"  
+                className="relative mb-8"   
                 ref={containerRef}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}

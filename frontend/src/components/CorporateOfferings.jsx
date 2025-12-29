@@ -66,13 +66,13 @@ export const CorporateOfferings = () => {
             <div
               key={index}
               style={{
-                top: `${80 + index * 100}px`,
+                top: `${100 + index * 30}px`,
                 zIndex: (index + 1) * 10,
               }}
               className="sticky w-full mb-24 bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden transition-transform duration-500"
             >
               {/* Card Header with Gradient */}
-              <div className="flex items-center p-8 md:p-10 bg-gradient-to-r from-purple-50 via-white to-pink-50 border-b border-slate-100/50">
+              <div className="flex items-center p-8 md:p-10 bg-gradient-to-r from-purple-100 via-pink-50 to-pink-100 border-b border-slate-100/50">
                 <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center mr-6 text-purple-600 shrink-0 border border-purple-100">
                   {offering.icon}
                 </div>
