@@ -126,6 +126,68 @@ const ProfileSimple = () => {
     setShowEmojiPicker(false);
   };
 
+  // Calculate journey stages for the map
+  const journeyStages = [
+    {
+      id: 'discovered',
+      title: 'Discovered',
+      description: 'You found us',
+      completed: true,
+      icon: '🌱',
+      level: 1
+    },
+    {
+      id: 'explored',
+      title: 'Explored',
+      description: 'Learning starts',
+      completed: true,
+      icon: '📚',
+      level: 2
+    }
+  ];
+
+  if (bookings.length > 0) {
+    journeyStages.push({
+      id: 'booked',
+      title: 'First Session',
+      description: 'Taking action',
+      completed: true,
+      icon: '🤝',
+      level: 3
+    });
+  }
+
+  journeyStages.push({
+    id: 'ongoing',
+    title: 'Reflection',
+    description: 'Continuing...',
+    completed: false,
+    icon: '🌸',
+    level: bookings.length > 0 ? 4 : 3
+  });
+
+  // Calculate path for the wavy line
+  const generatePath = () => {
+    const centerX = 200; // Assuming viewBox width 400
+    const amplitude = 60; // Deviation from center
+    const stepHeight = 128; // Height of each row (32 * 4 = 128px) matches h-32
+
+    return journeyStages.map((_, index) => {
+      const y = (index * stepHeight) + (stepHeight / 2);
+      const x = index % 2 === 0 ? centerX - amplitude : centerX + amplitude;
+
+      if (index === 0) return `M ${x} ${y}`;
+
+      const prevY = ((index - 1) * stepHeight) + (stepHeight / 2);
+      const prevX = (index - 1) % 2 === 0 ? centerX - amplitude : centerX + amplitude;
+
+      const cp1y = (prevY + y) / 2;
+      const cp2y = (prevY + y) / 2;
+
+      return `C ${prevX} ${cp1y}, ${x} ${cp2y}, ${x} ${y}`;
+    }).join(' ');
+  };
+
   if (!isInitialized || loading) {
     return (
       <div className="min-h-screen bg-pink-50 flex items-center justify-center">
@@ -351,44 +413,60 @@ const ProfileSimple = () => {
               </div>
             )}
 
-            {/* Journey Section */}
-            <div className="bg-purple-100 rounded-3xl p-8 shadow-lg">
-              <h2 className="text-2xl font-semibold text-slate-800 mb-8">Your Journey So Far</h2>
+            {/* Journey Section - Candy Crush Style */}
+            <div className="bg-purple-100 rounded-3xl p-8 shadow-lg relative overflow-hidden">
+              <h2 className="text-2xl font-semibold text-slate-800 mb-8 text-center">Your Journey Map</h2>
 
-              <div className="space-y-6">
-                <div className="flex items-start gap-6 p-6 bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-2xl">
-                  <div className="text-3xl mt-1">🌱</div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-medium text-slate-800 mb-2">Discovered MindSettler</h3>
-                    <p className="text-slate-600 leading-relaxed">You found this space for understanding.</p>
-                  </div>
-                </div>
+              <div className="relative flex flex-col items-center py-4">
+                {/* Wavy Path SVG */}
+                <svg className="absolute top-4 left-0 w-full h-full pointer-events-none z-0" viewBox={`0 0 400 ${journeyStages.length * 128}`}>
+                  <path
+                    d={generatePath()}
+                    fill="none"
+                    stroke="#E9D5FF"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                    strokeDasharray="20 20"
+                    className="drop-shadow-sm"
+                  />
+                </svg>
 
-                <div className="flex items-start gap-6 p-6 bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-2xl">
-                  <div className="text-3xl mt-1">📚</div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-medium text-slate-800 mb-2">Explored Psycho-Education</h3>
-                    <p className="text-slate-600 leading-relaxed">You began learning about yourself.</p>
-                  </div>
-                </div>
+                {journeyStages.map((stage, index) => (
+                  <div key={stage.id} className="relative z-10 flex items-center justify-center w-full h-32">
+                    
+                    {/* Content Container with Offset */}
+                    <div 
+                      className={`flex items-center gap-4 transition-transform duration-500 ${
+                        index % 2 === 0 ? '-translate-x-[60px] flex-row-reverse text-right' : 'translate-x-[60px] text-left'
+                      }`}
+                      style={{ width: '300px' }} // Fixed width to control layout around center
+                    >
+                      
+                      {/* Text Info */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-slate-700 text-lg truncate">{stage.title}</h3>
+                        <p className="text-sm text-slate-500 truncate">{stage.description}</p>
+                      </div>
 
-                {bookings.length > 0 && (
-                  <div className="flex items-start gap-6 p-6 bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-2xl">
-                    <div className="text-3xl mt-1">🤝</div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-medium text-slate-800 mb-2">Booked Sessions</h3>
-                      <p className="text-slate-600 leading-relaxed">You took steps toward understanding.</p>
+                      {/* Level Node */}
+                      <div className="relative group flex-shrink-0">
+                        <div className={`
+                          w-20 h-20 rounded-full flex items-center justify-center text-3xl shadow-[0_6px_0_rgb(0,0,0,0.1)] border-4 transition-transform transform hover:scale-110 active:scale-95 cursor-pointer
+                          ${stage.completed
+                            ? 'bg-gradient-to-b from-purple-400 to-purple-600 border-purple-200 text-white'
+                            : 'bg-slate-200 border-slate-300 text-slate-400 grayscale'}
+                        `}>
+                          {stage.icon}
+                        </div>
+
+                        {/* Level Number Badge */}
+                        <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full border-2 border-white flex items-center justify-center font-bold text-yellow-900 shadow-md text-sm">
+                          {stage.level}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                )}
-
-                <div className="flex items-start gap-6 p-6 bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-2xl">
-                  <div className="text-3xl mt-1">🌸</div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-medium text-slate-800 mb-2">Ongoing Reflection</h3>
-                    <p className="text-slate-600 leading-relaxed">Your journey continues at your own pace.</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
