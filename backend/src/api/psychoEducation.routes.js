@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { psychoEducationController } from '../controllers/psychoEducation.controller.js';
-import { authenticateToken, requireAdmin } from '../middleware/auth.middleware.js';
+import { authenticateToken, requireAdmin, optionalAuth } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
@@ -18,22 +18,13 @@ router.put('/:contentId', authenticateToken, requireAdmin, psychoEducationContro
 router.delete('/:contentId', authenticateToken, requireAdmin, psychoEducationController.deleteContent);
 
 // Public routes
-// GET /api/psycho-education/published - Get published content
-router.get('/published', psychoEducationController.getPublishedContent);
+// GET /api/psycho-education/published - Get published content (with optional auth for like status)
+router.get('/published', optionalAuth, psychoEducationController.getPublishedContent);
 
 // GET /api/psycho-education/:contentId - Get single content
 router.get('/:contentId', psychoEducationController.getContent);
 
-// POST /api/psycho-education/:contentId/like - Like content
-router.post('/:contentId/like', psychoEducationController.likeContent);
-
-// POST /api/psycho-education/:contentId/helpful - Mark as helpful
-router.post('/:contentId/helpful', psychoEducationController.markHelpful);
-
-// POST /api/psycho-education/:contentId/comment - Add comment to content
-router.post('/:contentId/comment', psychoEducationController.addComment);
-
-// POST /api/psycho-education/:contentId/share - Share content
-router.post('/:contentId/share', psychoEducationController.shareContent);
+// POST /api/psycho-education/:contentId/like - Like content (requires auth)
+router.post('/:contentId/like', authenticateToken, psychoEducationController.likeContent);
 
 export default router;

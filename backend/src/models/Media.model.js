@@ -145,11 +145,27 @@ const mediaSchema = new mongoose.Schema({
 
 // 🔒 Validation: ensure media has content
 mediaSchema.pre('validate', function (next) {
-  if (!this.fileUrl && (!this.assets || this.assets.length === 0)) {
-    next(new Error('Media must have either fileUrl or assets'));
+  console.log('🔍 Media validation - type:', this.type);
+  console.log('🔍 Media validation - fileUrl:', this.fileUrl || 'EMPTY');
+  console.log('🔍 Media validation - assets:', this.assets || 'EMPTY');
+  console.log('🔍 Media validation - assets length:', this.assets ? this.assets.length : 0);
+  
+  // For posts, require assets
+  if (this.type === 'post') {
+    if (!this.assets || this.assets.length === 0) {
+      console.log('❌ Validation failed: Post type requires assets');
+      return next(new Error('Post type media must have at least one asset'));
+    }
   } else {
-    next();
+    // For other types (video, audio, document), require fileUrl
+    if (!this.fileUrl) {
+      console.log('❌ Validation failed: Non-post media must have fileUrl');
+      return next(new Error('Media must have fileUrl for video, audio, or document types'));
+    }
   }
+  
+  console.log('✅ Validation passed');
+  next();
 });
 
 // Indexes

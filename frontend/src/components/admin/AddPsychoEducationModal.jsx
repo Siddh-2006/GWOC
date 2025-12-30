@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, BookOpen, Loader2, Plus, MessageCircle, FileText, Quote, Lightbulb, CheckCircle } from 'lucide-react';
 import { psychoEducationApi } from '../../services/psychoEducation.api';
@@ -12,7 +12,6 @@ const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
     contentType: 'qa',
     category: 'general',
     tags: '',
-    estimatedReadTime: '',
     content: {
       question: '',
       answer: '',
@@ -40,12 +39,6 @@ const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
     { value: 'self-care', label: 'Self-Care' },
     { value: 'mindfulness', label: 'Mindfulness' },
     { value: 'general', label: 'General' }
-  ];
-
-  const difficulties = [
-    { value: 'beginner', label: 'Beginner' },
-    { value: 'intermediate', label: 'Intermediate' },
-    { value: 'advanced', label: 'Advanced' }
   ];
 
   const handleSubmit = async (e) => {
@@ -78,7 +71,8 @@ const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
       const contentData = {
         ...formData,
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
-        estimatedReadTime: formData.estimatedReadTime ? parseInt(formData.estimatedReadTime) : undefined
+        isPublished: true,
+        publishedAt: new Date()
       };
 
       const response = await psychoEducationApi.createContent(contentData);
@@ -93,7 +87,6 @@ const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
           contentType: 'qa',
           category: 'general',
           tags: '',
-          estimatedReadTime: '',
           content: {
             question: '',
             answer: '',
@@ -382,33 +375,18 @@ const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
           {/* Content Fields (Dynamic based on type) */}
           {renderContentFields()}
 
-          {/* Tags and Read Time */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tags
-              </label>
-              <input
-                type="text"
-                value={formData.tags}
-                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="anxiety, mindfulness, self-care (comma separated)"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Estimated Read Time (minutes)
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={formData.estimatedReadTime}
-                onChange={(e) => setFormData({ ...formData, estimatedReadTime: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="5"
-              />
-            </div>
+          {/* Tags */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tags
+            </label>
+            <input
+              type="text"
+              value={formData.tags}
+              onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              placeholder="anxiety, mindfulness, self-care (comma separated)"
+            />
           </div>
 
           {/* Submit Button */}

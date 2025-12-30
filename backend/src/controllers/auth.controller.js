@@ -250,9 +250,14 @@ export const refreshToken = async (req, res) => {
     // Generate new tokens
     const tokens = await generateTokens(user._id);
 
-    // Remove old refresh token and add new one
+    // Remove old token and add new token in separate operations to avoid MongoDB conflict
+    // First, remove the old refresh token
     user.refreshTokens = user.refreshTokens.filter(tokenObj => tokenObj.token !== refreshToken);
+    
+    // Then, add the new refresh token
     user.refreshTokens.push({ token: tokens.refreshToken });
+    
+    // Save the changes
     await user.save();
 
     res.json({

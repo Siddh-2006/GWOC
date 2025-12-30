@@ -1,10 +1,307 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Heart, Eye, Search, Filter, MessageCircle, Lightbulb, Quote, FileText, CheckCircle, ThumbsUp, Clock, Tag, Star, Plus, ArrowLeft, ArrowRight } from 'lucide-react';
+import { BookOpen, Heart, Search, Filter, MessageCircle, Lightbulb, Quote, FileText, CheckCircle, Clock, Plus, ArrowLeft, ArrowRight, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { psychoEducationApi } from '../services/psychoEducation.api';
 import useAuthStore from '../store/useAuthStore';
 import AddPsychoEducationModal from '../components/admin/AddPsychoEducationModal';
+
+// Text formatting function to handle markdown-like syntax
+const formatText = (text) => {
+  if (!text) return text;
+  
+  // Handle different types of formatting
+  const lines = text.split('\n');
+  const formattedLines = lines.map((line, lineIndex) => {
+    // Handle headings (### Heading)
+    if (line.startsWith('### ')) {
+      return (
+        <h3 key={lineIndex} className="text-lg font-bold text-gray-800 mt-4 mb-2 border-b border-gray-200 pb-1">
+          {line.substring(4)}
+        </h3>
+      );
+    }
+    
+    if (line.startsWith('## ')) {
+      return (
+        <h2 key={lineIndex} className="text-xl font-bold text-gray-800 mt-5 mb-3 border-b-2 border-primary/20 pb-2">
+          {line.substring(3)}
+        </h2>
+      );
+    }
+    
+    // Handle bullet points (- item or * item)
+    if (line.match(/^[\s]*[-*]\s+/)) {
+      const content = line.replace(/^[\s]*[-*]\s+/, '');
+      return (
+        <div key={lineIndex} className="flex items-start gap-2 my-1">
+          <span className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></span>
+          <span>{formatInlineText(content)}</span>
+        </div>
+      );
+    }
+    
+    // Handle numbered lists (1. item)
+    if (line.match(/^[\s]*\d+\.\s+/)) {
+      const match = line.match(/^[\s]*(\d+)\.\s+(.+)/);
+      if (match) {
+        return (
+          <div key={lineIndex} className="flex items-start gap-3 my-1">
+            <span className="w-6 h-6 bg-primary text-white rounded-full text-xs flex items-center justify-center flex-shrink-0 font-bold">
+              {match[1]}
+            </span>
+            <span>{formatInlineText(match[2])}</span>
+          </div>
+        );
+      }
+    }
+    
+    // Handle empty lines
+    if (line.trim() === '') {
+      return <div key={lineIndex} className="h-2"></div>;
+    }
+    
+    // Regular paragraph
+    return (
+      <p key={lineIndex} className="leading-relaxed my-2">
+        {formatInlineText(line)}
+      </p>
+    );
+  });
+  
+  return <div className="space-y-1">{formattedLines}</div>;
+};
+
+// Helper function for inline formatting
+const formatInlineText = (text) => {
+  if (!text) return text;
+  
+  // Split text by formatting patterns
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|~~[^~]+~~)/g);
+  
+  return parts.map((part, index) => {
+    // Bold text **text**
+    if (part.startsWith('**') && part.endsWith('**')) {
+      const boldText = part.slice(2, -2);
+      return (
+        <strong key={index} className="font-bold text-gray-800 bg-primary/10 px-1 rounded">
+          {boldText}
+        </strong>
+      );
+    }
+    
+    // Italic text *text*
+    if (part.startsWith('*') && part.endsWith('*') && !part.startsWith('**')) {
+      const italicText = part.slice(1, -1);
+      return (
+        <em key={index} className="italic text-primary font-medium">
+          {italicText}
+        </em>
+      );
+    }
+    
+    // Code text `code`
+    if (part.startsWith('`') && part.endsWith('`')) {
+      const codeText = part.slice(1, -1);
+      return (
+        <code key={index} className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm font-mono border">
+          {codeText}
+        </code>
+      );
+    }
+    
+    // Strikethrough text ~~text~~
+    if (part.startsWith('~~') && part.endsWith('~~')) {
+      const strikeText = part.slice(2, -2);
+      return (
+        <span key={index} className="line-through text-gray-500">
+          {strikeText}
+        </span>
+      );
+    }
+    
+    // Regular text
+    return part;
+  });
+};
+
+// Content Detail Modal Component
+const ContentDetailModal = ({ content, isOpen, onClose, onLike, user, setError }) => {
+  if (!isOpen || !content) return null;
+
+  const renderContentBody = () => {
+    switch (content.contentType) {
+      case 'qa':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">Question</h3>
+              <div className="text-gray-700 leading-relaxed">{formatInlineText(content.content.question)}</div>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">Answer</h3>
+              <div className="text-gray-700 leading-relaxed">
+                {formatText(content.content.answer)}
+              </div>
+            </div>
+          </div>
+        );
+      case 'theory':
+      case 'article':
+        return (
+          <div className="prose prose-gray max-w-none">
+            <div className="text-gray-700 leading-relaxed">
+              {formatText(content.content.body)}
+            </div>
+          </div>
+        );
+      case 'quote':
+        return (
+          <div className="text-center py-8">
+            <blockquote className="text-2xl italic text-gray-700 border-l-4 border-primary pl-6 mb-4">
+              "{content.content.quote}"
+            </blockquote>
+            {content.content.author && (
+              <p className="text-gray-500 font-medium">— {content.content.author}</p>
+            )}
+          </div>
+        );
+      case 'tip':
+      case 'exercise':
+        return (
+          <div className="space-y-4">
+            {content.content.steps && content.content.steps.map((step, index) => (
+              <div key={index} className="border border-gray-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                    {step.order || index + 1}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">{formatInlineText(step.title)}</h4>
+                    <div className="text-gray-700 leading-relaxed">
+                      {formatText(step.description)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      default:
+        return <p className="text-gray-700">{content.description}</p>;
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+      >
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                  {content.contentType === 'qa' && <MessageCircle size={20} />}
+                  {content.contentType === 'theory' && <FileText size={20} />}
+                  {content.contentType === 'quote' && <Quote size={20} />}
+                  {content.contentType === 'article' && <FileText size={20} />}
+                  {content.contentType === 'tip' && <Lightbulb size={20} />}
+                  {content.contentType === 'exercise' && <CheckCircle size={20} />}
+                </div>
+                <span className="text-xs font-bold text-primary uppercase tracking-widest">
+                  {content.contentType === 'qa' ? 'Q&A' : content.contentType}
+                </span>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">{content.title}</h2>
+              <p className="text-gray-600">{content.description}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors p-2"
+            >
+              <X size={24} />
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6">
+          {renderContentBody()}
+        </div>
+
+        {/* Tags */}
+        {content.tags && content.tags.length > 0 && (
+          <div className="px-6 pb-4">
+            <div className="flex flex-wrap gap-2">
+              {content.tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="text-xs px-3 py-1 bg-gray-100 text-gray-600 rounded-full"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="p-6 border-t border-gray-200 flex justify-between items-center">
+          <div className="flex items-center gap-4 text-sm text-gray-500">
+            {user && (
+              <motion.button
+                key={`modal-like-${content._id}-${content.hasLiked}-${updateTrigger}`} // Include update trigger
+                onClick={() => {
+                  onLike(content._id);
+                }}
+                className={`flex items-center gap-1 transition-all duration-300 ${
+                  content.hasLiked 
+                    ? 'text-red-500' 
+                    : 'hover:text-red-500 hover:scale-105'
+                }`}
+                whileTap={{ scale: 0.95 }}
+              >
+                <motion.div
+                  key={`modal-heart-${content._id}-${content.hasLiked}-${updateTrigger}`} // Include update trigger
+                  animate={{ 
+                    scale: content.hasLiked ? [1, 1.4, 1.2] : 1,
+                    transition: { duration: 0.3 }
+                  }}
+                  className={content.hasLiked ? 'scale-125' : ''}
+                >
+                  <Heart 
+                    size={16} 
+                    className={content.hasLiked ? "fill-red-500 text-red-500" : "text-gray-400"} 
+                    fill={content.hasLiked ? "#ef4444" : "none"}
+                    color={content.hasLiked ? "#ef4444" : "#9ca3af"}
+                  />
+                </motion.div>
+                <span className="font-medium">{content.likesCount || 0}</span>
+              </motion.button>
+            )}
+            {content.estimatedReadTime && (
+              <div className="flex items-center gap-1">
+                <Clock size={16} />
+                <span>{content.estimatedReadTime} min read</span>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
 
 const PsychoEducation = () => {
   const { user } = useAuthStore();
@@ -16,9 +313,13 @@ const PsychoEducation = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [sortBy, setSortBy] = useState('recent'); // New sorting state
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedContent, setSelectedContent] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [updateTrigger, setUpdateTrigger] = useState(0); // Force re-render trigger
 
   const contentTypes = [
     { value: 'all', label: 'All Types', icon: BookOpen },
@@ -41,62 +342,126 @@ const PsychoEducation = () => {
     { value: 'general', label: 'General' }
   ];
 
+  const sortOptions = [
+    { value: 'recent', label: 'Recently Added' },
+    { value: 'likes', label: 'Most Liked' }
+  ];
+
   const fetchContent = async (resetPage = false) => {
     try {
       setLoading(true);
+      setError(null);
+      
       const params = {
         search: searchTerm,
         contentType: selectedType !== 'all' ? selectedType : undefined,
         category: selectedCategory !== 'all' ? selectedCategory : undefined,
+        sortBy: sortBy,
         page: resetPage ? 1 : page,
         limit: 12
       };
 
       const response = await psychoEducationApi.getPublishedContent(params);
 
+      // Ensure proper data structure for each item
+      const processedContent = (response.data || []).map(item => ({
+        ...item,
+        hasLiked: Boolean(item.hasLiked),
+        likesCount: Number(item.likesCount || 0)
+      }));
+
       if (resetPage) {
-        setContent(response.data);
+        setContent(processedContent);
         setPage(1);
       } else {
-        setContent(prev => [...prev, ...response.data]);
+        setContent(prev => [...prev, ...processedContent]);
       }
 
-      setHasMore(response.pagination.page < response.pagination.pages);
+      setHasMore(response.pagination && response.pagination.page < response.pagination.pages);
     } catch (err) {
-      setError('Failed to load content');
-      console.error('Fetch content error:', err);
+      console.error('❌ Fetch content error:', err);
+      setError('Failed to load content. Please try refreshing the page.');
+      
+      if (resetPage) {
+        setContent([]);
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  // Debug: Log user state
   useEffect(() => {
-    fetchContent(true);
-  }, [searchTerm, selectedType, selectedCategory]);
+    console.log('🔍 PsychoEducation - User state:', user);
+    console.log('🔍 PsychoEducation - Is authenticated:', !!user);
+    console.log('🔍 PsychoEducation - Access token exists:', !!localStorage.getItem('accessToken'));
+  }, [user]);
+
+  useEffect(() => {
+    // Reset content and fetch fresh data when filters change OR when user changes
+    setContent([]);
+    setPage(1);
+    setHasMore(true);
+    
+    // Add a small delay to ensure the component is fully mounted
+    const timer = setTimeout(() => {
+      fetchContent(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [searchTerm, selectedType, selectedCategory, sortBy, user?.userId]); // Added user?.userId dependency
 
   const handleLike = async (contentId) => {
     try {
-      const response = await psychoEducationApi.likeContent(contentId);
-      setContent(prev => prev.map(item =>
-        item._id === contentId
-          ? { ...item, likes: response.data.likes, hasLiked: response.data.hasLiked }
-          : item
-      ));
-    } catch (err) {
-      console.error('Like content error:', err);
-    }
-  };
+      if (!user) {
+        setError('Please log in to like content');
+        return;
+      }
 
-  const handleMarkHelpful = async (contentId) => {
-    try {
-      const response = await psychoEducationApi.markHelpful(contentId);
-      setContent(prev => prev.map(item =>
-        item._id === contentId
-          ? { ...item, helpful: response.data.helpful, hasMarkedHelpful: response.data.hasMarkedHelpful }
-          : item
-      ));
+      // Call API to update database
+      const response = await psychoEducationApi.likeContent(contentId);
+
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to like content');
+      }
+
+      const newLikesCount = response.data.likes;
+      const newHasLiked = response.data.hasLiked;
+
+      // Update content array with new state from database
+      setContent(prevContent => {
+        return prevContent.map(item => {
+          if (item._id === contentId) {
+            return {
+              ...item,
+              hasLiked: newHasLiked,
+              likesCount: newLikesCount
+            };
+          }
+          return item;
+        });
+      });
+
+      // Update selected content if it's the same item
+      if (selectedContent && selectedContent._id === contentId) {
+        setSelectedContent(prev => ({
+          ...prev,
+          hasLiked: newHasLiked,
+          likesCount: newLikesCount
+        }));
+      }
+
+      // Force re-render
+      setUpdateTrigger(prev => prev + 1);
+
     } catch (err) {
-      console.error('Mark helpful error:', err);
+      console.error('❌ Like content error:', err);
+      
+      if (err.response?.status === 401) {
+        setError('Your session has expired. Please log in again.');
+      } else {
+        setError('Failed to like content. Please try again.');
+      }
     }
   };
 
@@ -106,7 +471,23 @@ const PsychoEducation = () => {
   };
 
   const handleContentAdded = (newContent) => {
-    setContent(prev => [newContent, ...prev]);
+    // Add new content to the beginning of the list if sorting by recent
+    if (sortBy === 'recent') {
+      setContent(prev => [newContent, ...prev]);
+    } else {
+      // For other sorts, refresh the content to maintain proper order
+      fetchContent(true);
+    }
+  };
+
+  const handleOpenDetail = (item) => {
+    setSelectedContent(item);
+    setShowDetailModal(true);
+  };
+
+  const handleCloseDetail = () => {
+    setShowDetailModal(false);
+    setSelectedContent(null);
   };
 
   const getContentIcon = (type) => {
@@ -120,15 +501,17 @@ const PsychoEducation = () => {
       case 'qa':
         return (
           <div className="space-y-2">
-            <p className="font-medium text-gray-800">Q: {item.content.question}</p>
-            <p className="text-gray-600 line-clamp-3">A: {item.content.answer}</p>
+            <p className="font-medium text-gray-800">Q: {formatInlineText(item.content.question)}</p>
+            <div className="text-gray-600 line-clamp-3">
+              A: {formatInlineText(item.content.answer.substring(0, 150) + (item.content.answer.length > 150 ? '...' : ''))}
+            </div>
           </div>
         );
       case 'quote':
         return (
           <div className="space-y-2">
             <blockquote className="text-lg italic text-gray-700 border-l-4 border-purple-300 pl-4">
-              "{item.content.quote}"
+              "{formatInlineText(item.content.quote)}"
             </blockquote>
             {item.content.author && (
               <p className="text-sm text-gray-500">— {item.content.author}</p>
@@ -139,7 +522,7 @@ const PsychoEducation = () => {
       case 'exercise':
         return (
           <div className="space-y-2">
-            <p className="text-gray-600 line-clamp-2">{item.description}</p>
+            <div className="text-gray-600 line-clamp-2">{formatInlineText(item.description)}</div>
             {item.content.steps && item.content.steps.length > 0 && (
               <p className="text-sm text-purple-600 font-medium">
                 {item.content.steps.length} steps included
@@ -147,9 +530,16 @@ const PsychoEducation = () => {
             )}
           </div>
         );
+      case 'theory':
+      case 'article':
+        return (
+          <div className="text-gray-600 line-clamp-3">
+            {formatInlineText(item.content.body.substring(0, 200) + (item.content.body.length > 200 ? '...' : ''))}
+          </div>
+        );
       default:
         return (
-          <p className="text-gray-600 line-clamp-3">{item.description}</p>
+          <div className="text-gray-600 line-clamp-3">{formatInlineText(item.description)}</div>
         );
     }
   };
@@ -197,6 +587,17 @@ const PsychoEducation = () => {
           transition={{ delay: 0.1 }}
           className="bg-white rounded-[2.5rem] p-8 shadow-sm mb-12 space-y-6 border border-purple-50"
         >
+          {/* Error Display for User Actions */}
+          {/* Error Display for User Actions */}
+          {error && error.includes('log in') && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 flex items-center justify-between">
+              <span>{error}</span>
+              <Link to="/login" className="text-red-600 hover:text-red-800 font-medium underline">
+                Login
+              </Link>
+            </div>
+          )}
+
           {/* Top Row: Search */}
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -224,6 +625,14 @@ const PsychoEducation = () => {
               {categories.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
 
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-6 py-2.5 bg-off-white border border-transparent rounded-full text-sm font-bold text-gray-600 focus:bg-white focus:border-purple-200 transition-all outline-none cursor-pointer"
+            >
+              {sortOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+
             <div className="h-4 w-px bg-gray-200 mx-2 hidden md:block" />
 
             <div className="flex flex-wrap gap-2">
@@ -244,8 +653,26 @@ const PsychoEducation = () => {
         </motion.div>
 
         {/* Loading / Error / Empty States */}
-        {loading && <div className="text-center py-20 text-gray-400 font-medium">Loading content library...</div>}
-        {error && <div className="text-center py-20 text-red-400 font-medium">{error}</div>}
+        {loading && (
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-gray-400 font-medium">Loading content library...</p>
+          </div>
+        )}
+        {error && (
+          <div className="text-center py-20">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-red-500 text-2xl">⚠️</span>
+            </div>
+            <p className="text-red-500 font-medium mb-4">{error}</p>
+            <button 
+              onClick={() => fetchContent(true)}
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
         {!loading && !error && content.length === 0 && (
           <div className="text-center py-20">
             <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
@@ -283,27 +710,45 @@ const PsychoEducation = () => {
 
               <div className="mt-auto pt-6 border-t border-gray-50 flex justify-between items-center">
                 <div className="flex gap-4">
-                  <button
-                    className="flex items-center gap-1.5 text-gray-400 hover:text-red-400 transition-colors"
-                    onClick={(e) => { e.stopPropagation(); handleLike(item._id); }}
-                  >
-                    <Heart size={18} className={item.hasLiked ? "fill-red-400 text-red-400" : ""} />
-                    <span className="text-sm font-bold">{Array.isArray(item.likes) ? item.likes.length : item.likes}</span>
-                  </button>
-                  <button
-                    className="flex items-center gap-1.5 text-gray-400 hover:text-green-500 transition-colors"
-                    onClick={(e) => { e.stopPropagation(); handleMarkHelpful(item._id); }}
-                  >
-                    <ThumbsUp size={18} className={item.hasMarkedHelpful ? "fill-green-500 text-green-500" : ""} />
-                    <span className="text-sm font-bold">{Array.isArray(item.helpful) ? item.helpful.length : item.helpful}</span>
-                  </button>
+                  {user && (
+                    <motion.button
+                      key={`like-${item._id}-${item.hasLiked}-${updateTrigger}`} // Include update trigger
+                      className={`flex items-center gap-1.5 transition-all duration-300 ${
+                        item.hasLiked 
+                          ? 'text-red-500' 
+                          : 'text-gray-400 hover:text-red-400 hover:scale-105'
+                      }`}
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        handleLike(item._id); 
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <motion.div
+                        key={`heart-${item._id}-${item.hasLiked}-${updateTrigger}`} // Include update trigger
+                        animate={{ 
+                          scale: item.hasLiked ? [1, 1.4, 1.2] : 1,
+                          transition: { duration: 0.3 }
+                        }}
+                        className={item.hasLiked ? 'scale-125' : ''}
+                      >
+                        <Heart 
+                          size={18} 
+                          className={item.hasLiked ? "fill-red-500 text-red-500" : "text-gray-400"} 
+                          fill={item.hasLiked ? "#ef4444" : "none"}
+                          color={item.hasLiked ? "#ef4444" : "#9ca3af"}
+                        />
+                      </motion.div>
+                      <span className="text-sm font-bold">{item.likesCount || 0}</span>
+                    </motion.button>
+                  )}
                 </div>
-                <Link
-                  to={`/psycho-education/read/${item._id}`}
-                  className="text-secondary font-bold text-sm flex items-center gap-2 group/btn"
+                <button
+                  onClick={() => handleOpenDetail(item)}
+                  className="text-secondary font-bold text-sm flex items-center gap-2 group/btn hover:text-secondary/80 transition-colors"
                 >
-                  Read Depth <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
-                </Link>
+                  Read More <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+                </button>
               </div>
             </motion.div>
           ))}
@@ -322,6 +767,16 @@ const PsychoEducation = () => {
           isOpen={showAddModal}
           onClose={() => setShowAddModal(false)}
           onContentAdded={handleContentAdded}
+        />
+
+        {/* Content Detail Modal */}
+        <ContentDetailModal
+          content={selectedContent}
+          isOpen={showDetailModal}
+          onClose={handleCloseDetail}
+          onLike={handleLike}
+          user={user}
+          setError={setError}
         />
 
       </div>

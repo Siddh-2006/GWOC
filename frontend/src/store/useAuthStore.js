@@ -54,7 +54,6 @@ const useAuthStore = create((set, get) => ({
     try {
       const accessToken = localStorage.getItem('accessToken');
       const refreshToken = localStorage.getItem('refreshToken');
-      const storedUser = localStorage.getItem('user');
       
       if (!accessToken) {
         // No token, user is not logged in
@@ -184,14 +183,8 @@ const useAuthStore = create((set, get) => ({
     // Start periodic token validation
     get().startTokenValidation();
 
-    // Auto-redirect based on user role
-    if (user?.role === 'admin') {
-      // Redirect admin users to admin dashboard
-      window.location.href = '/admin';
-    } else {
-      // Redirect regular users to home/dashboard
-      window.location.href = '/';
-    }
+    // Note: Redirect is now handled by the AuthRoute component in App.jsx
+    // This prevents conflicts with React Router
   },
 
   logout: () => {

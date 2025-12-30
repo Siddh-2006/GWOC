@@ -5,6 +5,8 @@ export const mediaController = {
   // Create new media
   createMedia: async (req, res) => {
     try {
+      console.log('📝 Create media request body:', JSON.stringify(req.body, null, 2));
+      
       const {
         title,
         description,
@@ -12,11 +14,22 @@ export const mediaController = {
         category,
         fileUrl,
         thumbnailUrl,
+        assets,
         tags,
         duration,
         fileSize,
-        mimeType
+        mimeType,
+        isPublished,
+        publishedAt
       } = req.body;
+
+      console.log('📝 Extracted fields:', {
+        title,
+        type,
+        fileUrl: fileUrl || 'EMPTY',
+        assets: assets || 'EMPTY',
+        assetsLength: assets ? assets.length : 0
+      });
 
       const media = new Media({
         title,
@@ -25,11 +38,20 @@ export const mediaController = {
         category,
         fileUrl,
         thumbnailUrl,
+        assets: assets || [],
         tags: tags || [],
         duration,
         fileSize,
         mimeType,
+        isPublished: isPublished || false,
+        publishedAt: publishedAt || (isPublished ? new Date() : undefined),
         createdBy: req.user.userId
+      });
+
+      console.log('📝 Media object before save:', {
+        fileUrl: media.fileUrl || 'EMPTY',
+        assets: media.assets || 'EMPTY',
+        assetsLength: media.assets ? media.assets.length : 0
       });
 
       await media.save();

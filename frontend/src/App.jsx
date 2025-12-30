@@ -54,6 +54,24 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   return children;
 };
 
+// Auth Route Component (redirects authenticated users)
+const AuthRoute = ({ children }) => {
+  const { isAuthenticated, user, isInitialized } = useAuthStore();
+
+  if (!isInitialized) return <AuthLoader />;
+  
+  if (isAuthenticated) {
+    // Redirect based on user role
+    if (user?.role === 'admin') {
+      return <Navigate to="/admin" replace />;
+    } else {
+      return <Navigate to="/profile" replace />;
+    }
+  }
+
+  return children;
+};
+
 // Placeholder components until pages are created
 const Placeholder = ({ title }) => (
   <div className="py-20 text-center min-h-[60vh] flex flex-col justify-center items-center">
@@ -140,12 +158,12 @@ function App() {
             }
           />
 
-          {/* Auth Routes */}
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+          {/* Auth Routes - Redirect if already authenticated */}
+          <Route path="/signup" element={<AuthRoute><Signup /></AuthRoute>} />
+          <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
+          <Route path="/verify-email" element={<AuthRoute><VerifyEmail /></AuthRoute>} />
+          <Route path="/forgot-password" element={<AuthRoute><ForgotPassword /></AuthRoute>} />
+          <Route path="/reset-password" element={<AuthRoute><ResetPassword /></AuthRoute>} />
         </Routes>
         <Chatbot />
       </Layout>

@@ -1,4 +1,5 @@
 import { PsychoEducation } from '../models/PsychoEducation.model.js';
+import mongoose from 'mongoose';
 
 export const psychoEducationController = {
   // Create new psycho-education content
@@ -139,9 +140,12 @@ export const psychoEducationController = {
         category,
         difficulty,
         search,
+        sortBy = 'recent',
         page = 1,
         limit = 20
       } = req.query;
+
+      const userId = req.user?.userId; // Optional user ID for like status
 
       let query = { isPublished: true };
 
@@ -155,12 +159,71 @@ export const psychoEducationController = {
 
       const skip = (page - 1) * limit;
 
-      const content = await PsychoEducation.find(query)
-        .populate('mediaAttachments')
-        .select('-createdBy -updatedBy')
-        .sort({ publishedAt: -1 })
-        .skip(skip)
-        .limit(parseInt(limit));
+      // Determine sort order
+      let sortOrder = {};
+      switch (sortBy) {
+        case 'likes':
+          // Sort by number of likes (descending)
+          sortOrder = { 'likesCount': -1, publishedAt: -1 };
+          break;
+        case 'recent':
+        default:
+          // Sort by published date (most recent first)
+          sortOrder = { publishedAt: -1 };
+          break;
+      }
+
+      let content;
+      
+      if (sortBy === 'likes') {
+        // Use aggregation pipeline for likes sorting
+        const userObjectId = userId ? new mongoose.Types.ObjectId(userId) : null;
+        
+        const pipeline = [
+          { $match: query },
+          {
+            $addFields: {
+              likesCount: { $size: '$likes' },
+              hasLiked: userObjectId ? { $in: [userObjectId, '$likes'] } : false
+            }
+          },
+          { $sort: sortOrder },
+          { $skip: skip },
+          { $limit: parseInt(limit) },
+          {
+            $lookup: {
+              from: 'mediaattachments',
+              localField: 'mediaAttachments',
+              foreignField: '_id',
+              as: 'mediaAttachments'
+            }
+          },
+          {
+            $project: {
+              createdBy: 0,
+              updatedBy: 0
+            }
+          }
+        ];
+        
+        content = await PsychoEducation.aggregate(pipeline);
+      } else {
+        // Use regular find for other sorts
+        content = await PsychoEducation.find(query)
+          .populate('mediaAttachments')
+          .select('-createdBy -updatedBy')
+          .sort(sortOrder)
+          .skip(skip)
+          .limit(parseInt(limit))
+          .lean(); // Use lean for better performance
+
+        // Add user-specific like status
+        content = content.map(item => ({
+          ...item,
+          hasLiked: userId && Array.isArray(item.likes) ? item.likes.some(likeId => likeId.toString() === userId.toString()) : false,
+          likesCount: Array.isArray(item.likes) ? item.likes.length : (item.likes || 0)
+        }));
+      }
 
       const total = await PsychoEducation.countDocuments(query);
 
@@ -200,10 +263,6 @@ export const psychoEducationController = {
           message: 'Content not found'
         });
       }
-
-      // Increment views
-      content.views += 1;
-      await content.save();
 
       res.json({
         success: true,
@@ -312,17 +371,39 @@ export const psychoEducationController = {
         });
       }
 
+      // Clean up and ensure proper array format
+      if (!Array.isArray(content.likes)) {
+        content.likes = [];
+      }
+      
+      // Clean up helpful field if it has invalid data
+      if (!Array.isArray(content.helpful)) {
+        content.helpful = [];
+      } else {
+        // Remove any invalid entries
+        content.helpful = content.helpful.filter(id => {
+          try {
+            return mongoose.Types.ObjectId.isValid(id);
+          } catch (e) {
+            return false;
+          }
+        });
+      }
+
       const hasLiked = content.likes.includes(userId);
       
       if (hasLiked) {
-        // Unlike
-        content.likes = content.likes.filter(id => id.toString() !== userId);
+        // Unlike - remove user ID from likes array
+        content.likes = content.likes.filter(id => id.toString() !== userId.toString());
       } else {
-        // Like
+        // Like - add user ID to likes array
         content.likes.push(userId);
       }
 
+      // Save to database immediately
       await content.save();
+      
+      console.log(`✅ ${hasLiked ? 'Unliked' : 'Liked'} content "${content.title}" by user ${userId}`);
 
       res.json({
         success: true,
@@ -333,148 +414,10 @@ export const psychoEducationController = {
         }
       });
     } catch (error) {
-      console.error('Like content error:', error);
+      console.error('❌ Like content error:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to like content',
-        error: error.message
-      });
-    }
-  },
-
-  // Mark content as helpful
-  markHelpful: async (req, res) => {
-    try {
-      const { contentId } = req.params;
-      const userId = req.user?.userId;
-
-      if (!userId) {
-        return res.status(401).json({
-          success: false,
-          message: 'Authentication required to mark as helpful'
-        });
-      }
-
-      const content = await PsychoEducation.findById(contentId);
-      if (!content) {
-        return res.status(404).json({
-          success: false,
-          message: 'Content not found'
-        });
-      }
-
-      const hasMarkedHelpful = content.helpful.includes(userId);
-      
-      if (hasMarkedHelpful) {
-        // Remove helpful mark
-        content.helpful = content.helpful.filter(id => id.toString() !== userId);
-      } else {
-        // Mark as helpful
-        content.helpful.push(userId);
-      }
-
-      await content.save();
-
-      res.json({
-        success: true,
-        message: hasMarkedHelpful ? 'Removed helpful mark' : 'Content marked as helpful',
-        data: { 
-          helpful: content.helpful.length,
-          hasMarkedHelpful: !hasMarkedHelpful
-        }
-      });
-    } catch (error) {
-      console.error('Mark helpful error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to mark as helpful',
-        error: error.message
-      });
-    }
-  },
-
-  // Add comment to content
-  addComment: async (req, res) => {
-    try {
-      const { contentId } = req.params;
-      const { content: commentContent } = req.body;
-      const userId = req.user?.userId;
-
-      if (!userId) {
-        return res.status(401).json({
-          success: false,
-          message: 'Authentication required to comment'
-        });
-      }
-
-      if (!commentContent || !commentContent.trim()) {
-        return res.status(400).json({
-          success: false,
-          message: 'Comment content is required'
-        });
-      }
-
-      const content = await PsychoEducation.findById(contentId);
-      if (!content) {
-        return res.status(404).json({
-          success: false,
-          message: 'Content not found'
-        });
-      }
-
-      const comment = {
-        userId,
-        content: commentContent.trim(),
-        createdAt: new Date()
-      };
-
-      content.comments.push(comment);
-      await content.save();
-
-      // Populate the comment with user info
-      await content.populate('comments.userId', 'firstName lastName');
-
-      res.status(201).json({
-        success: true,
-        message: 'Comment added successfully',
-        data: content.comments[content.comments.length - 1]
-      });
-    } catch (error) {
-      console.error('Add comment error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to add comment',
-        error: error.message
-      });
-    }
-  },
-
-  // Share content (increment share count)
-  shareContent: async (req, res) => {
-    try {
-      const { contentId } = req.params;
-
-      const content = await PsychoEducation.findById(contentId);
-      if (!content) {
-        return res.status(404).json({
-          success: false,
-          message: 'Content not found'
-        });
-      }
-
-      content.shares += 1;
-      await content.save();
-
-      res.json({
-        success: true,
-        message: 'Content shared successfully',
-        data: { shares: content.shares }
-      });
-    } catch (error) {
-      console.error('Share content error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to share content',
         error: error.message
       });
     }
