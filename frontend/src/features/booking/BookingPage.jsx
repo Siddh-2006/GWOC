@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, CheckCircle, AlertCircle, Loader2, User, MessageSquare, Heart } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, AlertCircle, Loader2, User, MessageSquare, Heart, ChevronsDown, ChevronsUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useBookingStore } from '../../store/useBookingStore';
 import { bookingApi } from './booking.api';
 import useAuthStore from '../../store/useAuthStore';
@@ -24,13 +24,17 @@ const BookingPage = () => {
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  const [showAllSlots, setShowAllSlots] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const locationDropdownRef = useRef(null);
+  const calendarRef = useRef(null);
 
   // Surat location suggestions
   const suratLocations = [
     'MindSettler Studio, Surat, Gujarat',
     'Adajan, Surat, Gujarat',
-    'Vesu, Surat, Gujarat', 
+    'Vesu, Surat, Gujarat',
     'Citylight, Surat, Gujarat',
     'Piplod, Surat, Gujarat',
     'Althan, Surat, Gujarat',
@@ -43,18 +47,18 @@ const BookingPage = () => {
   // Location validation function
   const validateLocation = (location) => {
     const normalizedLocation = location.toLowerCase();
-    const isSuratLocation = normalizedLocation.includes('surat') || 
-                           normalizedLocation.includes('gujarat') ||
-                           suratLocations.some(loc => 
-                             normalizedLocation.includes(loc.toLowerCase().split(',')[0])
-                           );
+    const isSuratLocation = normalizedLocation.includes('surat') ||
+      normalizedLocation.includes('gujarat') ||
+      suratLocations.some(loc =>
+        normalizedLocation.includes(loc.toLowerCase().split(',')[0])
+      );
     return isSuratLocation;
   };
 
   // Filter location suggestions based on input
   const filterLocationSuggestions = (input) => {
     if (!input.trim()) return suratLocations.slice(0, 5);
-    
+
     const filtered = suratLocations.filter(location =>
       location.toLowerCase().includes(input.toLowerCase())
     );
@@ -102,6 +106,11 @@ const BookingPage = () => {
     fetchSlots(selectedDate);
   }, [selectedDate]);
 
+  // Scroll to top on step change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step]);
+
   // Handle click outside to close location dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -120,7 +129,41 @@ const BookingPage = () => {
   const handleDateChange = (date) => {
     setSelectedDate(date);
     setSelectedSlot(null); // Reset selected slot when date changes
+    setShowAllSlots(false); // Reset showAllSlots when date changes
+    setShowCalendar(false); // Close calendar on date selection
   };
+
+  // Calendar helper functions
+  const daysInMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+
+  const calendarDays = [];
+  const totalDays = daysInMonth(currentMonth);
+  const startDay = firstDayOfMonth(currentMonth);
+
+  // Add empty days for the previous month's alignment
+  for (let i = 0; i < startDay; i++) {
+    calendarDays.push(null);
+  }
+
+  // Add actual days
+  for (let i = 1; i <= totalDays; i++) {
+    calendarDays.push(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i));
+  }
+
+  // Handle click outside to close calendar
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target)) {
+        setShowCalendar(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Handle reflection completion
   const handleReflectionComplete = (sessionId) => {
@@ -139,33 +182,33 @@ const BookingPage = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     // Frontend validation
     if (!selectedSlot) {
       setError('Please select a time slot');
       setLoading(false);
       return;
     }
-    
+
     if (!formData.personalInfo.name || !formData.personalInfo.email || !formData.personalInfo.phone || !formData.personalInfo.relationshipStatus) {
       setError('Please fill in all required personal information fields');
       setLoading(false);
       return;
     }
-    
+
     // Check if "other" relationship status requires additional input
     if (formData.personalInfo.relationshipStatus === 'other' && !formData.personalInfo.relationshipStatusOther) {
       setError('Please specify your relationship status');
       setLoading(false);
       return;
     }
-    
+
     if (!formData.sessionContent.topics) {
       setError('Please describe what you would like to talk about');
       setLoading(false);
       return;
     }
-    
+
     // Validate location for offline sessions
     if (formData.sessionMode === 'offline') {
       if (!formData.location.trim()) {
@@ -173,7 +216,7 @@ const BookingPage = () => {
         setLoading(false);
         return;
       }
-      
+
       // Validate that location is in Surat area
       if (!validateLocation(formData.location)) {
         setError('Please provide a location in Surat, Gujarat area. MindSettler operates in Surat only.');
@@ -181,13 +224,13 @@ const BookingPage = () => {
         return;
       }
     }
-    
+
     if (!formData.agreedToTerms) {
       setError('Please agree to the terms and conditions');
       setLoading(false);
       return;
     }
-    
+
     try {
       const bookingData = {
         slotId: selectedSlot._id, // Changed from selectedSlot.id to selectedSlot._id
@@ -210,7 +253,7 @@ const BookingPage = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
+    <div className="max-w-4xl mx-auto px-4 py-12 pt-30">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-primary mb-4">Book Your Session</h1>
         <p className="text-gray-600">60-minute personalized psycho-education and guidance session.</p>
@@ -235,15 +278,15 @@ const BookingPage = () => {
         {step === 0 && (
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 bg-linear-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Heart className="text-primary" size={32} />
               </div>
               <h3 className="text-2xl font-bold mb-4">Take a Moment to Reflect</h3>
               <p className="text-gray-600 max-w-2xl mx-auto mb-8">
-                Before we begin, would you like to take a few minutes to reflect on what brings you here today? 
+                Before we begin, would you like to take a few minutes to reflect on what brings you here today?
                 This optional step helps us understand how to better support you during your session.
               </p>
-              
+
               <div className="bg-blue-50 p-6 rounded-2xl mb-8 text-left max-w-2xl mx-auto">
                 <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
                   <MessageSquare size={20} />
@@ -256,7 +299,7 @@ const BookingPage = () => {
                   <li>• Everything is confidential and secure</li>
                 </ul>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
                 <button
                   onClick={() => setShowReflection(true)}
@@ -272,7 +315,7 @@ const BookingPage = () => {
                   Skip for Now
                 </button>
               </div>
-              
+
               <p className="text-xs text-gray-500 mt-4">
                 You can always come back to this later
               </p>
@@ -283,7 +326,7 @@ const BookingPage = () => {
         {/* Reflection Flow Modal */}
         {showReflection && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-linear-to-br from-slate-50 via-blue-50/30 to-green-50/20 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
               <div className="relative">
                 {/* Close button */}
                 <button
@@ -309,17 +352,85 @@ const BookingPage = () => {
               Select Date & Time Slot
             </h3>
 
-            {/* Date Selection */}
-            <div className="mb-8">
+            {/* Custom Date Picker */}
+            <div className="mb-8 relative" ref={calendarRef}>
               <label className="block text-sm font-medium text-gray-700 mb-3">Select Date</label>
-              <input
-                type="date"
-                min={new Date().toISOString().split('T')[0]}
-                max={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                value={selectedDate}
-                onChange={(e) => handleDateChange(e.target.value)}
-                className="w-full md:w-auto px-4 py-3 rounded-xl border border-purple-100 focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-              />
+              <button
+                type="button"
+                onClick={() => setShowCalendar(!showCalendar)}
+                className="w-full md:w-64 px-4 py-3 rounded-xl border border-purple-100 flex items-center justify-between text-left hover:border-primary transition-colors bg-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+              >
+                <span className="text-gray-700">
+                  {new Date(selectedDate).toLocaleDateString('en-US', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                  })}
+                </span>
+                <Calendar size={20} className="text-primary" />
+              </button>
+
+              {showCalendar && (
+                <div className="absolute top-full left-0 mt-2 z-50 bg-white rounded-2xl shadow-2xl border border-purple-100 p-4 w-72">
+                  {/* Calendar Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <button
+                      type="button"
+                      disabled={currentMonth.getMonth() === new Date().getMonth() && currentMonth.getFullYear() === new Date().getFullYear()}
+                      onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+                      className="p-1 hover:bg-purple-50 rounded-lg disabled:opacity-0 transition-colors"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <div className="font-bold text-gray-800">
+                      {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+                      className="p-1 hover:bg-purple-50 rounded-lg transition-colors"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </div>
+
+                  {/* Calendar Grid */}
+                  <div className="grid grid-cols-7 text-center mb-2">
+                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) => (
+                      <div key={d} className="text-[10px] font-bold text-gray-400 uppercase">{d}</div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-1">
+                    {calendarDays.map((date, idx) => {
+                      if (!date) return <div key={`empty-${idx}`} />;
+
+                      const dateString = date.toLocaleDateString('en-CA');
+                      const isPast = date < new Date().setHours(0, 0, 0, 0);
+                      const isSelected = selectedDate === dateString;
+                      const isToday = dateString === new Date().toLocaleDateString('en-CA');
+
+                      return (
+                        <button
+                          key={dateString}
+                          type="button"
+                          disabled={isPast}
+                          onClick={() => handleDateChange(dateString)}
+                          className={`h-8 w-8 rounded-lg text-xs font-medium flex items-center justify-center transition-all ${isSelected
+                            ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-110'
+                            : isPast
+                              ? 'text-gray-200 cursor-not-allowed'
+                              : isToday
+                                ? 'text-primary border border-primary/20'
+                                : 'text-gray-600 hover:bg-purple-50'
+                            }`}
+                        >
+                          {date.getDate()}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {loading ? (
@@ -339,32 +450,55 @@ const BookingPage = () => {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
-                {availableSlots.length > 0 ? (
-                  availableSlots.map((slot) => (
+              <div className="space-y-6 mb-10">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {availableSlots.length > 0 ? (
+                    (showAllSlots ? availableSlots : availableSlots.slice(0, 6)).map((slot) => (
+                      <button
+                        key={slot._id}
+                        onClick={() => setSelectedSlot(slot)}
+                        className={`p-4 rounded-2xl border-2 transition-all text-center ${selectedSlot?._id === slot._id
+                          ? 'border-secondary bg-secondary/5 text-secondary shadow-lg scale-105'
+                          : 'border-purple-50 hover:border-purple-200'
+                          }`}
+                      >
+                        <Clock size={16} className="mx-auto mb-2" />
+                        <p className="font-bold">{slot.startTime} - {slot.endTime}</p>
+                        <p className="text-xs text-gray-400">
+                          {slot.availableModes?.includes('online') && slot.availableModes?.includes('offline')
+                            ? 'Online/Offline'
+                            : slot.availableModes?.[0] || 'Available'}
+                        </p>
+                        <p className="text-xs text-green-600 font-medium">
+                          ₹{slot.pricing?.online || 1200} - ₹{slot.pricing?.offline || 1500}
+                        </p>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="col-span-full py-12 text-center text-gray-500">
+                      No slots available for this date. Please try another day.
+                    </div>
+                  )}
+                </div>
+
+                {availableSlots.length > 6 && (
+                  <div className="flex justify-center">
                     <button
-                      key={slot._id}
-                      onClick={() => setSelectedSlot(slot)}
-                      className={`p-4 rounded-2xl border-2 transition-all text-center ${selectedSlot?._id === slot._id
-                        ? 'border-secondary bg-secondary/5 text-secondary shadow-lg scale-105'
-                        : 'border-purple-50 hover:border-purple-200'
-                        }`}
+                      onClick={() => setShowAllSlots(!showAllSlots)}
+                      className="flex items-center gap-2 text-primary font-semibold hover:text-primary/80 transition-colors py-2 px-4 rounded-xl border border-primary/20 hover:bg-primary/5"
                     >
-                      <Clock size={16} className="mx-auto mb-2" />
-                      <p className="font-bold">{slot.startTime} - {slot.endTime}</p>
-                      <p className="text-xs text-gray-400">
-                        {slot.availableModes?.includes('online') && slot.availableModes?.includes('offline') 
-                          ? 'Online/Offline' 
-                          : slot.availableModes?.[0] || 'Available'}
-                      </p>
-                      <p className="text-xs text-green-600 font-medium">
-                        ₹{slot.pricing?.online || 1200} - ₹{slot.pricing?.offline || 1500}
-                      </p>
+                      {showAllSlots ? (
+                        <>
+                          <ChevronsUp size={20} />
+                          Show Less
+                        </>
+                      ) : (
+                        <>
+                          <ChevronsDown size={20} />
+                          Show All Slots ({availableSlots.length})
+                        </>
+                      )}
                     </button>
-                  ))
-                ) : (
-                  <div className="col-span-full py-12 text-center text-gray-500">
-                    No slots available for this date. Please try another day.
                   </div>
                 )}
               </div>
@@ -387,7 +521,7 @@ const BookingPage = () => {
               <User className="text-secondary" />
               Personal Information
             </h3>
-            
+
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -490,9 +624,9 @@ const BookingPage = () => {
               )}
 
               <div className="flex gap-4">
-                <button 
-                  type="button" 
-                  onClick={() => setStep(1)} 
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
                   className="flex-1 py-4 text-primary font-semibold border border-primary rounded-xl hover:bg-primary/5 transition-colors"
                 >
                   Back
@@ -516,7 +650,7 @@ const BookingPage = () => {
               <MessageSquare className="text-secondary" />
               Session Details
             </h3>
-            
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">What would you like to talk about? *</label>
@@ -579,15 +713,15 @@ const BookingPage = () => {
                         }
                         setFormData(newFormData);
                       }}
-                      className={`p-4 rounded-xl border-2 transition-all text-left ${formData.sessionMode === mode 
-                        ? 'border-primary bg-primary/5 text-primary' 
+                      className={`p-4 rounded-xl border-2 transition-all text-left ${formData.sessionMode === mode
+                        ? 'border-primary bg-primary/5 text-primary'
                         : 'border-purple-50 hover:border-purple-200'
-                      }`}
+                        }`}
                     >
                       <div className="font-semibold capitalize mb-1">{mode} Session</div>
                       <div className="text-sm text-gray-600">
-                        {mode === 'online' 
-                          ? 'Video call via Google Meet' 
+                        {mode === 'online'
+                          ? 'Video call via Google Meet'
                           : 'In-person at MindSettler Studio, Surat'}
                       </div>
                       <div className="text-sm font-medium text-green-600 mt-2">
@@ -595,11 +729,11 @@ const BookingPage = () => {
                       </div>
                     </button>
                   )) || (
-                    <div className="col-span-full text-center text-gray-500 py-4">
-                      No session modes available for selected slot
-                    </div>
-                  )}
-                </div> 
+                      <div className="col-span-full text-center text-gray-500 py-4">
+                        No session modes available for selected slot
+                      </div>
+                    )}
+                </div>
               </div>
 
               {formData.sessionMode === 'offline' && (
@@ -635,15 +769,15 @@ const BookingPage = () => {
                     }}
                     onKeyDown={(e) => {
                       if (!showLocationSuggestions || locationSuggestions.length === 0) return;
-                      
+
                       if (e.key === 'ArrowDown') {
                         e.preventDefault();
-                        setSelectedSuggestionIndex(prev => 
+                        setSelectedSuggestionIndex(prev =>
                           prev < locationSuggestions.length - 1 ? prev + 1 : 0
                         );
                       } else if (e.key === 'ArrowUp') {
                         e.preventDefault();
-                        setSelectedSuggestionIndex(prev => 
+                        setSelectedSuggestionIndex(prev =>
                           prev > 0 ? prev - 1 : locationSuggestions.length - 1
                         );
                       } else if (e.key === 'Enter' && selectedSuggestionIndex >= 0) {
@@ -658,7 +792,7 @@ const BookingPage = () => {
                     }}
                     placeholder="MindSettler Studio, Surat"
                   />
-                  
+
                   {/* Location Suggestions Dropdown */}
                   {showLocationSuggestions && (
                     <div className="location-suggestions absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-48 overflow-y-auto">
@@ -667,9 +801,8 @@ const BookingPage = () => {
                           <button
                             key={index}
                             type="button"
-                            className={`w-full px-4 py-3 text-left hover:bg-purple-50 active:bg-purple-100 focus:bg-purple-50 focus:outline-none text-sm border-none bg-transparent cursor-pointer transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg ${
-                              index === selectedSuggestionIndex ? 'bg-purple-100' : ''
-                            }`}
+                            className={`w-full px-4 py-3 text-left hover:bg-purple-50 active:bg-purple-100 focus:bg-purple-50 focus:outline-none text-sm border-none bg-transparent cursor-pointer transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg ${index === selectedSuggestionIndex ? 'bg-purple-100' : ''
+                              }`}
                             onMouseDown={(e) => {
                               // Prevent input blur when clicking suggestion
                               e.preventDefault();
@@ -696,16 +829,16 @@ const BookingPage = () => {
                       )}
                     </div>
                   )}
-                  
+
                   <p className="text-xs text-gray-500 mt-1">
                     Default: MindSettler Studio, Surat. Please specify a location within Surat, Gujarat area.
                   </p>
-                  
+
                   {/* Location validation indicator */}
                   {formData.location && (
                     <p className={`text-xs mt-1 ${validateLocation(formData.location) ? 'text-green-600' : 'text-red-600'}`}>
-                      {validateLocation(formData.location) 
-                        ? '✓ Valid Surat location' 
+                      {validateLocation(formData.location)
+                        ? '✓ Valid Surat location'
                         : '⚠ Please provide a location in Surat, Gujarat'}
                     </p>
                   )}
@@ -742,17 +875,17 @@ const BookingPage = () => {
               )}
 
               <div className="flex gap-4">
-                <button 
-                  type="button" 
-                  onClick={() => setStep(2)} 
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
                   className="flex-1 py-4 text-primary font-semibold border border-primary rounded-xl hover:bg-primary/5 transition-colors"
                 >
                   Back
                 </button>
                 <button
                   type="submit"
-                  disabled={loading || !formData.agreedToTerms || !formData.sessionContent.topics || 
-                           (formData.sessionMode === 'offline' && (!formData.location.trim() || !validateLocation(formData.location)))}
+                  disabled={loading || !formData.agreedToTerms || !formData.sessionContent.topics ||
+                    (formData.sessionMode === 'offline' && (!formData.location.trim() || !validateLocation(formData.location)))}
                   className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? <Loader2 className="animate-spin" size={20} /> : 'Request Appointment'}
@@ -772,7 +905,7 @@ const BookingPage = () => {
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
               Thank you, {formData.personalInfo.name.split(' ')[0]}. Your session request has been sent successfully.
             </p>
-            
+
             <div className="bg-blue-50 p-6 rounded-xl mb-8 text-left max-w-md mx-auto">
               <h4 className="font-semibold text-blue-900 mb-3">Session Details:</h4>
               <div className="space-y-2 text-sm text-blue-800">
@@ -792,7 +925,7 @@ const BookingPage = () => {
                 <li>• You'll receive a reminder 10 minutes before your session</li>
               </ul>
             </div>
-            
+
             <div className="space-y-4">
               <button
                 onClick={() => window.location.href = '/'}
