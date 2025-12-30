@@ -299,7 +299,7 @@ const PsychoEducation = () => {
                   </button>
                 </div>
                 <Link
-                  to={`/psycho-education/read/${item.slug}`}
+                  to={`/psycho-education/read/${item._id}`}
                   className="text-secondary font-bold text-sm flex items-center gap-2 group/btn"
                 >
                   Read Depth <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />

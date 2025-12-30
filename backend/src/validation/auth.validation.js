@@ -86,13 +86,6 @@ export const authValidation = {
         'any.required': 'Last name is required'
       }),
 
-    phone: Joi.string()
-      .allow('', null)
-      .optional()
-      .messages({
-        'string.base': 'Phone must be a string'
-      }),
-
     avatar: Joi.string()
       .max(10)
       .allow('', null)

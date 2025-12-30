@@ -1,14 +1,26 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { User, Calendar, BookOpen, Heart, Settings, Shield, Eye, EyeOff } from 'lucide-react';
+import { User, Calendar, BookOpen, Heart, Settings, Shield, Eye, EyeOff, Edit3, Save, X } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 import { bookingApi } from '../features/booking/booking.api';
+import { authApi } from '../features/auth/auth.api';
 
 const Profile = () => {
-  const { user, isAuthenticated, isInitialized } = useAuthStore();
+  const { user, isAuthenticated, isInitialized, updateUser } = useAuthStore();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [profileData, setProfileData] = useState({
+    firstName: '',
+    lastName: '',
+    avatar: '',
+    bio: '',
+    location: '',
+    interests: ''
+  });
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
 
   // Animation refs
   const welcomeRef = useRef(null);
@@ -27,9 +39,18 @@ const Profile = () => {
         if (user) {
           const userBookings = await bookingApi.getUserBookings();
           setBookings(userBookings || []);
+          
+          // Initialize profile data from user
+          setProfileData({
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
+            avatar: user.avatar || '😊',
+            bio: user.bio || '',
+            location: user.location || '',
+            interests: user.interests || ''
+          });
         }
       } catch (error) {
-        // Silently handle error - no aggressive error display
         console.error('Profile data fetch error:', error);
       } finally {
         setLoading(false);
@@ -38,6 +59,54 @@ const Profile = () => {
 
     fetchUserData();
   }, [user]);
+
+  const handleInputChange = (field, value) => {
+    setProfileData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    setSaveMessage('');
+    
+    try {
+      const response = await authApi.updateProfile(profileData);
+      
+      if (response.success) {
+        // Update the user in the auth store
+        updateUser(response.data.user);
+        setSaveMessage('Profile updated successfully!');
+        setIsEditing(false);
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => setSaveMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Profile update error:', error);
+      setSaveMessage('Failed to update profile. Please try again.');
+      
+      // Clear error message after 5 seconds
+      setTimeout(() => setSaveMessage(''), 5000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    // Reset to original user data
+    setProfileData({
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      avatar: user.avatar || '😊',
+      bio: user.bio || '',
+      location: user.location || '',
+      interests: user.interests || ''
+    });
+    setIsEditing(false);
+    setSaveMessage('');
+  };
 
   // Calculate journey stages
   const getJourneyStages = () => {
@@ -53,7 +122,7 @@ const Profile = () => {
         id: 'explored',
         title: 'Explored Psycho-Education',
         description: 'You began learning about yourself.',
-        completed: true, // Assume they've at least visited
+        completed: true,
         icon: '📚'
       }
     ];
@@ -130,7 +199,6 @@ const Profile = () => {
     );
   }
 
-  // If not authenticated, redirect to login
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-pink-50 flex items-center justify-center">
@@ -317,9 +385,104 @@ const Profile = () => {
               <h3 className="text-xl font-semibold text-slate-800 mb-6">Personal Details</h3>
 
               <div className="space-y-4 mb-8">
+                {/* First Name */}
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-slate-600">Name:</span>
-                  <span className="text-slate-800">{user?.firstName} {user?.lastName}</span>
+                  <span className="text-slate-600">First Name:</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={profileData.firstName}
+                      onChange={(e) => handleInputChange('firstName', e.target.value)}
+                      className="px-3 py-1 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="First name"
+                    />
+                  ) : (
+                    <span className="text-slate-800">{profileData.firstName}</span>
+                  )}
+                </div>
+
+                {/* Last Name */}
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-slate-600">Last Name:</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={profileData.lastName}
+                      onChange={(e) => handleInputChange('lastName', e.target.value)}
+                      className="px-3 py-1 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="Last name"
+                    />
+                  ) : (
+                    <span className="text-slate-800">{profileData.lastName}</span>
+                  )}
+                </div>
+
+                {/* Avatar */}
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-slate-600">Avatar:</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={profileData.avatar}
+                      onChange={(e) => handleInputChange('avatar', e.target.value)}
+                      className="px-3 py-1 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-center"
+                      placeholder="😊"
+                      maxLength="10"
+                    />
+                  ) : (
+                    <span className="text-2xl">{profileData.avatar}</span>
+                  )}
+                </div>
+
+                {/* Bio */}
+                <div className="py-2">
+                  <span className="text-slate-600 block mb-2">Bio:</span>
+                  {isEditing ? (
+                    <textarea
+                      value={profileData.bio}
+                      onChange={(e) => handleInputChange('bio', e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                      placeholder="Tell us a bit about yourself..."
+                      rows="3"
+                      maxLength="500"
+                    />
+                  ) : (
+                    <span className="text-slate-800">{profileData.bio || 'No bio added yet'}</span>
+                  )}
+                </div>
+
+                {/* Location */}
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-slate-600">Location:</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={profileData.location}
+                      onChange={(e) => handleInputChange('location', e.target.value)}
+                      className="px-3 py-1 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="Your location"
+                      maxLength="100"
+                    />
+                  ) : (
+                    <span className="text-slate-800">{profileData.location || 'Not specified'}</span>
+                  )}
+                </div>
+
+                {/* Interests */}
+                <div className="py-2">
+                  <span className="text-slate-600 block mb-2">Interests:</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={profileData.interests}
+                      onChange={(e) => handleInputChange('interests', e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="Your interests..."
+                      maxLength="200"
+                    />
+                  ) : (
+                    <span className="text-slate-800">{profileData.interests || 'No interests added yet'}</span>
+                  )}
                 </div>
 
                 <div className="flex justify-between items-center py-2">
@@ -327,6 +490,27 @@ const Profile = () => {
                   <span className="text-slate-800">{user?.email}</span>
                 </div>
               </div>
+
+              {/* Edit Actions */}
+              {isEditing && (
+                <div className="flex justify-center gap-4 mb-8">
+                  <button
+                    onClick={handleSaveProfile}
+                    disabled={saving}
+                    className="inline-flex items-center gap-2 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                  >
+                    <Save size={16} />
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </button>
+                  <button
+                    onClick={handleCancelEdit}
+                    className="inline-flex items-center gap-2 px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
+                  >
+                    <X size={16} />
+                    Cancel
+                  </button>
+                </div>
+              )}
 
               {/* Privacy & Trust Section */}
               <div className="border-t border-slate-200 pt-6">
