@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Download, Heart, Eye, Search, Filter, Grid, List, Clock, Tag, Plus, Settings, MessageCircle, Share } from 'lucide-react';
+import { Play, Download, Heart, Eye, Search, Filter, Grid, List, Clock, Tag, Plus, Settings, MessageCircle } from 'lucide-react';
 import { mediaApi } from '../services/media.api';
 import useAuthStore from '../store/useAuthStore';
 import { useToast } from '../hooks/useToast';
@@ -23,8 +23,10 @@ const Resources = () => {
   const [selectedType, setSelectedType] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage] = useState(12);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [showPlayer, setShowPlayer] = useState(false);
@@ -46,26 +48,28 @@ const Resources = () => {
     { value: 'general', label: 'General' }
   ];
 
-  const fetchMedia = async (resetPage = false) => {
+  const fetchMedia = async (page = 1, resetData = false) => {
     try {
       setLoading(true);
       const params = {
         search: searchTerm,
         type: selectedType !== 'all' ? selectedType : undefined,
-        page: resetPage ? 1 : page,
-        limit: 12
+        category: selectedCategory !== 'all' ? selectedCategory : undefined,
+        page: page,
+        limit: itemsPerPage
       };
 
       const response = await mediaApi.getPublishedMedia(params);
 
-      if (resetPage) {
+      if (resetData) {
         setMedia(response.data);
-        setPage(1);
       } else {
-        setMedia(prev => [...prev, ...response.data]);
+        setMedia(response.data);
       }
 
-      setHasMore(response.pagination.page < response.pagination.pages);
+      setCurrentPage(response.pagination.page);
+      setTotalPages(response.pagination.pages);
+      setTotalItems(response.pagination.total);
     } catch (err) {
       setError('Failed to load media content');
       console.error('Fetch media error:', err);
@@ -75,8 +79,9 @@ const Resources = () => {
   };
 
   useEffect(() => {
-    fetchMedia(true);
-  }, [searchTerm, selectedType]);
+    setCurrentPage(1);
+    fetchMedia(1, true);
+  }, [searchTerm, selectedType, selectedCategory]);
 
   // Debug: Log media data to see what we're getting
   useEffect(() => {
@@ -173,34 +178,6 @@ const Resources = () => {
     }
   };
 
-  const handleShare = async (mediaId) => {
-    try {
-      await mediaApi.shareMedia(mediaId);
-      setMedia(prev => prev.map(item =>
-        item._id === mediaId
-          ? { ...item, shares: (item.shares || 0) + 1 }
-          : item
-      ));
-      
-      // Update selected media if it's the same
-      if (selectedMedia && selectedMedia._id === mediaId) {
-        setSelectedMedia(prev => ({
-          ...prev,
-          shares: (prev.shares || 0) + 1
-        }));
-      }
-
-      // Copy link to clipboard
-      const shareUrl = `${window.location.origin}/resources?media=${mediaId}`;
-      await navigator.clipboard.writeText(shareUrl);
-      
-      // You could add a toast notification here
-      console.log('Link copied to clipboard!');
-    } catch (err) {
-      console.error('Share media error:', err);
-    }
-  };
-
   const handleMediaClick = async (mediaItem) => {
     setSelectedMedia(mediaItem);
     
@@ -213,13 +190,18 @@ const Resources = () => {
     
     // Track view
     try {
-      await mediaApi.getMedia(mediaItem._id); // This increments views
-      // Update the media item's view count locally
-      setMedia(prev => prev.map(item =>
-        item._id === mediaItem._id
-          ? { ...item, views: (item.views || 0) + 1 }
-          : item
-      ));
+      const response = await mediaApi.getMedia(mediaItem._id);
+      if (response.success) {
+        // Update the media item's view count locally
+        setMedia(prev => prev.map(item =>
+          item._id === mediaItem._id
+            ? { ...item, views: response.data.views }
+            : item
+        ));
+        
+        // Update selected media with fresh data
+        setSelectedMedia(response.data);
+      }
     } catch (err) {
       console.error('Error tracking view:', err);
     }
@@ -231,13 +213,9 @@ const Resources = () => {
     setSelectedMedia(null);
   };
 
-  const loadMore = () => {
-    setPage(prev => prev + 1);
-    fetchMedia();
-  };
-
   const handleMediaAdded = (newMedia) => {
     setMedia(prev => [newMedia, ...prev]);
+    setTotalItems(prev => prev + 1);
   };
 
   const formatDuration = (seconds) => {
@@ -338,6 +316,16 @@ const Resources = () => {
                 ))}
               </select>
 
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white text-sm"
+              >
+                {categories.map(category => (
+                  <option key={category.value} value={category.value}>{category.label}</option>
+                ))}
+              </select>
+
               {/* Compact View Mode Toggle */}
               <div className="flex bg-gray-100 rounded-xl p-1">
                 <button
@@ -362,11 +350,15 @@ const Resources = () => {
               <p className="text-gray-500 text-sm text-center">
                 {media.length > 0 ? (
                   <>
-                    <span className="font-medium text-gray-700">{media.length}</span> resources
+                    <span className="font-medium text-gray-700">{totalItems}</span> resources
                     {searchTerm && <span> for "{searchTerm}"</span>}
+                    {selectedType !== 'all' && <span> in {mediaTypes.find(t => t.value === selectedType)?.label}</span>}
+                    {selectedCategory !== 'all' && <span> • {categories.find(c => c.value === selectedCategory)?.label}</span>}
                   </>
                 ) : (
-                  searchTerm ? `No results for "${searchTerm}"` : 'No resources available'
+                  searchTerm || selectedType !== 'all' || selectedCategory !== 'all' 
+                    ? 'No results found for current filters' 
+                    : 'No resources available'
                 )}
               </p>
             </div>
@@ -515,34 +507,31 @@ const Resources = () => {
                               <Eye size={16} />
                               <span>{item.views || 0}</span>
                             </div>
-                            <motion.button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleLike(item._id);
-                              }}
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              className={`flex items-center gap-1 transition-colors ${
-                                !isAuthenticated 
-                                  ? 'text-gray-400 cursor-not-allowed' 
-                                  : item.hasLiked 
+                            {isAuthenticated && (
+                              <motion.button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleLike(item._id);
+                                }}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                className={`flex items-center gap-1 transition-colors ${
+                                  item.hasLiked 
                                     ? 'text-red-500' 
                                     : 'text-gray-500 hover:text-red-500'
-                              }`}
-                              disabled={!isAuthenticated}
-                            >
-                              <Heart 
-                                size={16} 
-                                className={
-                                  !isAuthenticated 
-                                    ? 'text-gray-400' 
-                                    : item.hasLiked 
+                                }`}
+                              >
+                                <Heart 
+                                  size={16} 
+                                  className={
+                                    item.hasLiked 
                                       ? 'fill-red-500 text-red-500' 
                                       : 'text-gray-500'
-                                } 
-                              />
-                              <span>{Array.isArray(item.likes) ? item.likes.length : item.likesCount || item.likes || 0}</span>
-                            </motion.button>
+                                  } 
+                                />
+                                <span>{Array.isArray(item.likes) ? item.likes.length : item.likesCount || item.likes || 0}</span>
+                              </motion.button>
+                            )}
                             {item.comments && item.comments.length > 0 && (
                               <div className="flex items-center gap-1">
                                 <MessageCircle size={16} />
@@ -723,34 +712,31 @@ const Resources = () => {
                           transition={{ delay: 0.5 }}
                         >
                           <div className="flex items-center gap-4">
-                            <motion.button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleLike(item._id);
-                              }}
-                              whileHover={{ scale: 1.2 }}
-                              whileTap={{ scale: 0.8 }}
-                              className={`flex items-center gap-2 transition-colors ${
-                                !isAuthenticated 
-                                  ? 'text-gray-400 cursor-not-allowed' 
-                                  : item.hasLiked 
+                            {isAuthenticated && (
+                              <motion.button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleLike(item._id);
+                                }}
+                                whileHover={{ scale: 1.2 }}
+                                whileTap={{ scale: 0.8 }}
+                                className={`flex items-center gap-2 transition-colors ${
+                                  item.hasLiked 
                                     ? 'text-red-500' 
                                     : 'text-gray-500 hover:text-red-500'
-                              }`}
-                              disabled={!isAuthenticated}
-                            >
-                              <Heart 
-                                size={18} 
-                                className={
-                                  !isAuthenticated 
-                                    ? 'text-gray-400' 
-                                    : item.hasLiked 
+                                }`}
+                              >
+                                <Heart 
+                                  size={18} 
+                                  className={
+                                    item.hasLiked 
                                       ? 'fill-red-500 text-red-500' 
                                       : 'text-gray-500'
-                                } 
-                              />
-                              <span className="text-sm font-medium">{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
-                            </motion.button>
+                                  } 
+                                />
+                                <span className="text-sm font-medium">{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
+                              </motion.button>
+                            )}
 
                             <motion.button
                               onClick={(e) => {
@@ -770,19 +756,6 @@ const Resources = () => {
                               <span className="text-sm font-medium">{item.comments?.length || 0}</span>
                             </motion.button>
                           </div>
-
-                          <motion.button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleShare(item._id);
-                            }}
-                            whileHover={{ scale: 1.2 }}
-                            whileTap={{ scale: 0.8 }}
-                            className="flex items-center gap-2 text-gray-500 hover:text-green-500 transition-colors"
-                          >
-                            <Share size={18} />
-                            <span className="text-sm font-medium">{item.shares || 0}</span>
-                          </motion.button>
                         </motion.div>
                       </div>
                     </>
@@ -882,34 +855,31 @@ const Resources = () => {
                               <Eye size={18} />
                               <span>{item.views || 0} views</span>
                             </div>
-                            <motion.button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleLike(item._id);
-                              }}
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              className={`flex items-center gap-2 transition-colors ${
-                                !isAuthenticated 
-                                  ? 'text-gray-400 cursor-not-allowed' 
-                                  : item.hasLiked 
+                            {isAuthenticated && (
+                              <motion.button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleLike(item._id);
+                                }}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                className={`flex items-center gap-2 transition-colors ${
+                                  item.hasLiked 
                                     ? 'text-red-500' 
                                     : 'text-gray-500 hover:text-red-500'
-                              }`}
-                              disabled={!isAuthenticated}
-                            >
-                              <Heart 
-                                size={18} 
-                                className={
-                                  !isAuthenticated 
-                                    ? 'text-gray-400' 
-                                    : item.hasLiked 
+                                }`}
+                              >
+                                <Heart 
+                                  size={18} 
+                                  className={
+                                    item.hasLiked 
                                       ? 'fill-red-500 text-red-500' 
                                       : 'text-gray-500'
-                                } 
-                              />
-                              <span>{Array.isArray(item.likes) ? item.likes.length : item.likesCount || item.likes || 0} likes</span>
-                            </motion.button>
+                                  } 
+                                />
+                                <span>{Array.isArray(item.likes) ? item.likes.length : item.likesCount || item.likes || 0} likes</span>
+                              </motion.button>
+                            )}
                             {item.comments && item.comments.length > 0 && (
                               <button 
                                 onClick={(e) => {
@@ -1000,32 +970,29 @@ const Resources = () => {
                                 <Eye size={16} />
                                 <span>{item.views || 0}</span>
                               </div>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleLike(item._id);
-                                }}
-                                className={`flex items-center gap-1 transition-colors ${
-                                  !isAuthenticated 
-                                    ? 'text-gray-400 cursor-not-allowed' 
-                                    : item.hasLiked 
+                              {isAuthenticated && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleLike(item._id);
+                                  }}
+                                  className={`flex items-center gap-1 transition-colors ${
+                                    item.hasLiked 
                                       ? 'text-red-500' 
                                       : 'hover:text-red-500'
-                                }`}
-                                disabled={!isAuthenticated}
-                              >
-                                <Heart 
-                                  size={16} 
-                                  className={
-                                    !isAuthenticated 
-                                      ? 'text-gray-400' 
-                                      : item.hasLiked 
+                                  }`}
+                                >
+                                  <Heart 
+                                    size={16} 
+                                    className={
+                                      item.hasLiked 
                                         ? 'fill-red-500 text-red-500' 
                                         : 'text-gray-500'
-                                  } 
-                                />
-                                <span>{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
-                              </button>
+                                    } 
+                                  />
+                                  <span>{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
+                                </button>
+                              )}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -1055,7 +1022,7 @@ const Resources = () => {
             </div>
           )}
 
-          {/* Instagram-style Empty State */}
+          {/* Empty State */}
           {!loading && media.length === 0 && (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -1065,35 +1032,167 @@ const Resources = () => {
               <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search size={32} className="text-gray-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">No posts yet</h3>
-              <p className="text-gray-500 max-w-sm mx-auto">
-                Try adjusting your search or check back later for new content.
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                {searchTerm || selectedType !== 'all' || selectedCategory !== 'all' 
+                  ? 'No results found' 
+                  : 'No resources yet'
+                }
+              </h3>
+              <p className="text-gray-500 max-w-sm mx-auto mb-4">
+                {searchTerm || selectedType !== 'all' || selectedCategory !== 'all'
+                  ? 'Try adjusting your search or filters to find what you\'re looking for.'
+                  : 'Check back later for new content.'
+                }
               </p>
-              <button 
+              {(searchTerm || selectedType !== 'all' || selectedCategory !== 'all') && (
+                <button 
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedType('all');
+                    setSelectedCategory('all');
+                  }}
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                >
+                  Clear all filters
+                </button>
+              )}
+            </motion.div>
+          )}
+
+          {/* Pagination Controls */}
+          {!loading && media.length > 0 && totalPages > 1 && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex justify-center items-center mt-12 space-x-2"
+            >
+              {/* Previous Button */}
+              <button
                 onClick={() => {
-                  setSearchTerm('');
-                  setSelectedType('all');
+                  const newPage = currentPage - 1;
+                  setCurrentPage(newPage);
+                  fetchMedia(newPage);
                 }}
-                className="mt-4 text-primary hover:text-primary/80 font-medium"
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
               >
-                Clear filters
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Previous
+              </button>
+
+              {/* Page Numbers */}
+              <div className="flex space-x-1">
+                {(() => {
+                  const pages = [];
+                  const maxVisiblePages = 5;
+                  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                  
+                  // Adjust start page if we're near the end
+                  if (endPage - startPage + 1 < maxVisiblePages) {
+                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                  }
+
+                  // First page + ellipsis
+                  if (startPage > 1) {
+                    pages.push(
+                      <button
+                        key={1}
+                        onClick={() => {
+                          setCurrentPage(1);
+                          fetchMedia(1);
+                        }}
+                        className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        1
+                      </button>
+                    );
+                    if (startPage > 2) {
+                      pages.push(
+                        <span key="ellipsis1" className="px-3 py-2 text-gray-500">
+                          ...
+                        </span>
+                      );
+                    }
+                  }
+
+                  // Visible page numbers
+                  for (let i = startPage; i <= endPage; i++) {
+                    pages.push(
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setCurrentPage(i);
+                          fetchMedia(i);
+                        }}
+                        className={`px-3 py-2 rounded-lg transition-colors ${
+                          i === currentPage
+                            ? 'bg-primary text-white'
+                            : 'bg-white border border-gray-200 hover:bg-gray-50'
+                        }`}
+                      >
+                        {i}
+                      </button>
+                    );
+                  }
+
+                  // Last page + ellipsis
+                  if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                      pages.push(
+                        <span key="ellipsis2" className="px-3 py-2 text-gray-500">
+                          ...
+                        </span>
+                      );
+                    }
+                    pages.push(
+                      <button
+                        key={totalPages}
+                        onClick={() => {
+                          setCurrentPage(totalPages);
+                          fetchMedia(totalPages);
+                        }}
+                        className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        {totalPages}
+                      </button>
+                    );
+                  }
+
+                  return pages;
+                })()}
+              </div>
+
+              {/* Next Button */}
+              <button
+                onClick={() => {
+                  const newPage = currentPage + 1;
+                  setCurrentPage(newPage);
+                  fetchMedia(newPage);
+                }}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              >
+                Next
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </button>
             </motion.div>
           )}
 
-          {/* Instagram-style Load More */}
-          {hasMore && !loading && media.length > 0 && (
+          {/* Pagination Info */}
+          {!loading && media.length > 0 && (
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center mt-8"
+              className="text-center mt-6"
             >
-              <button
-                onClick={loadMore}
-                className="px-8 py-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors font-medium text-gray-700"
-              >
-                Load more
-              </button>
+              <p className="text-sm text-gray-500">
+                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} resources
+              </p>
             </motion.div>
           )}
 
@@ -1124,7 +1223,6 @@ const Resources = () => {
           onClose={handleClosePlayer}
           onLike={handleLike}
           onComment={handleComment}
-          onShare={handleShare}
         />
 
         {/* Post Viewer Modal for Posts */}
@@ -1134,7 +1232,6 @@ const Resources = () => {
           onClose={handleClosePlayer}
           onLike={handleLike}
           onComment={handleComment}
-          onShare={handleShare}
         />
 
         {/* Toast Container */}

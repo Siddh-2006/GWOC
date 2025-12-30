@@ -188,13 +188,17 @@ const useAuthStore = create((set, get) => ({
   },
 
   logout: () => {
+    console.log('🔄 Auth store logout initiated...');
+    
     // Stop token validation
     get().stopTokenValidation();
     
+    console.log('🧹 Clearing localStorage...');
     localStorage.removeItem('user');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     
+    console.log('🔄 Updating auth state...');
     set({
       user: null,
       accessToken: null,
@@ -202,6 +206,8 @@ const useAuthStore = create((set, get) => ({
       error: null,
       isInitialized: true
     });
+    
+    console.log('✅ Auth store logout completed');
   },
 
   setUser: (user) => {

@@ -11,9 +11,11 @@ import {
 } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 import { useLikedMedia } from '../hooks/useLikedMedia';
+import { useToast } from '../hooks/useToast';
 import MediaCard from '../components/MediaCard';
 import LikedMediaTest from '../components/LikedMediaTest';
 import LikedMediaDebug from '../components/LikedMediaDebug';
+import ToastContainer from '../components/ToastContainer';
 
 const ProfileCard = ({ children, className = "" }) => (
   <motion.div 
@@ -66,6 +68,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const { likedMedia, loading: likedLoading, error: likedError, toggleLike } = useLikedMedia();
+  const { toasts, success, error: showError, removeToast } = useToast();
 
   // Mock data for demonstration
   const [achievements] = useState([
@@ -100,11 +103,18 @@ const Profile = () => {
   }, [isAuthenticated, user, likedMedia, likedLoading, likedError]);
 
   // Handle unliking media from profile
-  const handleLike = async (mediaId) => {
+  const handleRemoveFromLiked = async (mediaId) => {
     try {
+      const mediaItem = likedMedia.find(item => item._id === mediaId);
       await toggleLike(mediaId);
+      
+      // Show success message
+      if (mediaItem) {
+        success(`Removed "${mediaItem.title}" from your liked content`);
+      }
     } catch (error) {
-      console.error('Failed to toggle like:', error);
+      console.error('Failed to remove from liked:', error);
+      showError('Failed to remove from liked content. Please try again.');
     }
   };
 
@@ -349,8 +359,9 @@ const Profile = () => {
                     <MediaCard
                       key={media._id}
                       media={media}
-                      onLike={handleLike}
-                      showLikeButton={true}
+                      onUnlike={handleRemoveFromLiked}
+                      showLikeButton={false}
+                      showRemoveButton={true}
                     />
                   ))}
                 </div>
@@ -457,6 +468,9 @@ const Profile = () => {
 
         </div>
       </div>
+      
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
 };

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Heart, MessageCircle, Share, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { X, Heart, MessageCircle, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import ImageWithFallback from './ImageWithFallback';
+import useAuthStore from '../store/useAuthStore';
 
-const PostViewer = ({ post, isOpen, onClose, onLike, onComment, onShare }) => {
+const PostViewer = ({ post, isOpen, onClose, onLike, onComment }) => {
+  const { isAuthenticated } = useAuthStore();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [comment, setComment] = useState('');
 
@@ -139,18 +141,20 @@ const PostViewer = ({ post, isOpen, onClose, onLike, onComment, onShare }) => {
                 {/* Post Actions */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-4">
-                    <motion.button
-                      onClick={() => onLike && onLike(post._id)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className={`transition-colors ${
-                        post.hasLiked 
-                          ? 'text-red-500' 
-                          : 'text-gray-700 hover:text-red-500'
-                      }`}
-                    >
-                      <Heart size={28} className={post.hasLiked ? "fill-red-500 text-red-500" : "text-gray-700"} />
-                    </motion.button>
+                    {isAuthenticated && (
+                      <motion.button
+                        onClick={() => onLike && onLike(post._id)}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className={`transition-colors ${
+                          post.hasLiked 
+                            ? 'text-red-500' 
+                            : 'text-gray-700 hover:text-red-500'
+                        }`}
+                      >
+                        <Heart size={28} className={post.hasLiked ? "fill-red-500 text-red-500" : "text-gray-700"} />
+                      </motion.button>
+                    )}
 
                     <motion.button
                       whileHover={{ scale: 1.1 }}
@@ -158,15 +162,6 @@ const PostViewer = ({ post, isOpen, onClose, onLike, onComment, onShare }) => {
                       className="text-gray-700 hover:text-blue-500 transition-colors"
                     >
                       <MessageCircle size={28} />
-                    </motion.button>
-
-                    <motion.button
-                      onClick={() => onShare && onShare(post._id)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="text-gray-700 hover:text-green-500 transition-colors"
-                    >
-                      <Share size={28} />
                     </motion.button>
                   </div>
 
@@ -177,11 +172,13 @@ const PostViewer = ({ post, isOpen, onClose, onLike, onComment, onShare }) => {
                 </div>
 
                 {/* Likes Count */}
-                <div className="mb-4">
-                  <p className="font-semibold text-gray-800">
-                    {Array.isArray(post.likes) ? post.likes.length : post.likes || 0} likes
-                  </p>
-                </div>
+                {isAuthenticated && (
+                  <div className="mb-4">
+                    <p className="font-semibold text-gray-800">
+                      {Array.isArray(post.likes) ? post.likes.length : post.likes || 0} likes
+                    </p>
+                  </div>
+                )}
 
                 {/* Post Title & Description */}
                 <div className="mb-4">

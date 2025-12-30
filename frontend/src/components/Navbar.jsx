@@ -22,13 +22,20 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = async () => {
+    console.log('🔄 Logout initiated...');
     try {
+      console.log('📡 Calling logout API...');
       await authApi.logout();
+      console.log('✅ Logout API successful');
     } catch (err) {
-      console.error('Logout error:', err);
+      console.error('❌ Logout API error:', err);
+      // Continue with logout even if API call fails
     } finally {
+      console.log('🧹 Clearing auth state...');
       logout();
+      console.log('🔄 Navigating to login...');
       navigate('/login');
+      console.log('✅ Logout completed');
     }
   };
 

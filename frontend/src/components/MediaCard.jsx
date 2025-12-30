@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Heart, Play, MessageSquare, Share2 } from 'lucide-react';
+import { Heart, Play, MessageSquare, Share2, X } from 'lucide-react';
 
 const MediaCard = ({ 
   media, 
@@ -7,11 +7,21 @@ const MediaCard = ({
   onUnlike, 
   onClick,
   showLikeButton = true,
+  showRemoveButton = false,
   className = ""
 }) => {
   const handleLikeClick = (e) => {
     e.stopPropagation();
     if (onLike) {
+      onLike(media._id);
+    }
+  };
+
+  const handleRemoveClick = (e) => {
+    e.stopPropagation();
+    if (onUnlike) {
+      onUnlike(media._id);
+    } else if (onLike) {
       onLike(media._id);
     }
   };
@@ -45,21 +55,36 @@ const MediaCard = ({
           </div>
         )}
         
-        {/* Like Button */}
-        {showLikeButton && (
-          <div className="absolute top-3 right-3">
-            <motion.button 
-              onClick={handleLikeClick}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className={`p-2 rounded-full transition-colors ${
-                media.hasLiked 
-                  ? 'bg-red-500 hover:bg-red-600 text-white' 
-                  : 'bg-white hover:bg-gray-100 text-gray-600 hover:text-red-500'
-              }`}
-            >
-              <Heart size={16} className={media.hasLiked ? 'fill-current' : ''} />
-            </motion.button>
+        {/* Like/Remove Button */}
+        {(showLikeButton || showRemoveButton) && (
+          <div className="absolute top-3 right-3 z-10">
+            {showRemoveButton ? (
+              <motion.button 
+                onClick={handleRemoveClick}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="p-3 rounded-full bg-red-500 hover:bg-red-600 text-white transition-colors shadow-lg cursor-pointer border-2 border-white"
+                title="Remove from liked content"
+                type="button"
+              >
+                <X size={18} strokeWidth={2} />
+              </motion.button>
+            ) : (
+              <motion.button 
+                onClick={handleLikeClick}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className={`p-2 rounded-full transition-colors shadow-lg cursor-pointer ${
+                  media.hasLiked 
+                    ? 'bg-red-500 hover:bg-red-600 text-white' 
+                    : 'bg-white hover:bg-gray-100 text-gray-600 hover:text-red-500'
+                }`}
+                title={media.hasLiked ? "Remove from liked content" : "Add to liked content"}
+                type="button"
+              >
+                <Heart size={16} className={media.hasLiked ? 'fill-current' : ''} />
+              </motion.button>
+            )}
           </div>
         )}
         

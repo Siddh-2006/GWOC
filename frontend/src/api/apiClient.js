@@ -27,8 +27,11 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     
-    // If error is 401 and not already retrying and not a refresh token request
-    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/refresh-token')) {
+    // If error is 401 and not already retrying and not a refresh token request or logout request
+    if (error.response?.status === 401 && 
+        !originalRequest._retry && 
+        !originalRequest.url?.includes('/refresh-token') &&
+        !originalRequest.url?.includes('/logout')) {
       originalRequest._retry = true;
       
       try {

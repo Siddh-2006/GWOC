@@ -201,13 +201,47 @@ export const mediaController = {
         });
       }
 
-      // Increment views
-      media.views += 1;
-      await media.save();
+      // Increment views only if it's a different user or no user tracking
+      const userId = req.user?.userId;
+      let shouldIncrementView = true;
+      
+      if (userId) {
+        // Initialize viewedBy array if it doesn't exist
+        if (!media.viewedBy) {
+          media.viewedBy = [];
+          // Mark as modified to ensure it gets saved
+          media.markModified('viewedBy');
+        }
+        
+        // Only increment if user hasn't viewed this media before
+        shouldIncrementView = !media.viewedBy.some(viewerId => viewerId.toString() === userId.toString());
+        
+        if (shouldIncrementView) {
+          media.views += 1;
+          media.viewedBy.push(userId);
+          media.markModified('viewedBy');
+          await media.save();
+          console.log(`📊 View tracked for user ${userId}. New views: ${media.views}`);
+        } else {
+          console.log(`👁️ User ${userId} already viewed this media. Views remain: ${media.views}`);
+        }
+      } else {
+        // For anonymous users, always increment (could be improved with IP tracking)
+        media.views += 1;
+        await media.save();
+        console.log(`📊 Anonymous view tracked. New views: ${media.views}`);
+      }
+
+      // Add hasLiked status if user is authenticated
+      const mediaObj = media.toObject();
+      if (userId) {
+        mediaObj.hasLiked = mediaObj.likes.some(likeId => likeId.toString() === userId.toString());
+      }
+      mediaObj.likesCount = mediaObj.likes.length;
 
       res.json({
         success: true,
-        data: media
+        data: mediaObj
       });
     } catch (error) {
       console.error('Get media error:', error);

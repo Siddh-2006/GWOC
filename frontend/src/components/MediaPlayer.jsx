@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Play, Pause, Volume2, VolumeX, Maximize, Download, Heart, MessageCircle, Share } from 'lucide-react';
+import { X, Play, Pause, Volume2, VolumeX, Maximize, Download, Heart, MessageCircle } from 'lucide-react';
+import useAuthStore from '../store/useAuthStore';
 
-const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment, onShare }) => {
+const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
+  const { isAuthenticated } = useAuthStore();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -424,35 +426,30 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment, onShare }) => 
 
                 {/* Actions */}
                 <div className="flex items-center gap-4 mb-6 pb-6 border-b">
-                  <motion.button
-                    onClick={() => onLike && onLike(media._id)}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className={`flex items-center gap-2 transition-colors ${
-                      media.hasLiked 
-                        ? 'text-red-500' 
-                        : 'text-gray-600 hover:text-red-500'
-                    }`}
-                  >
-                    <Heart 
-                      size={20} 
-                      className={media.hasLiked ? "fill-red-500 text-red-500" : "text-gray-600"} 
-                    />
-                    <span>{Array.isArray(media.likes) ? media.likes.length : media.likesCount || media.likes || 0}</span>
-                  </motion.button>
+                  {isAuthenticated && (
+                    <motion.button
+                      onClick={() => onLike && onLike(media._id)}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      className={`flex items-center gap-2 transition-colors ${
+                        media.hasLiked 
+                          ? 'text-red-500' 
+                          : 'text-gray-600 hover:text-red-500'
+                      }`}
+                    >
+                      <Heart 
+                        size={20} 
+                        className={media.hasLiked ? "fill-red-500 text-red-500" : "text-gray-600"} 
+                      />
+                      <span>{Array.isArray(media.likes) ? media.likes.length : media.likesCount || media.likes || 0}</span>
+                    </motion.button>
+                  )}
                   <button
                     onClick={() => setShowComments(!showComments)}
                     className="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-colors"
                   >
                     <MessageCircle size={20} />
                     <span>{media.comments?.length || 0}</span>
-                  </button>
-                  <button 
-                    onClick={() => onShare && onShare(media._id)}
-                    className="flex items-center gap-2 text-gray-600 hover:text-green-500 transition-colors"
-                  >
-                    <Share size={20} />
-                    <span>{media.shares || 0}</span>
                   </button>
                 </div>
 

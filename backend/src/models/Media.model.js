@@ -116,6 +116,11 @@ const mediaSchema = new mongoose.Schema({
     default: 0
   },
 
+  viewedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Auth'
+  }],
+
   likes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Auth'
