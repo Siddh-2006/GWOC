@@ -5,8 +5,6 @@ export const mediaController = {
   // Create new media
   createMedia: async (req, res) => {
     try {
-      console.log('📝 Create media request body:', JSON.stringify(req.body, null, 2));
-      
       const {
         title,
         description,
@@ -23,14 +21,6 @@ export const mediaController = {
         publishedAt
       } = req.body;
 
-      console.log('📝 Extracted fields:', {
-        title,
-        type,
-        fileUrl: fileUrl || 'EMPTY',
-        assets: assets || 'EMPTY',
-        assetsLength: assets ? assets.length : 0
-      });
-
       const media = new Media({
         title,
         description,
@@ -46,12 +36,6 @@ export const mediaController = {
         isPublished: isPublished || false,
         publishedAt: publishedAt || (isPublished ? new Date() : undefined),
         createdBy: req.user.userId
-      });
-
-      console.log('📝 Media object before save:', {
-        fileUrl: media.fileUrl || 'EMPTY',
-        assets: media.assets || 'EMPTY',
-        assetsLength: media.assets ? media.assets.length : 0
       });
 
       await media.save();
@@ -221,15 +205,11 @@ export const mediaController = {
           media.viewedBy.push(userId);
           media.markModified('viewedBy');
           await media.save();
-          console.log(`📊 View tracked for user ${userId}. New views: ${media.views}`);
-        } else {
-          console.log(`👁️ User ${userId} already viewed this media. Views remain: ${media.views}`);
         }
       } else {
         // For anonymous users, always increment (could be improved with IP tracking)
         media.views += 1;
         await media.save();
-        console.log(`📊 Anonymous view tracked. New views: ${media.views}`);
       }
 
       // Add hasLiked status if user is authenticated
@@ -338,7 +318,21 @@ export const mediaController = {
         });
       }
 
-      const media = await Media.findById(mediaId);
+      // Add retry logic for database operations
+      let retries = 3;
+      let media = null;
+      
+      while (retries > 0) {
+        try {
+          media = await Media.findById(mediaId);
+          break;
+        } catch (dbError) {
+          retries--;
+          if (retries === 0) throw dbError;
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+        }
+      }
+
       if (!media) {
         return res.status(404).json({
           success: false,
@@ -356,7 +350,18 @@ export const mediaController = {
         media.likes.push(userId);
       }
 
-      await media.save();
+      // Retry save operation
+      retries = 3;
+      while (retries > 0) {
+        try {
+          await media.save();
+          break;
+        } catch (dbError) {
+          retries--;
+          if (retries === 0) throw dbError;
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
 
       res.json({
         success: true,
@@ -368,7 +373,17 @@ export const mediaController = {
         }
       });
     } catch (error) {
-      console.error('Like media error:', error);
+      console.error('❌ Like media error:', error.message);
+      
+      // Check if it's a connection error
+      if (error.name === 'MongoServerSelectionError' || error.name === 'MongoNetworkError') {
+        return res.status(503).json({
+          success: false,
+          message: 'Database connection issue. Please try again in a moment.',
+          error: 'Service temporarily unavailable'
+        });
+      }
+      
       res.status(500).json({
         success: false,
         message: 'Failed to like media',

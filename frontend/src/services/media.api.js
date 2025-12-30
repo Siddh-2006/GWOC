@@ -28,8 +28,30 @@ export const mediaApi = {
   },
 
   likeMedia: async (mediaId) => {
-    const response = await api.post(`/media/${mediaId}/like`);
-    return response.data;
+    let retries = 3;
+    let lastError;
+    
+    while (retries > 0) {
+      try {
+        const response = await api.post(`/media/${mediaId}/like`);
+        return response.data;
+      } catch (error) {
+        lastError = error;
+        
+        // Don't retry for client errors (4xx)
+        if (error.response?.status >= 400 && error.response?.status < 500) {
+          throw error;
+        }
+        
+        retries--;
+        if (retries > 0) {
+          // Wait before retry (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, (4 - retries) * 1000));
+        }
+      }
+    }
+    
+    throw lastError;
   },
 
   addComment: async (mediaId, content) => {

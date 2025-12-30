@@ -1,19 +1,42 @@
 import jwt from 'jsonwebtoken';
 import Auth from '../models/Auth.model.js';
 
+// Track recent requests to avoid spam logging
+const recentRequests = new Map();
+const LOG_THROTTLE_MS = 5000; // Only log same endpoint every 5 seconds
+
+const shouldLog = (key, url) => {
+  // Skip logging for like/dislike endpoints (both media and psycho-education)
+  if (url.includes('/like') || url.includes('/dislike')) {
+    return false;
+  }
+  
+  const now = Date.now();
+  const lastLogged = recentRequests.get(key);
+  
+  if (!lastLogged || now - lastLogged > LOG_THROTTLE_MS) {
+    recentRequests.set(key, now);
+    return true;
+  }
+  return false;
+};
+
 // Middleware to verify JWT access token
 export const authenticateToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    
+    // Create a key for throttling logs
+    const logKey = `${req.method}:${req.url}`;
+    const shouldLogThis = shouldLog(logKey, req.url);
 
-    console.log('🔍 Auth middleware - URL:', req.url);
-    console.log('🔍 Auth middleware - Method:', req.method);
-    console.log('🔍 Auth middleware - Auth header:', authHeader ? 'Present' : 'Missing');
-    console.log('🔍 Auth middleware - Token:', token ? 'Present' : 'Missing');
+    if (shouldLogThis) {
+      console.log(`🔐 Auth: ${req.method} ${req.url} - ${token ? 'Token present' : 'No token'}`);
+    }
 
     if (!token) {
-      console.log('❌ Auth middleware - No token provided');
+      if (shouldLogThis) console.log('❌ Auth: No token provided');
       return res.status(401).json({
         success: false,
         message: 'Access token required'
@@ -26,19 +49,19 @@ export const authenticateToken = async (req, res, next) => {
       process.env.JWT_ACCESS_SECRET || 'access_secret_key'
     );
 
-    console.log('🔍 Auth middleware - Token decoded successfully, userId:', decoded.userId);
-
     // Check if user exists and is active
     const user = await Auth.findById(decoded.userId);
     if (!user || !user.isActive) {
-      console.log('❌ Auth middleware - User not found or inactive');
+      if (shouldLogThis) console.log('❌ Auth: Invalid user or inactive account');
       return res.status(401).json({
         success: false,
         message: 'Invalid token or user not found'
       });
     }
 
-    console.log('✅ Auth middleware - User authenticated:', user.email);
+    if (shouldLogThis) {
+      console.log(`✅ Auth: ${user.email} authenticated`);
+    }
 
     // Add user info to request
     req.user = {
@@ -49,10 +72,12 @@ export const authenticateToken = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.log('❌ Auth middleware error:', error.message);
+    // Skip logging auth errors for like/dislike endpoints to reduce noise
+    if (!req.url.includes('/like') && !req.url.includes('/dislike')) {
+      console.log('❌ Auth error:', error.message);
+    }
     
     if (error.name === 'TokenExpiredError') {
-      console.log('❌ Token expired');
       return res.status(401).json({
         success: false,
         message: 'Token expired'
@@ -60,14 +85,20 @@ export const authenticateToken = async (req, res, next) => {
     }
     
     if (error.name === 'JsonWebTokenError') {
-      console.log('❌ Invalid token format');
       return res.status(401).json({
         success: false,
         message: 'Invalid token'
       });
     }
 
-    console.error('Auth middleware error:', error);
+    // Only log full error details for unexpected errors (and not for like endpoints)
+    if (error.name !== 'MongoServerSelectionError' && 
+        error.name !== 'MongoNetworkError' && 
+        !req.url.includes('/like') && 
+        !req.url.includes('/dislike')) {
+      console.error('Auth middleware unexpected error:', error);
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Internal server error'

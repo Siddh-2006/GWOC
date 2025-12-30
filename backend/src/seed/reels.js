@@ -9,7 +9,7 @@ const seedMedia = async () => {
   try {
     await connectDB();
 
-    console.log('🌱 Seeding media (non-destructive)...');
+    // Seeding media (non-destructive)
 
     const ADMIN_USER_ID = '69501793c7e7686984f43d27';
 

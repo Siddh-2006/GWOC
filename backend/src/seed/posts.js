@@ -211,7 +211,6 @@ const posts = [
 const seedMultiplePosts = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ MongoDB connected');
 
     // OPTIONAL: Uncomment if you want to remove old seeded posts
     // await Media.deleteMany({ type: 'post' });
@@ -230,8 +229,6 @@ const seedMultiplePosts = async () => {
 
     await Media.insertMany(formattedPosts);
 
-    console.log(`🎉 Successfully seeded ${formattedPosts.length} posts`);
-    console.log('📸 Posts now have proper thumbnailUrl fields for display');
     process.exit(0);
   } catch (error) {
     console.error('❌ Seed error:', error);

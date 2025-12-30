@@ -11,30 +11,23 @@ export const useLikedMedia = () => {
 
   const fetchLikedMedia = async (params = {}) => {
     if (!isAuthenticated) {
-      console.log('useLikedMedia: Not authenticated, skipping fetch');
       return;
     }
     
-    console.log('useLikedMedia: Fetching liked media...');
-    console.log('useLikedMedia: Access token:', localStorage.getItem('accessToken') ? 'Present' : 'Missing');
     setLoading(true);
     setError(null);
     
     try {
       const response = await mediaApi.getUserLikedMedia(params);
-      console.log('useLikedMedia: API response:', response);
       if (response.success) {
         setLikedMedia(response.data);
         setPagination(response.pagination);
-        console.log('useLikedMedia: Set liked media:', response.data);
       } else {
         setError(response.message || 'Failed to fetch liked media');
-        console.log('useLikedMedia: API error:', response.message);
       }
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to fetch liked media');
-      console.error('useLikedMedia: Fetch error:', err);
-      console.error('useLikedMedia: Error response:', err.response?.data);
+      console.error('❌ Fetch liked media error:', err.message);
     } finally {
       setLoading(false);
     }
@@ -43,16 +36,29 @@ export const useLikedMedia = () => {
   const toggleLike = async (mediaId) => {
     try {
       const response = await mediaApi.likeMedia(mediaId);
+      
       if (response.success) {
         // If media was unliked, remove it from the liked list
         if (!response.data.hasLiked) {
           setLikedMedia(prev => prev.filter(media => media._id !== mediaId));
         }
         return response.data;
+      } else {
+        throw new Error(response.message || 'Failed to toggle like');
       }
     } catch (err) {
-      console.error('Toggle like error:', err);
-      throw err;
+      console.error('❌ Toggle like error:', err.message);
+      
+      // Handle specific error types
+      if (err.response?.status === 503) {
+        throw new Error('Database connection issue. Please try again in a moment.');
+      } else if (err.response?.status === 401) {
+        throw new Error('Please log in to like content.');
+      } else if (err.response?.status === 404) {
+        throw new Error('Content not found.');
+      } else {
+        throw new Error(err.response?.data?.message || err.message || 'Failed to update like status');
+      }
     }
   };
 
@@ -61,7 +67,6 @@ export const useLikedMedia = () => {
   };
 
   useEffect(() => {
-    console.log('useLikedMedia: useEffect triggered, isAuthenticated =', isAuthenticated);
     if (isAuthenticated) {
       fetchLikedMedia();
     } else {

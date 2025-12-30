@@ -94,12 +94,6 @@ const Profile = () => {
   // Fetch user's liked media
   useEffect(() => {
     // The useLikedMedia hook handles fetching automatically
-    console.log('Profile: isAuthenticated =', isAuthenticated);
-    console.log('Profile: user =', user);
-    console.log('Profile: likedMedia =', likedMedia);
-    console.log('Profile: likedLoading =', likedLoading);
-    console.log('Profile: likedError =', likedError);
-    console.log('Profile: accessToken =', localStorage.getItem('accessToken') ? 'Present' : 'Missing');
   }, [isAuthenticated, user, likedMedia, likedLoading, likedError]);
 
   // Handle unliking media from profile

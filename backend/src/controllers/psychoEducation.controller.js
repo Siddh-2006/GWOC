@@ -402,8 +402,6 @@ export const psychoEducationController = {
 
       // Save to database immediately
       await content.save();
-      
-      console.log(`✅ ${hasLiked ? 'Unliked' : 'Liked'} content "${content.title}" by user ${userId}`);
 
       res.json({
         success: true,
