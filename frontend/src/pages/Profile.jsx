@@ -1,20 +1,20 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  User, Calendar, Lock, BookOpen, Heart, 
-  MapPin, Clock, Edit2, Play, Plus, 
-  ChevronRight, Shield, TrendingUp, Brain, 
-  Lightbulb, Star, Activity, MessageSquare, 
-  Download, Settings, Bell, Share2, BarChart3,
-  Sun, Headphones, Camera, FileText, Award,
-  CheckCircle, Target
+  User, Calendar, Heart, 
+  Clock, Edit2, Play, Plus, 
+  Shield, TrendingUp, 
+  Star, Award, Settings,
+  CheckCircle, Target, CalendarDays
 } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 import { useLikedMedia } from '../hooks/useLikedMedia';
+import { useSessions } from '../hooks/useSessions';
 import { useToast } from '../hooks/useToast';
 import MediaCard from '../components/MediaCard';
-import LikedMediaTest from '../components/LikedMediaTest';
-import LikedMediaDebug from '../components/LikedMediaDebug';
+import SessionCard from '../components/SessionCard';
+import SessionNotesModal from '../components/SessionNotesModal';
+import SessionNotesViewer from '../components/SessionNotesViewer';
 import ToastContainer from '../components/ToastContainer';
 
 const ProfileCard = ({ children, className = "" }) => (
@@ -42,33 +42,15 @@ const SectionHeading = ({ icon: Icon, title, subtitle }) => (
   </div>
 );
 
-const StatCard = ({ icon: Icon, title, value, trend, color = "purple" }) => (
-  <motion.div 
-    whileHover={{ scale: 1.02 }}
-    className="bg-white rounded-xl shadow-md p-4"
-  >
-    <div className="flex items-center justify-between mb-4">
-      <div className={`p-2 bg-${color}-50 text-${color}-600 rounded-lg`}>
-        <Icon size={24} />
-      </div>
-      {trend && (
-        <div className={`text-xs font-semibold px-2 py-1 rounded-full bg-green-100 text-green-700`}>
-          <TrendingUp size={12} className="inline mr-1" />
-          {trend}
-        </div>
-      )}
-    </div>
-    <div className="text-2xl font-bold text-gray-800 mb-1">{value}</div>
-    <div className="text-sm text-gray-500">{title}</div>
-  </motion.div>
-);
-
 const Profile = () => {
   const { user, isAuthenticated, isInitialized } = useAuthStore();
-  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const { likedMedia, loading: likedLoading, error: likedError, toggleLike } = useLikedMedia();
+  const { categorizedSessions, loading: sessionsLoading, error: sessionsError, fetchSessions } = useSessions();
   const { toasts, success, error: showError, removeToast } = useToast();
+  const [selectedSession, setSelectedSession] = useState(null);
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [showNotesViewer, setShowNotesViewer] = useState(false);
 
   // Mock data for demonstration
   const [achievements] = useState([
@@ -112,9 +94,47 @@ const Profile = () => {
     }
   };
 
+  // Handle session actions
+  const handleViewSessionDetails = (session) => {
+    setSelectedSession(session);
+    // Could open a detailed view modal here
+  };
+
+  const handleAddNotes = (session) => {
+    setSelectedSession(session);
+    setShowNotesModal(true);
+  };
+
+  const handleViewNotes = (session) => {
+    setSelectedSession(session);
+    setShowNotesViewer(true);
+  };
+
+  const handleNotesModalClose = () => {
+    setShowNotesModal(false);
+    setSelectedSession(null);
+  };
+
+  const handleNotesViewerClose = () => {
+    setShowNotesViewer(false);
+    setSelectedSession(null);
+  };
+
+  const handleEditFromViewer = (session) => {
+    setShowNotesViewer(false);
+    setSelectedSession(session);
+    setShowNotesModal(true);
+  };
+
+  const handleNotesSaved = () => {
+    success('Session notes saved successfully!');
+    fetchSessions(); // Refresh sessions data
+  };
+
   // Tab configuration
   const tabs = [
     { id: 'overview', label: 'Overview', icon: User },
+    { id: 'sessions', label: 'My Sessions', icon: CalendarDays },
     { id: 'wellness', label: 'Wellness', icon: Heart },
     { id: 'liked', label: 'Liked Content', icon: Heart },
     { id: 'achievements', label: 'Achievements', icon: Award },
@@ -122,7 +142,7 @@ const Profile = () => {
   ];
 
   // Loading State
-  if (!isInitialized || loading) {
+  if (!isInitialized) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center">
         <div className="text-center">
@@ -261,6 +281,247 @@ const Profile = () => {
             </ProfileCard>
           )}
 
+          {/* Sessions Tab */}
+          {activeTab === 'sessions' && (
+            <div className="space-y-8">
+              <ProfileCard>
+                <SectionHeading 
+                  icon={CalendarDays} 
+                  title="My Sessions" 
+                  subtitle="Manage your therapy sessions and notes"
+                />
+                
+                {/* Sessions Overview Stats */}
+                {(categorizedSessions.upcoming.length > 0 || categorizedSessions.ongoing.length > 0 || categorizedSessions.past.length > 0) && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600 mb-1">
+                        {categorizedSessions.ongoing.length}
+                      </div>
+                      <div className="text-sm text-gray-600">Ongoing</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600 mb-1">
+                        {categorizedSessions.upcoming.length}
+                      </div>
+                      <div className="text-sm text-gray-600">Upcoming</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-gray-600 mb-1">
+                        {categorizedSessions.past.length}
+                      </div>
+                      <div className="text-sm text-gray-600">Completed</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-600 mb-1">
+                        {categorizedSessions.past.filter(s => s.hasNotes).length}
+                      </div>
+                      <div className="text-sm text-gray-600">With Notes</div>
+                    </div>
+                  </div>
+                )}
+                
+                {sessionsLoading ? (
+                  <div className="text-center py-12">
+                    <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-500">Loading your sessions...</p>
+                  </div>
+                ) : sessionsError ? (
+                  <div className="text-center py-12">
+                    <div className="text-red-500 mb-4">⚠️</div>
+                    <p className="text-red-600 mb-2">Failed to load sessions</p>
+                    <p className="text-sm text-gray-500">{sessionsError}</p>
+                    <button 
+                      onClick={() => fetchSessions()} 
+                      className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : 
+                  /* Check if we have any sessions at all */
+                  categorizedSessions.upcoming.length === 0 && 
+                   categorizedSessions.ongoing.length === 0 && 
+                   categorizedSessions.past.length === 0 ? (
+                    /* Complete Empty State */
+                    <div className="text-center py-16">
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.5 }}
+                        className="max-w-md mx-auto"
+                      >
+                        <div className="mb-6">
+                          <CalendarDays size={80} className="mx-auto text-gray-300 mb-4" />
+                        </div>
+                        
+                        <h3 className="text-xl font-semibold text-gray-700 mb-3">
+                          No sessions yet
+                        </h3>
+                        
+                        <p className="text-gray-500 mb-6 leading-relaxed">
+                          Book your first therapy session to start your mental health journey. Our qualified therapists are here to support you.
+                        </p>
+                        
+                        <motion.a
+                          href="/booking"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl font-medium hover:bg-purple-700 transition-colors shadow-lg"
+                        >
+                          <Plus size={18} />
+                          Book a Session
+                        </motion.a>
+                      </motion.div>
+                    </div>
+                  ) : (
+                    /* Sessions Layout - Compact for fewer sessions */
+                    <div className="space-y-8">
+                      {/* Priority Sessions (Ongoing + Upcoming) */}
+                      {(categorizedSessions.ongoing.length > 0 || categorizedSessions.upcoming.length > 0) && (
+                        <div className="space-y-6">
+                          {/* Ongoing Sessions */}
+                          {categorizedSessions.ongoing.length > 0 && (
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <Play className="text-green-600" size={20} />
+                                Ongoing Sessions
+                                <span className="ml-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                                  {categorizedSessions.ongoing.length}
+                                </span>
+                              </h3>
+                              <div className={`grid gap-4 ${
+                                categorizedSessions.ongoing.length === 1 
+                                  ? 'grid-cols-1 max-w-md' 
+                                  : categorizedSessions.ongoing.length === 2 
+                                  ? 'grid-cols-1 md:grid-cols-2 max-w-4xl' 
+                                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                              }`}>
+                                {categorizedSessions.ongoing.map((session) => (
+                                  <SessionCard
+                                    key={session._id}
+                                    session={session}
+                                    hasNotes={session.hasNotes}
+                                    onViewDetails={handleViewSessionDetails}
+                                    onAddNotes={handleAddNotes}
+                                    onViewNotes={handleViewNotes}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Upcoming Sessions */}
+                          {categorizedSessions.upcoming.length > 0 && (
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <Calendar className="text-blue-600" size={20} />
+                                Upcoming Sessions
+                                <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                                  {categorizedSessions.upcoming.length}
+                                </span>
+                              </h3>
+                              <div className={`grid gap-4 ${
+                                categorizedSessions.upcoming.length === 1 
+                                  ? 'grid-cols-1 max-w-md' 
+                                  : categorizedSessions.upcoming.length === 2 
+                                  ? 'grid-cols-1 md:grid-cols-2 max-w-4xl' 
+                                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                              }`}>
+                                {categorizedSessions.upcoming.map((session) => (
+                                  <SessionCard
+                                    key={session._id}
+                                    session={session}
+                                    hasNotes={session.hasNotes}
+                                    onViewDetails={handleViewSessionDetails}
+                                    onAddNotes={handleAddNotes}
+                                    onViewNotes={handleViewNotes}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Past Sessions */}
+                      {categorizedSessions.past.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            <CheckCircle className="text-gray-600" size={20} />
+                            Past Sessions
+                            <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                              {categorizedSessions.past.length}
+                            </span>
+                          </h3>
+                          <div className={`grid gap-4 ${
+                            categorizedSessions.past.length === 1 
+                              ? 'grid-cols-1 max-w-md' 
+                              : categorizedSessions.past.length === 2 
+                              ? 'grid-cols-1 md:grid-cols-2 max-w-4xl' 
+                              : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                          }`}>
+                            {categorizedSessions.past.slice(0, 6).map((session) => (
+                              <SessionCard
+                                key={session._id}
+                                session={session}
+                                hasNotes={session.hasNotes}
+                                onViewDetails={handleViewSessionDetails}
+                                onAddNotes={handleAddNotes}
+                                onViewNotes={handleViewNotes}
+                              />
+                            ))}
+                          </div>
+                          {categorizedSessions.past.length > 6 && (
+                            <div className="text-center mt-6">
+                              <button className="px-6 py-2 text-purple-600 hover:text-purple-700 font-medium transition-colors">
+                                View All Past Sessions ({categorizedSessions.past.length - 6} more)
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Quick Actions for users with few sessions */}
+                      {(categorizedSessions.upcoming.length + categorizedSessions.ongoing.length + categorizedSessions.past.length) < 3 && (
+                        <div className="mt-8 p-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl border border-purple-100">
+                          <div className="text-center">
+                            <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                              Continue Your Journey
+                            </h4>
+                            <p className="text-gray-600 mb-4">
+                              Regular sessions help build momentum in your mental health journey
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                              <motion.a
+                                href="/booking"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl font-medium hover:bg-purple-700 transition-colors shadow-md"
+                              >
+                                <Plus size={18} />
+                                Book Another Session
+                              </motion.a>
+                              <motion.a
+                                href="/resources"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-purple-600 border border-purple-200 rounded-xl font-medium hover:bg-purple-50 transition-colors"
+                              >
+                                <Heart size={18} />
+                                Explore Resources
+                              </motion.a>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                }
+              </ProfileCard>
+            </div>
+          )}
+
           {/* Wellness Tab */}
           {activeTab === 'wellness' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -360,38 +621,35 @@ const Profile = () => {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <Heart size={64} className="mx-auto text-gray-300 mb-4" />
-                  <p className="text-gray-500 mb-4">No liked content yet</p>
-                  <p className="text-sm text-gray-400">Start exploring and like posts that resonate with you!</p>
-                  
-                  {/* Debug info */}
-                  <div className="mt-8 p-4 bg-gray-100 rounded-lg text-left text-sm">
-                    <p><strong>Debug Info:</strong></p>
-                    <p>Authenticated: {isAuthenticated ? 'Yes' : 'No'}</p>
-                    <p>Loading: {likedLoading ? 'Yes' : 'No'}</p>
-                    <p>Error: {likedError || 'None'}</p>
-                    <p>Media Count: {likedMedia.length}</p>
-                    <button 
-                      onClick={() => {
-                        console.log('Manual refresh triggered');
-                        window.location.reload();
-                      }}
-                      className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-xs"
+                <div className="text-center py-16">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="max-w-md mx-auto"
+                  >
+                    <div className="mb-6">
+                      <Heart size={80} className="mx-auto text-gray-300 mb-4" />
+                    </div>
+                    
+                    <h3 className="text-xl font-semibold text-gray-700 mb-3">
+                      No liked content yet
+                    </h3>
+                    
+                    <p className="text-gray-500 mb-6 leading-relaxed">
+                      Discover and save content that resonates with you. When you like posts, videos, or articles, they'll appear here for easy access.
+                    </p>
+                    
+                    <motion.a
+                      href="/resources"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl font-medium hover:bg-purple-700 transition-colors shadow-lg"
                     >
-                      Refresh Page
-                    </button>
-                  </div>
-                  
-                  {/* API Test Component */}
-                  <div className="mt-4">
-                    <LikedMediaTest />
-                  </div>
-                  
-                  {/* Debug Component */}
-                  <div className="mt-4">
-                    <LikedMediaDebug />
-                  </div>
+                      <Heart size={18} />
+                      Explore Resources
+                    </motion.a>
+                  </motion.div>
                 </div>
               )}
             </ProfileCard>
@@ -465,6 +723,22 @@ const Profile = () => {
       
       {/* Toast Container */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
+
+      {/* Session Notes Modal */}
+      <SessionNotesModal
+        session={selectedSession}
+        isOpen={showNotesModal}
+        onClose={handleNotesModalClose}
+        onSave={handleNotesSaved}
+      />
+
+      {/* Session Notes Viewer */}
+      <SessionNotesViewer
+        session={selectedSession}
+        isOpen={showNotesViewer}
+        onClose={handleNotesViewerClose}
+        onEdit={handleEditFromViewer}
+      />
     </div>
   );
 };

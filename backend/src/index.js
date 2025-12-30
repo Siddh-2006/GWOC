@@ -19,6 +19,7 @@ import contactRoutes from './api/contact.routes.js';
 import mediaRoutes from './api/media.routes.js';
 import psychoEducationRoutes from './api/psychoEducation.routes.js';
 import reflectionRoutes from './api/reflection.routes.js';
+import sessionsRoutes from './api/sessions.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -50,6 +51,7 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/psycho-education', psychoEducationRoutes);
 app.use('/api/reflection', reflectionRoutes);
+app.use('/api/sessions', sessionsRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
