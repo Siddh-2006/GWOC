@@ -4,6 +4,8 @@ import { BookOpen, Heart, Search, Filter, MessageCircle, Lightbulb, Quote, FileT
 import { Link } from 'react-router-dom';
 import { psychoEducationApi } from '../services/psychoEducation.api';
 import useAuthStore from '../store/useAuthStore';
+import { useToast } from '../hooks/useToast';
+import ToastContainer from '../components/ToastContainer';
 import AddPsychoEducationModal from '../components/admin/AddPsychoEducationModal';
 
 // Text formatting function to handle markdown-like syntax
@@ -126,7 +128,7 @@ const formatInlineText = (text) => {
 };
 
 // Content Detail Modal Component
-const ContentDetailModal = ({ content, isOpen, onClose, onLike, user, setError }) => {
+const ContentDetailModal = ({ content, isOpen, onClose, onLike, user, showError }) => {
   if (!isOpen || !content) return null;
 
   const renderContentBody = () => {
@@ -305,6 +307,7 @@ const ContentDetailModal = ({ content, isOpen, onClose, onLike, user, setError }
 
 const PsychoEducation = () => {
   const { user } = useAuthStore();
+  const { toasts, success, error: showError, removeToast } = useToast();
   const isAdmin = user?.role === 'admin';
 
   const [content, setContent] = useState([]);
@@ -358,7 +361,7 @@ const PsychoEducation = () => {
         category: selectedCategory !== 'all' ? selectedCategory : undefined,
         sortBy: sortBy,
         page: resetPage ? 1 : page,
-        limit: 12
+        limit: 9
       };
 
       const response = await psychoEducationApi.getPublishedContent(params);
@@ -414,7 +417,7 @@ const PsychoEducation = () => {
   const handleLike = async (contentId) => {
     try {
       if (!user) {
-        setError('Please log in to like content');
+        showError('Please log in to like content');
         return;
       }
 
@@ -454,20 +457,63 @@ const PsychoEducation = () => {
       // Force re-render
       setUpdateTrigger(prev => prev + 1);
 
+      // Show success toast
+      if (newHasLiked) {
+        success('Added to your liked content!');
+      } else {
+        success('Removed from your liked content');
+      }
+
     } catch (err) {
       console.error('❌ Like content error:', err);
       
       if (err.response?.status === 401) {
-        setError('Your session has expired. Please log in again.');
+        showError('Your session has expired. Please log in again.');
       } else {
-        setError('Failed to like content. Please try again.');
+        showError('Failed to like content. Please try again.');
       }
     }
   };
 
   const loadMore = () => {
-    setPage(prev => prev + 1);
-    fetchContent();
+    const nextPage = page + 1;
+    setPage(nextPage);
+    
+    // Call fetchContent with the next page
+    const fetchNextPage = async () => {
+      try {
+        setLoading(true);
+        
+        const params = {
+          search: searchTerm,
+          contentType: selectedType !== 'all' ? selectedType : undefined,
+          category: selectedCategory !== 'all' ? selectedCategory : undefined,
+          sortBy: sortBy,
+          page: nextPage,
+          limit: 9
+        };
+
+        const response = await psychoEducationApi.getPublishedContent(params);
+
+        // Ensure proper data structure for each item
+        const processedContent = (response.data || []).map(item => ({
+          ...item,
+          hasLiked: Boolean(item.hasLiked),
+          likesCount: Number(item.likesCount || 0)
+        }));
+
+        // Append new content to existing content
+        setContent(prev => [...prev, ...processedContent]);
+        setHasMore(response.pagination && response.pagination.page < response.pagination.pages);
+      } catch (err) {
+        console.error('❌ Load more content error:', err);
+        showError('Failed to load more content. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchNextPage();
   };
 
   const handleContentAdded = (newContent) => {
@@ -587,7 +633,6 @@ const PsychoEducation = () => {
           transition={{ delay: 0.1 }}
           className="bg-white rounded-[2.5rem] p-8 shadow-sm mb-12 space-y-6 border border-purple-50"
         >
-          {/* Error Display for User Actions */}
           {/* Error Display for User Actions */}
           {error && error.includes('log in') && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 flex items-center justify-between">
@@ -776,8 +821,11 @@ const PsychoEducation = () => {
           onClose={handleCloseDetail}
           onLike={handleLike}
           user={user}
-          setError={setError}
+          showError={showError}
         />
+
+        {/* Toast Container */}
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
 
       </div>
     </div>
