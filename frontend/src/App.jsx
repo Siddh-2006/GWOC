@@ -112,16 +112,16 @@ function App() {
             path="/profile"
             element={
               <ProtectedRoute>
-                <ProfileSimple />
+                <Profile />
               </ProtectedRoute>
             }
           />
 
           <Route
-            path="/profile-full"
+            path="/profile-simple"
             element={
               <ProtectedRoute>
-                <Profile />
+                <ProfileSimple />
               </ProtectedRoute>
             }
           />

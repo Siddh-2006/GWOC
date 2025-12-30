@@ -143,9 +143,13 @@ const PostViewer = ({ post, isOpen, onClose, onLike, onComment, onShare }) => {
                       onClick={() => onLike && onLike(post._id)}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      className="text-gray-700 hover:text-red-500 transition-colors"
+                      className={`transition-colors ${
+                        post.hasLiked 
+                          ? 'text-red-500' 
+                          : 'text-gray-700 hover:text-red-500'
+                      }`}
                     >
-                      <Heart size={28} className={Array.isArray(post.likes) && post.likes.length > 0 ? "fill-red-500 text-red-500" : ""} />
+                      <Heart size={28} className={post.hasLiked ? "fill-red-500 text-red-500" : "text-gray-700"} />
                     </motion.button>
 
                     <motion.button

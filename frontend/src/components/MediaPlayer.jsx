@@ -424,13 +424,22 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment, onShare }) => 
 
                 {/* Actions */}
                 <div className="flex items-center gap-4 mb-6 pb-6 border-b">
-                  <button
+                  <motion.button
                     onClick={() => onLike && onLike(media._id)}
-                    className="flex items-center gap-2 text-gray-600 hover:text-red-500 transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className={`flex items-center gap-2 transition-colors ${
+                      media.hasLiked 
+                        ? 'text-red-500' 
+                        : 'text-gray-600 hover:text-red-500'
+                    }`}
                   >
-                    <Heart size={20} />
-                    <span>{Array.isArray(media.likes) ? media.likes.length : media.likes || 0}</span>
-                  </button>
+                    <Heart 
+                      size={20} 
+                      className={media.hasLiked ? "fill-red-500 text-red-500" : "text-gray-600"} 
+                    />
+                    <span>{Array.isArray(media.likes) ? media.likes.length : media.likesCount || media.likes || 0}</span>
+                  </motion.button>
                   <button
                     onClick={() => setShowComments(!showComments)}
                     className="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-colors"

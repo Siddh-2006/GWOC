@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const api = axios.create({
-  baseURL: API_BASE_URL+"/api",
+  baseURL: `${API_BASE_URL}/api`,
 });
 
 // Add auth token to requests
@@ -39,6 +39,12 @@ export const mediaApi = {
 
   shareMedia: async (mediaId) => {
     const response = await api.post(`/media/${mediaId}/share`);
+    return response.data;
+  },
+
+  // Get user's liked media
+  getUserLikedMedia: async (params = {}) => {
+    const response = await api.get('/media/user/liked', { params });
     return response.data;
   },
 

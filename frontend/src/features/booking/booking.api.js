@@ -5,9 +5,9 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 // Create axios instance with auth token
 const createAuthAxios = () => {
-  const token = localStorage.getItem('accessToken'); // Changed from 'token' to 'accessToken'
+  const token = localStorage.getItem('accessToken');
   return axios.create({
-    baseURL: API_BASE,
+    baseURL: `${API_BASE}/api`,
     headers: {
       'Authorization': token ? `Bearer ${token}` : '',
       'Content-Type': 'application/json'
@@ -32,7 +32,7 @@ export const bookingApi = {
   createBooking: async (bookingData) => {
     try {
       const api = createAuthAxios();
-      const response = await api.post('/api/booking', bookingData);
+      const response = await api.post('/booking', bookingData);
       return response.data.data;
     } catch (error) {
       console.error('Create booking error:', error);
@@ -50,7 +50,7 @@ export const bookingApi = {
   getUserBookings: async (status = null) => {
     try {
       const api = createAuthAxios();
-      const url = status ? `/api/booking/user?status=${status}` : '/api/booking/user';
+      const url = status ? `/booking/user?status=${status}` : '/booking/user';
       const response = await api.get(url);
       return response.data.data || [];
     } catch (error) {
@@ -63,7 +63,7 @@ export const bookingApi = {
   cancelBooking: async (bookingId) => {
     try {
       const api = createAuthAxios();
-      const response = await api.delete(`/api/booking/${bookingId}`);
+      const response = await api.delete(`/booking/${bookingId}`);
       return response.data.data;
     } catch (error) {
       console.error('Cancel booking error:', error);
@@ -84,7 +84,7 @@ export const bookingApi = {
         if (filters.page) params.append('page', filters.page);
         if (filters.limit) params.append('limit', filters.limit);
         
-        const response = await api.get(`/api/booking/admin/all?${params.toString()}`);
+        const response = await api.get(`/booking/admin/all?${params.toString()}`);
         return response.data;
       } catch (error) {
         console.error('Get all bookings error:', error);
@@ -96,7 +96,7 @@ export const bookingApi = {
     confirmBooking: async (bookingId, confirmationData) => {
       try {
         const api = createAuthAxios();
-        const response = await api.put(`/api/booking/admin/confirm/${bookingId}`, confirmationData);
+        const response = await api.put(`/booking/admin/confirm/${bookingId}`, confirmationData);
         return response.data.data;
       } catch (error) {
         console.error('Confirm booking error:', error);

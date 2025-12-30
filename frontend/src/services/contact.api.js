@@ -1,9 +1,9 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 class ContactAPI {
   async submitContactForm(formData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/contact/submit`, {
+      const response = await fetch(`${API_BASE_URL}/api/contact/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -38,7 +38,7 @@ class ContactAPI {
       if (params.status) queryParams.append('status', params.status);
       if (params.search) queryParams.append('search', params.search);
 
-      const response = await fetch(`${API_BASE_URL}/contact/messages?${queryParams}`, {
+      const response = await fetch(`${API_BASE_URL}/api/contact/messages?${queryParams}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ class ContactAPI {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${API_BASE_URL}/contact/messages/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/contact/messages/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ class ContactAPI {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${API_BASE_URL}/contact/messages/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/contact/messages/${id}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -121,7 +121,7 @@ class ContactAPI {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${API_BASE_URL}/contact/messages/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/contact/messages/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -150,7 +150,7 @@ class ContactAPI {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${API_BASE_URL}/contact/stats`, {
+      const response = await fetch(`${API_BASE_URL}/api/contact/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

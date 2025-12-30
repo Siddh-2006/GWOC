@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Play, Download, Heart, Eye, Search, Filter, Grid, List, Clock, Tag, Plus, Settings, MessageCircle, Share } from 'lucide-react';
 import { mediaApi } from '../services/media.api';
 import useAuthStore from '../store/useAuthStore';
+import { useToast } from '../hooks/useToast';
+import ToastContainer from '../components/ToastContainer';
 import AddMediaModal from '../components/admin/AddMediaModal';
 import MediaPlayer from '../components/MediaPlayer';
 import PostViewer from '../components/PostViewer';
@@ -10,7 +12,8 @@ import InlineVideoPlayer from '../components/InlineVideoPlayer';
 import ImageWithFallback from '../components/ImageWithFallback';
 
 const Resources = () => {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
+  const { toasts, success, error: showError, removeToast } = useToast();
   const isAdmin = user?.role === 'admin';
 
   const [media, setMedia] = useState([]);
@@ -93,11 +96,21 @@ const Resources = () => {
   }, [media]);
 
   const handleLike = async (mediaId) => {
+    if (!isAuthenticated) {
+      showError('Please log in to like content');
+      return;
+    }
+
     try {
       const response = await mediaApi.likeMedia(mediaId);
       setMedia(prev => prev.map(item =>
         item._id === mediaId
-          ? { ...item, likes: response.data.likes, hasLiked: response.data.hasLiked }
+          ? { 
+              ...item, 
+              hasLiked: response.data.hasLiked,
+              likes: response.data.likes,
+              likesCount: response.data.likes
+            }
           : item
       ));
       
@@ -105,16 +118,34 @@ const Resources = () => {
       if (selectedMedia && selectedMedia._id === mediaId) {
         setSelectedMedia(prev => ({
           ...prev,
+          hasLiked: response.data.hasLiked,
           likes: response.data.likes,
-          hasLiked: response.data.hasLiked
+          likesCount: response.data.likes
         }));
+      }
+
+      // Show success message
+      if (response.data.hasLiked) {
+        success('Added to your liked content!');
+      } else {
+        success('Removed from your liked content');
       }
     } catch (err) {
       console.error('Like media error:', err);
+      if (err.response?.status === 401) {
+        showError('Please log in to like content');
+      } else {
+        showError('Failed to like content. Please try again.');
+      }
     }
   };
 
   const handleComment = async (mediaId, content) => {
+    if (!isAuthenticated) {
+      showError('Please log in to comment');
+      return;
+    }
+
     try {
       const response = await mediaApi.addComment(mediaId, content);
       setMedia(prev => prev.map(item =>
@@ -130,8 +161,15 @@ const Resources = () => {
           comments: [...(prev.comments || []), response.data]
         }));
       }
+
+      success('Comment added successfully!');
     } catch (err) {
       console.error('Add comment error:', err);
+      if (err.response?.status === 401) {
+        showError('Please log in to comment');
+      } else {
+        showError('Failed to add comment. Please try again.');
+      }
     }
   };
 
@@ -477,10 +515,34 @@ const Resources = () => {
                               <Eye size={16} />
                               <span>{item.views || 0}</span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <Heart size={16} />
-                              <span>{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
-                            </div>
+                            <motion.button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleLike(item._id);
+                              }}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              className={`flex items-center gap-1 transition-colors ${
+                                !isAuthenticated 
+                                  ? 'text-gray-400 cursor-not-allowed' 
+                                  : item.hasLiked 
+                                    ? 'text-red-500' 
+                                    : 'text-gray-500 hover:text-red-500'
+                              }`}
+                              disabled={!isAuthenticated}
+                            >
+                              <Heart 
+                                size={16} 
+                                className={
+                                  !isAuthenticated 
+                                    ? 'text-gray-400' 
+                                    : item.hasLiked 
+                                      ? 'fill-red-500 text-red-500' 
+                                      : 'text-gray-500'
+                                } 
+                              />
+                              <span>{Array.isArray(item.likes) ? item.likes.length : item.likesCount || item.likes || 0}</span>
+                            </motion.button>
                             {item.comments && item.comments.length > 0 && (
                               <div className="flex items-center gap-1">
                                 <MessageCircle size={16} />
@@ -668,9 +730,25 @@ const Resources = () => {
                               }}
                               whileHover={{ scale: 1.2 }}
                               whileTap={{ scale: 0.8 }}
-                              className="flex items-center gap-2 text-gray-500 hover:text-red-500 transition-colors"
+                              className={`flex items-center gap-2 transition-colors ${
+                                !isAuthenticated 
+                                  ? 'text-gray-400 cursor-not-allowed' 
+                                  : item.hasLiked 
+                                    ? 'text-red-500' 
+                                    : 'text-gray-500 hover:text-red-500'
+                              }`}
+                              disabled={!isAuthenticated}
                             >
-                              <Heart size={18} />
+                              <Heart 
+                                size={18} 
+                                className={
+                                  !isAuthenticated 
+                                    ? 'text-gray-400' 
+                                    : item.hasLiked 
+                                      ? 'fill-red-500 text-red-500' 
+                                      : 'text-gray-500'
+                                } 
+                              />
                               <span className="text-sm font-medium">{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
                             </motion.button>
 
@@ -804,10 +882,34 @@ const Resources = () => {
                               <Eye size={18} />
                               <span>{item.views || 0} views</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Heart size={18} />
-                              <span>{Array.isArray(item.likes) ? item.likes.length : item.likes || 0} likes</span>
-                            </div>
+                            <motion.button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleLike(item._id);
+                              }}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              className={`flex items-center gap-2 transition-colors ${
+                                !isAuthenticated 
+                                  ? 'text-gray-400 cursor-not-allowed' 
+                                  : item.hasLiked 
+                                    ? 'text-red-500' 
+                                    : 'text-gray-500 hover:text-red-500'
+                              }`}
+                              disabled={!isAuthenticated}
+                            >
+                              <Heart 
+                                size={18} 
+                                className={
+                                  !isAuthenticated 
+                                    ? 'text-gray-400' 
+                                    : item.hasLiked 
+                                      ? 'fill-red-500 text-red-500' 
+                                      : 'text-gray-500'
+                                } 
+                              />
+                              <span>{Array.isArray(item.likes) ? item.likes.length : item.likesCount || item.likes || 0} likes</span>
+                            </motion.button>
                             {item.comments && item.comments.length > 0 && (
                               <button 
                                 onClick={(e) => {
@@ -903,9 +1005,25 @@ const Resources = () => {
                                   e.stopPropagation();
                                   handleLike(item._id);
                                 }}
-                                className="flex items-center gap-1 hover:text-red-500 transition-colors"
+                                className={`flex items-center gap-1 transition-colors ${
+                                  !isAuthenticated 
+                                    ? 'text-gray-400 cursor-not-allowed' 
+                                    : item.hasLiked 
+                                      ? 'text-red-500' 
+                                      : 'hover:text-red-500'
+                                }`}
+                                disabled={!isAuthenticated}
                               >
-                                <Heart size={16} className={Array.isArray(item.likes) && item.likes.length > 0 ? "fill-red-500 text-red-500" : ""} />
+                                <Heart 
+                                  size={16} 
+                                  className={
+                                    !isAuthenticated 
+                                      ? 'text-gray-400' 
+                                      : item.hasLiked 
+                                        ? 'fill-red-500 text-red-500' 
+                                        : 'text-gray-500'
+                                  } 
+                                />
                                 <span>{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
                               </button>
                               <button
@@ -1018,6 +1136,9 @@ const Resources = () => {
           onComment={handleComment}
           onShare={handleShare}
         />
+
+        {/* Toast Container */}
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
       </div>
     </div>
   );

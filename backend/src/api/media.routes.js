@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { mediaController } from '../controllers/media.controller.js';
-import { authenticateToken, requireAdmin } from '../middleware/auth.middleware.js';
+import { authenticateToken, requireAdmin, optionalAuth } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
@@ -18,19 +18,22 @@ router.put('/:mediaId', authenticateToken, requireAdmin, mediaController.updateM
 router.delete('/:mediaId', authenticateToken, requireAdmin, mediaController.deleteMedia);
 
 // Public routes
-// GET /api/media/published - Get published media
-router.get('/published', mediaController.getPublishedMedia);
+// GET /api/media/published - Get published media (with optional auth for like status)
+router.get('/published', optionalAuth, mediaController.getPublishedMedia);
 
 // GET /api/media/:mediaId - Get single media
 router.get('/:mediaId', mediaController.getMedia);
 
 // POST /api/media/:mediaId/like - Like media
-router.post('/:mediaId/like', mediaController.likeMedia);
+router.post('/:mediaId/like', authenticateToken, mediaController.likeMedia);
 
 // POST /api/media/:mediaId/comment - Add comment to media
-router.post('/:mediaId/comment', mediaController.addComment);
+router.post('/:mediaId/comment', authenticateToken, mediaController.addComment);
 
 // POST /api/media/:mediaId/share - Share media
 router.post('/:mediaId/share', mediaController.shareMedia);
+
+// GET /api/media/user/liked - Get user's liked media (requires authentication)
+router.get('/user/liked', authenticateToken, mediaController.getUserLikedMedia);
 
 export default router;

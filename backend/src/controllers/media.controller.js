@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Media } from '../models/Media.model.js';
 
 export const mediaController = {
@@ -131,9 +132,20 @@ export const mediaController = {
 
       const total = await Media.countDocuments(query);
 
+      // Add hasLiked status if user is authenticated
+      const userId = req.user?.userId;
+      const mediaWithLikeStatus = media.map(item => {
+        const mediaObj = item.toObject();
+        if (userId) {
+          mediaObj.hasLiked = mediaObj.likes.some(likeId => likeId.toString() === userId.toString());
+        }
+        mediaObj.likesCount = mediaObj.likes.length;
+        return mediaObj;
+      });
+
       res.json({
         success: true,
-        data: media,
+        data: mediaWithLikeStatus,
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
@@ -278,11 +290,11 @@ export const mediaController = {
         });
       }
 
-      const hasLiked = media.likes.includes(userId);
+      const hasLiked = media.likes.some(likeId => likeId.toString() === userId.toString());
       
       if (hasLiked) {
         // Unlike
-        media.likes = media.likes.filter(id => id.toString() !== userId);
+        media.likes = media.likes.filter(id => id.toString() !== userId.toString());
       } else {
         // Like
         media.likes.push(userId);
@@ -295,7 +307,8 @@ export const mediaController = {
         message: hasLiked ? 'Media unliked successfully' : 'Media liked successfully',
         data: { 
           likes: media.likes.length,
-          hasLiked: !hasLiked
+          hasLiked: !hasLiked,
+          likesCount: media.likes.length
         }
       });
     } catch (error) {
@@ -390,6 +403,69 @@ export const mediaController = {
       res.status(500).json({
         success: false,
         message: 'Failed to share media',
+        error: error.message
+      });
+    }
+  },
+
+  // Get user's liked media
+  getUserLikedMedia: async (req, res) => {
+    try {
+      const userId = req.user?.userId;
+      const {
+        type,
+        category,
+        page = 1,
+        limit = 20
+      } = req.query;
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+
+      let query = { 
+        likes: userId,
+        isPublished: true 
+      };
+
+      if (type) query.type = type;
+      if (category) query.category = category;
+
+      const skip = (page - 1) * limit;
+
+      const likedMedia = await Media.find(query)
+        .select('title description type category fileUrl thumbnailUrl tags duration views likes comments shares createdAt publishedAt assets')
+        .sort({ publishedAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit));
+
+      const total = await Media.countDocuments(query);
+
+      // Add hasLiked flag for each media item
+      const mediaWithLikeStatus = likedMedia.map(media => ({
+        ...media.toObject(),
+        hasLiked: true, // All items in this response are liked by the user
+        likesCount: media.likes.length
+      }));
+
+      res.json({
+        success: true,
+        data: mediaWithLikeStatus,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      });
+    } catch (error) {
+      console.error('Get user liked media error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch liked media',
         error: error.message
       });
     }
