@@ -58,7 +58,7 @@ const HowItWorks = () => {
   }, []);
 
   return (
-    <section 
+    <section
       className="relative py-32 px-6 bg-fixed bg-cover bg-center"
       style={{ backgroundImage: "url('/assets/background_1_home.jpg')" }}
     >
@@ -80,7 +80,7 @@ const HowItWorks = () => {
         <div className="relative flex flex-col md:flex-row gap-8 lg:gap-24">
 
           {/* Left Side: Scrolling Text Boxes */}
-          <div className="w-full md:w-1/2 space-y-[20vh] pb-[5vh]">
+          <div className="w-full md:w-1/2 space-y-[30vh] pb-[5vh]">
             {stages.map((stage, index) => (
               <div
                 key={stage.id}
@@ -97,7 +97,7 @@ const HowItWorks = () => {
 
           {/* Right Side: Sticky Images */}
           <div className="hidden md:block w-1/2 sticky top-48 h-[350px] lg:h-[350px] self-start overflow-hidden rounded-[3rem] shadow-2xl border-8 border-white">
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
               <motion.img
                 key={activeIndex}
                 src={stages[activeIndex].image}
@@ -105,8 +105,8 @@ const HowItWorks = () => {
                 initial={{ opacity: 0, scale: 1.1, rotate: 2 }}
                 animate={{ opacity: 1, scale: 1, rotate: 0 }}
                 exit={{ opacity: 0, scale: 0.9, rotate: -2 }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full h-full object-cover"
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-0 w-full h-full object-cover"
               />
             </AnimatePresence>
             <div className="absolute inset-0 bg-linear-to-t from-primary/10 via-transparent to-transparent pointer-events-none" />

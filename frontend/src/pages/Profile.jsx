@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  User, Calendar, Heart, 
-  Clock, Edit2, Play, Plus, 
-  Shield, TrendingUp, 
+import {
+  User, Calendar, Heart,
+  Clock, Edit2, Play, Plus,
+  Shield, TrendingUp,
   Star, Award, Settings,
   CheckCircle, Target, CalendarDays
 } from 'lucide-react';
@@ -18,7 +18,7 @@ import SessionNotesViewer from '../components/SessionNotesViewer';
 import ToastContainer from '../components/ToastContainer';
 
 const ProfileCard = ({ children, className = "" }) => (
-  <motion.div 
+  <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5 }}
@@ -83,7 +83,7 @@ const Profile = () => {
     try {
       const mediaItem = likedMedia.find(item => item._id === mediaId);
       await toggleLike(mediaId);
-      
+
       // Show success message
       if (mediaItem) {
         success(`Removed "${mediaItem.title}" from your liked content`);
@@ -170,7 +170,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 pt-32 pb-20">
       <div className="max-w-7xl mx-auto px-6">
-        
+
         {/* Header Section */}
         <section className="mb-12">
           <ProfileCard className="relative overflow-hidden">
@@ -200,11 +200,11 @@ const Profile = () => {
                 <p className="text-xl text-gray-600 mb-2">
                   Premium Member
                 </p>
-                
+
                 <p className="text-lg text-gray-500 mb-6 italic">
                   "Prioritizing my peace, one step at a time."
                 </p>
-                
+
                 <div className="flex flex-wrap gap-4 mb-6">
                   <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
                     <Clock size={16} /> Member since {new Date().getFullYear()}
@@ -243,17 +243,16 @@ const Profile = () => {
 
         {/* Navigation Tabs */}
         <section className="mb-8">
-          <div className="flex flex-wrap gap-2">
-            <div className="flex bg-white rounded-xl p-2 shadow-md">
+          <div className="overflow-x-auto no-scrollbar pb-2">
+            <div className="flex bg-white rounded-2xl p-2 shadow-sm border border-purple-50 w-max min-w-full">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                    activeTab === tab.id
-                      ? 'bg-primary text-white shadow-md'
-                      : 'text-gray-600 hover:bg-purple-50 hover:text-primary'
-                  }`}
+                  className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === tab.id
+                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                    : 'text-gray-500 hover:bg-purple-50 hover:text-primary'
+                    }`}
                 >
                   <tab.icon size={18} />
                   {tab.label}
@@ -265,13 +264,13 @@ const Profile = () => {
 
         {/* Tab Content */}
         <div className="space-y-8">
-          
+
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <ProfileCard>
-              <SectionHeading 
-                icon={TrendingUp} 
-                title="Your Mental Health Journey" 
+              <SectionHeading
+                icon={TrendingUp}
+                title="Your Mental Health Journey"
                 subtitle="Track your progress over time"
               />
               <div className="text-center py-12">
@@ -285,12 +284,12 @@ const Profile = () => {
           {activeTab === 'sessions' && (
             <div className="space-y-8">
               <ProfileCard>
-                <SectionHeading 
-                  icon={CalendarDays} 
-                  title="My Sessions" 
+                <SectionHeading
+                  icon={CalendarDays}
+                  title="My Sessions"
                   subtitle="Manage your therapy sessions and notes"
                 />
-                
+
                 {/* Sessions Overview Stats */}
                 {(categorizedSessions.upcoming.length > 0 || categorizedSessions.ongoing.length > 0 || categorizedSessions.past.length > 0) && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl">
@@ -320,7 +319,7 @@ const Profile = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {sessionsLoading ? (
                   <div className="text-center py-12">
                     <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -331,18 +330,18 @@ const Profile = () => {
                     <div className="text-red-500 mb-4">⚠️</div>
                     <p className="text-red-600 mb-2">Failed to load sessions</p>
                     <p className="text-sm text-gray-500">{sessionsError}</p>
-                    <button 
-                      onClick={() => fetchSessions()} 
+                    <button
+                      onClick={() => fetchSessions()}
                       className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                     >
                       Retry
                     </button>
                   </div>
-                ) : 
+                ) :
                   /* Check if we have any sessions at all */
-                  categorizedSessions.upcoming.length === 0 && 
-                   categorizedSessions.ongoing.length === 0 && 
-                   categorizedSessions.past.length === 0 ? (
+                  categorizedSessions.upcoming.length === 0 &&
+                    categorizedSessions.ongoing.length === 0 &&
+                    categorizedSessions.past.length === 0 ? (
                     /* Complete Empty State */
                     <div className="text-center py-16">
                       <motion.div
@@ -354,15 +353,15 @@ const Profile = () => {
                         <div className="mb-6">
                           <CalendarDays size={80} className="mx-auto text-gray-300 mb-4" />
                         </div>
-                        
+
                         <h3 className="text-xl font-semibold text-gray-700 mb-3">
                           No sessions yet
                         </h3>
-                        
+
                         <p className="text-gray-500 mb-6 leading-relaxed">
                           Book your first therapy session to start your mental health journey. Our qualified therapists are here to support you.
                         </p>
-                        
+
                         <motion.a
                           href="/booking"
                           whileHover={{ scale: 1.05 }}
@@ -390,13 +389,12 @@ const Profile = () => {
                                   {categorizedSessions.ongoing.length}
                                 </span>
                               </h3>
-                              <div className={`grid gap-4 ${
-                                categorizedSessions.ongoing.length === 1 
-                                  ? 'grid-cols-1 max-w-md' 
-                                  : categorizedSessions.ongoing.length === 2 
-                                  ? 'grid-cols-1 md:grid-cols-2 max-w-4xl' 
+                              <div className={`grid gap-4 ${categorizedSessions.ongoing.length === 1
+                                ? 'grid-cols-1 max-w-md'
+                                : categorizedSessions.ongoing.length === 2
+                                  ? 'grid-cols-1 md:grid-cols-2 max-w-4xl'
                                   : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-                              }`}>
+                                }`}>
                                 {categorizedSessions.ongoing.map((session) => (
                                   <SessionCard
                                     key={session._id}
@@ -421,13 +419,12 @@ const Profile = () => {
                                   {categorizedSessions.upcoming.length}
                                 </span>
                               </h3>
-                              <div className={`grid gap-4 ${
-                                categorizedSessions.upcoming.length === 1 
-                                  ? 'grid-cols-1 max-w-md' 
-                                  : categorizedSessions.upcoming.length === 2 
-                                  ? 'grid-cols-1 md:grid-cols-2 max-w-4xl' 
+                              <div className={`grid gap-4 ${categorizedSessions.upcoming.length === 1
+                                ? 'grid-cols-1 max-w-md'
+                                : categorizedSessions.upcoming.length === 2
+                                  ? 'grid-cols-1 md:grid-cols-2 max-w-4xl'
                                   : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-                              }`}>
+                                }`}>
                                 {categorizedSessions.upcoming.map((session) => (
                                   <SessionCard
                                     key={session._id}
@@ -454,13 +451,12 @@ const Profile = () => {
                               {categorizedSessions.past.length}
                             </span>
                           </h3>
-                          <div className={`grid gap-4 ${
-                            categorizedSessions.past.length === 1 
-                              ? 'grid-cols-1 max-w-md' 
-                              : categorizedSessions.past.length === 2 
-                              ? 'grid-cols-1 md:grid-cols-2 max-w-4xl' 
+                          <div className={`grid gap-4 ${categorizedSessions.past.length === 1
+                            ? 'grid-cols-1 max-w-md'
+                            : categorizedSessions.past.length === 2
+                              ? 'grid-cols-1 md:grid-cols-2 max-w-4xl'
                               : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-                          }`}>
+                            }`}>
                             {categorizedSessions.past.slice(0, 6).map((session) => (
                               <SessionCard
                                 key={session._id}
@@ -526,9 +522,9 @@ const Profile = () => {
           {activeTab === 'wellness' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <ProfileCard>
-                <SectionHeading 
-                  icon={Heart} 
-                  title="Mood Tracking" 
+                <SectionHeading
+                  icon={Heart}
+                  title="Mood Tracking"
                   subtitle="Monitor your emotional wellbeing"
                 />
                 <div className="space-y-4">
@@ -540,10 +536,10 @@ const Profile = () => {
                       </div>
                       <div className="flex items-center gap-1">
                         {[1, 2, 3, 4, 5].map((star) => (
-                          <Star 
-                            key={star} 
-                            size={16} 
-                            className={`${entry.mood >= star ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                          <Star
+                            key={star}
+                            size={16}
+                            className={`${entry.mood >= star ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
                           />
                         ))}
                       </div>
@@ -553,9 +549,9 @@ const Profile = () => {
               </ProfileCard>
 
               <ProfileCard>
-                <SectionHeading 
-                  icon={Target} 
-                  title="Personal Goals" 
+                <SectionHeading
+                  icon={Target}
+                  title="Personal Goals"
                   subtitle="Track your wellness objectives"
                 />
                 <div className="space-y-4">
@@ -566,8 +562,8 @@ const Profile = () => {
                         <span className="text-sm text-gray-500">{goal.progress}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                        <div 
-                          className="bg-primary h-2 rounded-full transition-all duration-500" 
+                        <div
+                          className="bg-primary h-2 rounded-full transition-all duration-500"
                           style={{ width: `${goal.progress}%` }}
                         />
                       </div>
@@ -585,12 +581,12 @@ const Profile = () => {
           {/* Liked Content Tab */}
           {activeTab === 'liked' && (
             <ProfileCard>
-              <SectionHeading 
-                icon={Heart} 
-                title="Liked Content" 
+              <SectionHeading
+                icon={Heart}
+                title="Liked Content"
                 subtitle="Your saved posts and reels"
               />
-              
+
               {likedLoading ? (
                 <div className="text-center py-12">
                   <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -601,8 +597,8 @@ const Profile = () => {
                   <div className="text-red-500 mb-4">⚠️</div>
                   <p className="text-red-600 mb-2">Failed to load liked content</p>
                   <p className="text-sm text-gray-500">{likedError}</p>
-                  <button 
-                    onClick={() => window.location.reload()} 
+                  <button
+                    onClick={() => window.location.reload()}
                     className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
                   >
                     Retry
@@ -631,15 +627,15 @@ const Profile = () => {
                     <div className="mb-6">
                       <Heart size={80} className="mx-auto text-gray-300 mb-4" />
                     </div>
-                    
+
                     <h3 className="text-xl font-semibold text-gray-700 mb-3">
                       No liked content yet
                     </h3>
-                    
+
                     <p className="text-gray-500 mb-6 leading-relaxed">
                       Discover and save content that resonates with you. When you like posts, videos, or articles, they'll appear here for easy access.
                     </p>
-                    
+
                     <motion.a
                       href="/resources"
                       whileHover={{ scale: 1.05 }}
@@ -658,21 +654,20 @@ const Profile = () => {
           {/* Achievements Tab */}
           {activeTab === 'achievements' && (
             <ProfileCard>
-              <SectionHeading 
-                icon={Award} 
-                title="Achievements & Milestones" 
+              <SectionHeading
+                icon={Award}
+                title="Achievements & Milestones"
                 subtitle="Celebrate your mental health journey"
               />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {achievements.map((achievement) => (
-                  <motion.div 
+                  <motion.div
                     key={achievement.id}
                     whileHover={{ scale: 1.02 }}
-                    className={`p-6 rounded-2xl border-2 transition-all ${
-                      achievement.earned 
-                        ? 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200' 
-                        : 'bg-gray-50 border-gray-200 grayscale opacity-50'
-                    }`}
+                    className={`p-6 rounded-2xl border-2 transition-all ${achievement.earned
+                      ? 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200'
+                      : 'bg-gray-50 border-gray-200 grayscale opacity-50'
+                      }`}
                   >
                     <div className="flex items-start gap-4 mb-4">
                       <div className={`text-4xl ${achievement.earned ? '' : 'grayscale opacity-50'}`}>
@@ -706,9 +701,9 @@ const Profile = () => {
           {/* Settings Tab */}
           {activeTab === 'settings' && (
             <ProfileCard>
-              <SectionHeading 
-                icon={Settings} 
-                title="Account Settings" 
+              <SectionHeading
+                icon={Settings}
+                title="Account Settings"
                 subtitle="Manage your preferences"
               />
               <div className="text-center py-12">
@@ -720,7 +715,7 @@ const Profile = () => {
 
         </div>
       </div>
-      
+
       {/* Toast Container */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
 

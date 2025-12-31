@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, CheckCircle, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
@@ -18,6 +18,10 @@ const Signup = () => {
     confirmPassword: ''
   });
 
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (error) clearError();
@@ -26,13 +30,21 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+    if (formData.password.length < 6) {
+      return setError('Password must be at least 6 characters long');
+    }
+    if (!passwordRegex.test(formData.password)) {
+      return setError('Password must contain at least one uppercase letter, one lowercase letter, and one number');
+    }
+
     if (formData.password !== formData.confirmPassword) {
       return setError('Passwords do not match');
     }
 
     setLoading(true);
     clearError();
-    
+
     try {
       const response = await authApi.signup({
         firstName: formData.firstName,

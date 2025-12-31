@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, Loader2, AlertCircle, Headphones } from 'lucide-react';
@@ -15,6 +15,10 @@ const Login = () => {
     password: ''
   });
 
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (error) clearError();
@@ -27,7 +31,7 @@ const Login = () => {
       const response = await authApi.signin(formData);
       if (response.success) {
         setAuth(response.data.user, response.data.accessToken, response.data.refreshToken);
-        
+
         // Handle redirect based on user role
         if (response.data.user?.role === 'admin') {
           navigate('/admin', { replace: true });
