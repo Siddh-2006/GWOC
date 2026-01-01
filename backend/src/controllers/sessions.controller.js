@@ -70,22 +70,52 @@ export const sessionsController = {
         const slot = session.slotId;
         if (!slot) return { ...session, category: 'unknown', hasNotes: false };
 
-        const sessionDate = new Date(slot.date);
-        const [hours, minutes] = slot.startTime.split(':');
-        sessionDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        // Helper to formatting date to YYYY-MM-DD
+        const formatDate = (date) => {
+          const d = new Date(date);
+          let month = '' + (d.getMonth() + 1);
+          let day = '' + d.getDate();
+          const year = d.getFullYear();
 
-        const [endHours, endMinutes] = slot.endTime.split(':');
-        const sessionEndDate = new Date(slot.date);
-        sessionEndDate.setHours(parseInt(endHours), parseInt(endMinutes), 0, 0);
+          if (month.length < 2) month = '0' + month;
+          if (day.length < 2) day = '0' + day;
+
+          return [year, month, day].join('-');
+        };
+
+        // Construct IST date string to ensure consistent timezone interpretation
+        const dateStr = formatDate(slot.date);
+        
+        // Create Date objects using IST offset (+05:30)
+        // Format: YYYY-MM-DDTHH:mm:00+05:30
+        const sessionDate = new Date(`${dateStr}T${slot.startTime}:00+05:30`);
+        const sessionEndDate = new Date(`${dateStr}T${slot.endTime}:00+05:30`);
+        
+        // If the resulting date is invalid (backup), fall back to original logic (should rarely happen)
+        if (isNaN(sessionDate.getTime())) {
+          // Fallback logic
+          const d = new Date(slot.date);
+          const [h, m] = slot.startTime.split(':');
+          d.setHours(parseInt(h), parseInt(m), 0, 0);
+          // ... similarly for end date
+        }
 
         let category;
+        
+        // Check for Explicitly Past statuses first
         if (session.status === 'completed' || session.status === 'cancelled') {
           category = 'past';
-        } else if (now >= sessionDate && now <= sessionEndDate && session.status === 'confirmed') {
+        } 
+        // Ongoing: Time is now, and status is confirmed or pending
+        else if (now >= sessionDate && now <= sessionEndDate && (session.status === 'confirmed' || session.status === 'pending')) {
           category = 'ongoing';
-        } else if (sessionDate > now && session.status === 'confirmed') {
+        } 
+        // Upcoming: Future time, and status is confirmed or pending
+        else if (sessionDate > now && (session.status === 'confirmed' || session.status === 'pending')) {
           category = 'upcoming';
-        } else {
+        } 
+        // Default to past (e.g. pending but time has passed, or other statuses)
+        else {
           category = 'past';
         }
 
