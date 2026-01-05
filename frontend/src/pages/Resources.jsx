@@ -31,6 +31,12 @@ const Resources = () => {
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [showPlayer, setShowPlayer] = useState(false);
   const [showPostViewer, setShowPostViewer] = useState(false);
+  const [placeholder, setPlaceholder] = useState('');
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showCursor, setShowCursor] = useState(true);
+
+  const placeholderWords = ['depression', 'happiness roadmap', 'imposter syndrome', 'law of attraction'];
 
   const mediaTypes = [
     { value: 'all', label: 'All Types' },
@@ -82,6 +88,43 @@ const Resources = () => {
     setCurrentPage(1);
     fetchMedia(1, true);
   }, [searchTerm, selectedType, selectedCategory]);
+
+  // Typing animation effect
+  useEffect(() => {
+    if (searchTerm) return; // Don't animate if user is typing
+
+    const currentWord = placeholderWords[placeholderIndex];
+    const typingSpeed = isDeleting ? 50 : 150;
+    const pauseDuration = 2000;
+
+    const timeout = setTimeout(() => {
+      if (!isDeleting && placeholder === currentWord) {
+        // Finished typing, wait then start deleting
+        setTimeout(() => setIsDeleting(true), pauseDuration);
+      } else if (isDeleting && placeholder === '') {
+        // Finished deleting, move to next word
+        setIsDeleting(false);
+        setPlaceholderIndex((prev) => (prev + 1) % placeholderWords.length);
+      } else if (isDeleting) {
+        // Delete one character
+        setPlaceholder(currentWord.substring(0, placeholder.length - 1));
+      } else {
+        // Type one character
+        setPlaceholder(currentWord.substring(0, placeholder.length + 1));
+      }
+    }, typingSpeed);
+
+    return () => clearTimeout(timeout);
+  }, [placeholder, placeholderIndex, isDeleting, searchTerm]);
+
+  // Cursor blinking effect
+  useEffect(() => {
+    const cursorInterval = setInterval(() => {
+      setShowCursor((prev) => !prev);
+    }, 530);
+
+    return () => clearInterval(cursorInterval);
+  }, []);
 
   // Debug: Log media data to see what we're getting
   useEffect(() => {
@@ -240,33 +283,15 @@ const Resources = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-20 pt-28">
+    <div className="min-h-screen py-20 pt-24" style={{ backgroundColor: '#FFF5F7' }}>
       <div className="max-w-6xl mx-auto px-4">
         {/* Instagram-style Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
+          className="text-center mb-2"
         >
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex-1">
-              <motion.h1 
-                className="text-4xl md:text-5xl font-bold text-gray-800 mb-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                Resources
-              </motion.h1>
-              <motion.p 
-                className="text-lg text-gray-600 max-w-2xl mx-auto"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                Explore our curated collection of mental health resources, educational content, and wellness materials.
-              </motion.p>
-            </div>
+          <div className="flex justify-between items-center">
             {isAdmin && (
               <motion.button
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -275,7 +300,7 @@ const Resources = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowAddModal(true)}
-                className="btn-primary flex items-center gap-2 ml-6 px-4 py-2 rounded-xl shadow-lg"
+                className="btn-primary flex items-center gap-2 ml-auto px-4 py-2 rounded-xl shadow-lg"
               >
                 <Plus size={20} />
                 Add
@@ -289,7 +314,7 @@ const Resources = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white rounded-2xl p-4 shadow-sm mb-8 border border-gray-100"
+          className="mb-8"
         >
           <div className="flex flex-col sm:flex-row gap-4 items-center">
             {/* Compact Search */}
@@ -297,10 +322,10 @@ const Resources = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="text"
-                placeholder="Search resources..."
+                placeholder={`Search ${placeholder}${showCursor ? '|' : ''}`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-full focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white"
               />
             </div>
 
@@ -309,7 +334,7 @@ const Resources = () => {
               <select
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
-                className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white text-sm"
+                className="px-4 py-3 border border-gray-200 rounded-full focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white text-sm"
               >
                 {mediaTypes.map(type => (
                   <option key={type.value} value={type.value}>{type.label}</option>
@@ -319,7 +344,7 @@ const Resources = () => {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white text-sm"
+                className="px-4 py-3 border border-gray-200 rounded-full focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white text-sm"
               >
                 {categories.map(category => (
                   <option key={category.value} value={category.value}>{category.label}</option>
@@ -343,26 +368,6 @@ const Resources = () => {
               </div>
             </div>
           </div>
-
-          {/* Compact Results Count */}
-          {!loading && (
-            <div className="mt-3 pt-3 border-t border-gray-100">
-              <p className="text-gray-500 text-sm text-center">
-                {media.length > 0 ? (
-                  <>
-                    <span className="font-medium text-gray-700">{totalItems}</span> resources
-                    {searchTerm && <span> for "{searchTerm}"</span>}
-                    {selectedType !== 'all' && <span> in {mediaTypes.find(t => t.value === selectedType)?.label}</span>}
-                    {selectedCategory !== 'all' && <span> • {categories.find(c => c.value === selectedCategory)?.label}</span>}
-                  </>
-                ) : (
-                  searchTerm || selectedType !== 'all' || selectedCategory !== 'all' 
-                    ? 'No results found for current filters' 
-                    : 'No resources available'
-                )}
-              </p>
-            </div>
-          )}
         </motion.div>
 
         {/* Error State */}
