@@ -101,7 +101,7 @@ export const CorporateProcess = () => {
         </div>
 
         {/* RIGHT COLUMN: Scrolling Content */}
-        <div className="md:w-2/3 space-y-32 md:space-y-48 pb-24">
+        <div className="md:w-2/3 space-y-32 md:space-y-30 pb-24">
           {processSteps.map((step, index) => (
             <div
               key={index}
