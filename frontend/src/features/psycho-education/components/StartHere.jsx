@@ -19,8 +19,8 @@ const StartHere = ({ fadeInUp, staggerContainer }) => {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
         >
           {[
-            { title: "What Is Mental Health?", slug: "what-is-mental-health", desc: "Dispelling complexity and understanding balance.", icon: <Brain />, color: "bg-blue-50 text-blue-500" },
-            { title: "Mental Health: Myths vs Facts", slug: "myths-vs-facts", desc: "Separator truth from common misconceptions.", icon: <Target />, color: "bg-green-50 text-green-500" },
+            { title: "What Is Mental Health?", slug: "what-is-mental-health", desc: "Dispelling complexity and understanding balance.", icon: <Brain />, color: "bg-purple-50 text-primary" },
+            { title: "Mental Health: Myths vs Facts", slug: "myths-vs-facts", desc: "Separator truth from common misconceptions.", icon: <Target />, color: "bg-pink-50 text-secondary" },
             { title: "When Should You Seek Support?", slug: "when-to-seek-support", desc: "Learning to listen to what your mind needs.", icon: <HelpCircle />, color: "bg-purple-50 text-purple-500" },
             { title: "Self-Care vs Therapy", slug: "self-care-vs-therapy", desc: "Understanding the role of daily maintenance.", icon: <Shield />, color: "bg-pink-50 text-pink-500" }
           ].map((card, i) => (

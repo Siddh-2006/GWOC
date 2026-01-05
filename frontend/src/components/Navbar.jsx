@@ -44,33 +44,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'About', path: '/about' },
-    {
-      name: 'Psycho-Education',
-      path: '/psycho-education',
-      dropdown: [
-        {
-          title: 'Start Here',
-          items: [
-            { name: 'What is Mental Health?', path: '/psycho-education#start-here' },
-            { name: 'Myths vs Facts', path: '/psycho-education#start-here' },
-          ]
-        },
-        {
-          title: 'Common Struggles',
-          items: [
-            { name: 'Stress & Burnout', path: '/psycho-education#struggles' },
-            { name: 'Anxiety & Worry', path: '/psycho-education#struggles' },
-          ]
-        },
-        {
-          title: 'Coping Tools',
-          items: [
-            { name: 'Mindfulness', path: '/psycho-education#tools' },
-            { name: 'Healthy Boundaries', path: '/psycho-education#tools' },
-          ]
-        }
-      ]
-    },
+    { name: 'Psycho-Education', path: '/psycho-education' },
     { name: 'Corporate', path: '/corporate' },
     { name: 'Resources', path: '/resources' },
     { name: 'Contact', path: '/contact' },

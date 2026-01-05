@@ -1,19 +1,20 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FileText, PlayCircle, CheckCircle2, HelpCircle } from 'lucide-react';
+import { Library, Layout } from 'lucide-react';
 import { Link } from "react-router-dom";
 
 const LearningFormats = ({ fadeInUp }) => {
   return (
-    <section className="py-24 px-6 bg-primary text-white">
-      <div className="max-w-7xl mx-auto">
-        <motion.h2 {...fadeInUp} className="text-3xl md:text-4xl font-bold mb-16 text-center">How would you like to learn?</motion.h2>
+    <section className="py-16 px-6 bg-primary text-white">
+      <div className="max-w-4xl mx-auto">
+        <motion.h2 {...fadeInUp} className="text-2xl md:text-3xl font-bold mb-10 text-center">
+          Explore Library and Resources
+        </motion.h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
           {[
-            { label: "Articles", icon: <FileText />, desc: "Read at your pace", link: "/psycho-education/library" },
-            { label: "Short Videos", icon: <PlayCircle />, desc: "Easy to digest", link: "#" },
-            { label: "FAQs", icon: <HelpCircle />, desc: "Quick answers", link: "#" }
+            { label: "Library", icon: <Library />, desc: "Full mental health database", link: "/psycho-education/library" },
+            { label: "Resources", icon: <Layout />, desc: "Access guides & tools", link: "/resources" }
           ].map((item, i) => (
             <motion.div
               key={i}
@@ -23,13 +24,15 @@ const LearningFormats = ({ fadeInUp }) => {
             >
               <Link
                 to={item.link}
-                className="p-8 rounded-[2.5rem] bg-white/5 hover:bg-white/10 border border-white/10 text-center cursor-pointer group transition-all hover:-translate-y-2 flex flex-col h-full"
+                className="p-6 md:p-8 rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 text-center cursor-pointer group transition-all hover:-translate-y-1 flex items-center gap-6"
               >
-                <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-secondary transition-colors">
-                  {React.cloneElement(item.icon, { size: 28 })}
+                <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-secondary transition-colors text-white">
+                  {React.cloneElement(item.icon, { size: 24 })}
                 </div>
-                <h3 className="text-xl font-bold mb-2">{item.label}</h3>
-                <p className="text-white/40 text-sm tracking-wide">{item.desc}</p>
+                <div className="text-left">
+                  <h3 className="text-lg font-bold mb-1">{item.label}</h3>
+                  <p className="text-white/40 text-sm leading-tight">{item.desc}</p>
+                </div>
               </Link>
             </motion.div>
           ))}
