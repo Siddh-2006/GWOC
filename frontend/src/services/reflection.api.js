@@ -108,10 +108,15 @@ export const reflectionApi = {
     // Question Management
     getQuestions: async () => {
       try {
+        console.log('🔄 Making API call to /reflection/admin/questions');
         const response = await apiClient.get('/reflection/admin/questions');
+        console.log('📡 Raw API response:', response);
+        console.log('📊 Response data:', response.data);
         return response.data;
       } catch (error) {
-        console.error('Get admin questions API error:', error);
+        console.error('❌ Get admin questions API error:', error);
+        console.error('❌ Error response:', error.response?.data);
+        console.error('❌ Error status:', error.response?.status);
         throw error.response?.data || { success: false, message: 'Network error' };
       }
     },

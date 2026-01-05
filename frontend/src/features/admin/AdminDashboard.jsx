@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Check, X, Clock, User, Filter, Plus, Calendar, Loader2, Building2, MessageSquare, Eye, Mail, Phone, Heart, Image, BookOpen, Trash2 } from 'lucide-react';
+import { Check, X, Clock, User, Filter, Plus, Calendar, Loader2, Building2, MessageSquare, Eye, Mail, Phone, Heart, Trash2 } from 'lucide-react';
 import { useBookingStore } from '../../store/useBookingStore';
 import { bookingApi } from '../booking/booking.api';
 import { slotApi } from '../../services/slot.api';
@@ -8,12 +7,12 @@ import { CorporateInquiries } from '../../components/admin/CorporateInquiries';
 import ContactMessages from '../../components/admin/ContactMessages';
 import AddSlotModal from '../../components/admin/AddSlotModal';
 import ReflectionQuestions from '../../components/admin/ReflectionQuestions';
+import { useToast } from '../../hooks/useToast';
+import ToastContainer from '../../components/ToastContainer';
 
 const AdminDashboard = () => {
   const {
-    appointments,
     availableSlots,
-    updateAppointmentStatus,
     setAvailableSlots,
   } = useBookingStore();
 
@@ -29,8 +28,7 @@ const AdminDashboard = () => {
     notes: ''
   });
   const [showAddSlotModal, setShowAddSlotModal] = useState(false);
-  const [reflectionSummaries, setReflectionSummaries] = useState([]);
-  const [loadingReflections, setLoadingReflections] = useState(false);
+  const { toasts, success, error: showToast, removeToast } = useToast();
   const [statusFilter, setStatusFilter] = useState('all');
   const [showUpcomingOnly, setShowUpcomingOnly] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -56,36 +54,23 @@ const AdminDashboard = () => {
   const fetchSlots = async () => {
     try {
       const response = await slotApi.getAllSlots();
-      setAvailableSlots(response.data || []);
+      setAvailableSlots(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
       console.error('Fetch slots error:', err);
-    }
-  };
-
-  const fetchReflectionSummaries = async () => {
-    setLoadingReflections(true);
-    try {
-      const response = await fetch('http://localhost:3001/api/reflection/admin/all', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const data = await response.json();
-      if (data.success) {
-        setReflectionSummaries(data.data || []);
-      } else {
-        console.error('Failed to fetch reflection summaries:', data.message);
-      }
-    } catch (err) {
-      console.error('Fetch reflection summaries error:', err);
-    } finally {
-      setLoadingReflections(false);
+      setAvailableSlots([]); // Ensure it's always an array
     }
   };
 
   const handleSlotAdded = (newSlot) => {
-    setAvailableSlots(prev => [...prev, newSlot]);
+    console.log('Adding new slot to dashboard:', newSlot);
+    setAvailableSlots(prev => {
+      const prevArray = Array.isArray(prev) ? prev : [];
+      const updated = [...prevArray, newSlot];
+      console.log('Updated slots list:', updated.length);
+      return updated;
+    });
+    setShowAddSlotModal(false);
+    success('Time slot created successfully!');
   };
 
   const handleDeleteSlot = async (slotId) => {
@@ -93,9 +78,14 @@ const AdminDashboard = () => {
     
     try {
       await slotApi.deleteSlot(slotId);
-      setAvailableSlots(prev => prev.filter(slot => slot._id !== slotId));
+      setAvailableSlots(prev => {
+        const prevArray = Array.isArray(prev) ? prev : [];
+        return prevArray.filter(slot => slot._id !== slotId);
+      });
+      success('Time slot deleted successfully!');
     } catch (err) {
       setError('Failed to delete slot: ' + err.message);
+      showToast('Failed to delete slot: ' + err.message);
     }
   };
 
@@ -104,8 +94,6 @@ const AdminDashboard = () => {
       fetchBookings();
     } else if (activeTab === 'slots') {
       fetchSlots();
-    } else if (activeTab === 'reflections') {
-      fetchReflectionSummaries();
     }
   }, [activeTab]);
 
@@ -265,14 +253,6 @@ const AdminDashboard = () => {
             }`}
         >
           Session Bookings
-        </button>
-        <button
-          onClick={() => setActiveTab('reflections')}
-          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'reflections' ? 'bg-white shadow text-primary' : 'text-gray-500 hover:text-primary'
-            }`}
-        >
-          <Heart size={16} />
-          Reflection Summaries
         </button>
         <button
           onClick={() => setActiveTab('slots')}
@@ -526,192 +506,220 @@ const AdminDashboard = () => {
         ) : activeTab === 'slots' ? (
           <div className="p-8">
             <div className="flex justify-between items-center mb-8">
-              <h3 className="text-xl font-bold">Manage Available Slots</h3>
-              <button 
-                onClick={() => setShowAddSlotModal(true)}
-                className="btn-primary py-2 px-4 flex items-center gap-2 text-sm"
-              >
-                <Plus size={18} />
-                Add Slot
-              </button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {availableSlots.map((slot) => (
-                <div key={slot._id} className="p-4 rounded-2xl border border-purple-100 group hover:shadow-md transition-all">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex-1">
-                      <p className="font-bold text-primary">{slot.startTime} - {slot.endTime}</p>
-                      <p className="text-xs text-gray-400">{formatDate(slot.date)}</p>
-                      <p className="text-xs text-green-600">₹{slot.pricing?.online} - ₹{slot.pricing?.offline}</p>
-                      <div className="flex gap-1 mt-1">
-                        {slot.availableModes?.map(mode => (
-                          <span key={mode} className="text-[10px] px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full">
-                            {mode}
-                          </span>
-                        ))}
-                      </div>
-                      {slot.isAvailable ? (
-                        <span className="text-[10px] px-2 py-0.5 bg-green-100 text-green-600 rounded-full">Available</span>
-                      ) : (
-                        <span className="text-[10px] px-2 py-0.5 bg-red-100 text-red-600 rounded-full">Booked</span>
-                      )}
-                    </div>
-                    <button 
-                      onClick={() => handleDeleteSlot(slot._id)}
-                      className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                      disabled={!slot.isAvailable}
-                      title={slot.isAvailable ? "Delete slot" : "Cannot delete booked slot"}
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
+              <div>
+                <h3 className="text-2xl font-bold text-primary">Time Slot Management</h3>
+                <p className="text-gray-600 text-sm mt-1">
+                  Create and manage available appointment slots
+                </p>
+                <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                  <span className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    Available: {Array.isArray(availableSlots) ? availableSlots.filter(s => s.isAvailable && !s.bookingId).length : 0}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    Booked: {Array.isArray(availableSlots) ? availableSlots.filter(s => s.bookingId).length : 0}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                    Blocked: {Array.isArray(availableSlots) ? availableSlots.filter(s => s.isBlocked).length : 0}
+                  </span>
                 </div>
-              ))}
-              {availableSlots.length === 0 && (
-                <div className="col-span-full text-center py-12 text-gray-400">
-                  No slots available. Click "Add Slot" to create your first time slot.
-                </div>
-              )}
-            </div>
-          </div>
-        ) : activeTab === 'reflections' ? (
-          <div className="p-8">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-bold">Reflection Summaries</h2>
-              <div className="text-sm text-gray-500">
-                AI-generated summaries to help prepare for sessions
               </div>
-            </div>
-            
-            {/* Disclaimer */}
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-8">
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-amber-600 text-sm font-bold">!</span>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-amber-800 mb-2">Important Disclaimer</h4>
-                  <p className="text-amber-700 text-sm leading-relaxed">
-                    These AI-generated summaries are for preparation purposes only. They do not replace professional judgment, 
-                    diagnosis, or therapeutic assessment. Always rely on your clinical expertise and direct client interaction 
-                    for all therapeutic decisions.
-                  </p>
-                </div>
+              <div className="flex gap-3">
+                <button 
+                  onClick={async () => {
+                    try {
+                      const result = await slotApi.bulkCleanup();
+                      await fetchSlots();
+                      setError('');
+                      success(`Cleaned up ${result.data?.cleanedCount || 0} expired slots`);
+                    } catch (err) {
+                      setError('Failed to cleanup slots: ' + err.message);
+                      showToast('Failed to cleanup slots: ' + err.message);
+                    }
+                  }}
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm"
+                >
+                  <Trash2 size={16} />
+                  Cleanup Expired
+                </button>
+                <button 
+                  onClick={() => setShowAddSlotModal(true)}
+                  className="btn-primary py-2 px-4 flex items-center gap-2 text-sm"
+                >
+                  <Plus size={18} />
+                  Add Slot
+                </button>
               </div>
             </div>
 
-            {/* Reflection Summaries List */}
-            <div className="space-y-4">
-              {loadingReflections ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="animate-spin text-primary" size={32} />
-                  <span className="ml-3 text-gray-500">Loading reflection summaries...</span>
-                </div>
-              ) : reflectionSummaries.length > 0 ? (
-                <div className="space-y-4">
-                  {reflectionSummaries.map((session) => (
-                    <div key={session._id} className="bg-white border border-gray-200 rounded-xl p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="font-semibold text-gray-800">
-                            {session.userId?.firstName} {session.userId?.lastName}
-                          </h3>
-                          <p className="text-sm text-gray-500">
-                            {session.userId?.email}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            Session: {new Date(session.startedAt).toLocaleDateString()} at {new Date(session.startedAt).toLocaleTimeString()}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            session.status === 'completed' 
-                              ? 'bg-green-100 text-green-800' 
-                              : session.status === 'active'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {session.status}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {session.responses?.length || 0} responses
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {session.aiSummary ? (
-                        <div className="space-y-4">
-                          <div>
-                            <h4 className="font-medium text-gray-800 mb-2">Summary</h4>
-                            <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                              {session.aiSummary.summary}
-                            </p>
-                          </div>
-                          
-                          {session.aiSummary.keyThemes && session.aiSummary.keyThemes.length > 0 && (
-                            <div>
-                              <h4 className="font-medium text-gray-800 mb-2">Key Themes</h4>
-                              <div className="flex flex-wrap gap-2">
-                                {session.aiSummary.keyThemes.map((theme, index) => (
-                                  <span key={index} className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
-                                    {theme}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          
-                          {session.aiSummary.possibleApproaches && session.aiSummary.possibleApproaches.length > 0 && (
-                            <div>
-                              <h4 className="font-medium text-gray-800 mb-2">Possible Therapeutic Approaches</h4>
-                              <div className="flex flex-wrap gap-2">
-                                {session.aiSummary.possibleApproaches.map((approach, index) => (
-                                  <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                                    {approach}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          
-                          {session.aiSummary.suggestedQuestions && session.aiSummary.suggestedQuestions.length > 0 && (
-                            <div>
-                              <h4 className="font-medium text-gray-800 mb-2">Suggested Opening Questions</h4>
-                              <ul className="text-sm text-gray-600 space-y-1">
-                                {session.aiSummary.suggestedQuestions.map((question, index) => (
-                                  <li key={index} className="flex items-start gap-2">
-                                    <span className="text-gray-400 mt-1">•</span>
-                                    <span>"{question}"</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-center py-4 text-gray-500">
-                          <p className="text-sm">No summary generated yet</p>
-                          {session.status === 'active' && (
-                            <p className="text-xs mt-1">Session is still in progress</p>
-                          )}
-                        </div>
-                      )}
+            {/* Quick Stats */}
+            {Array.isArray(availableSlots) && availableSlots.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-white border border-gray-200 rounded-xl p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Total Slots</p>
+                      <p className="text-2xl font-bold text-gray-900">{availableSlots.length}</p>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12 text-gray-500">
-                  <Heart size={48} className="mx-auto mb-4 text-gray-300" />
-                  <h3 className="text-lg font-medium mb-2">No Reflection Summaries Yet</h3>
-                  <p className="mb-4">
-                    When clients complete pre-session reflections, their summaries will appear here to help you prepare for sessions.
-                  </p>
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 max-w-md mx-auto">
-                    <p className="text-sm text-blue-800">
-                      Summaries are automatically generated when clients complete their reflection sessions and include neutral themes, 
-                      possible therapeutic approaches, and suggested opening questions.
-                    </p>
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Clock size={20} className="text-blue-600" />
+                    </div>
                   </div>
+                </div>
+                
+                <div className="bg-white border border-gray-200 rounded-xl p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Available</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        {availableSlots.filter(s => s.isAvailable && !s.bookingId).length}
+                      </p>
+                    </div>
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white border border-gray-200 rounded-xl p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Booked</p>
+                      <p className="text-2xl font-bold text-red-600">
+                        {availableSlots.filter(s => s.bookingId).length}
+                      </p>
+                    </div>
+                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white border border-gray-200 rounded-xl p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">This Week</p>
+                      <p className="text-2xl font-bold text-purple-600">
+                        {availableSlots.filter(s => {
+                          const slotDate = new Date(s.date);
+                          const now = new Date();
+                          const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                          return slotDate >= now && slotDate <= weekFromNow;
+                        }).length}
+                      </p>
+                    </div>
+                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <Calendar size={20} className="text-purple-600" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Slots Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {Array.isArray(availableSlots) && availableSlots
+                .sort((a, b) => {
+                  const dateA = new Date(a.date);
+                  const dateB = new Date(b.date);
+                  if (dateA.getTime() !== dateB.getTime()) {
+                    return dateA - dateB;
+                  }
+                  return a.startTime.localeCompare(b.startTime);
+                })
+                .map((slot) => {
+                  const slotDateTime = new Date(slot.date);
+                  const [hours, minutes] = slot.startTime.split(':');
+                  slotDateTime.setHours(parseInt(hours), parseInt(minutes));
+                  const now = new Date();
+                  const isExpired = slotDateTime < now;
+                  
+                  let statusColor = 'green';
+                  let statusText = 'Available';
+                  
+                  if (isExpired) {
+                    statusColor = 'gray';
+                    statusText = 'Expired';
+                  } else if (slot.bookingId) {
+                    statusColor = 'red';
+                    statusText = 'Booked';
+                  } else if (slot.isBlocked) {
+                    statusColor = 'yellow';
+                    statusText = 'Blocked';
+                  } else if (!slot.isAvailable) {
+                    statusColor = 'gray';
+                    statusText = 'Unavailable';
+                  }
+
+                  return (
+                    <div key={slot._id} className={`p-4 rounded-xl border group hover:shadow-md transition-all ${
+                      isExpired ? 'border-gray-200 bg-gray-50' : 
+                      slot.bookingId ? 'border-red-200 bg-red-50' :
+                      slot.isBlocked ? 'border-yellow-200 bg-yellow-50' :
+                      'border-green-200 bg-green-50'
+                    }`}>
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-bold text-gray-800">{slot.startTime} - {slot.endTime}</p>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                              statusColor === 'green' ? 'bg-green-100 text-green-700' :
+                              statusColor === 'red' ? 'bg-red-100 text-red-700' :
+                              statusColor === 'yellow' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-gray-100 text-gray-700'
+                            }`}>
+                              {statusText}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">{formatDate(slot.date)}</p>
+                          <div className="space-y-1">
+                            <p className="text-xs text-gray-500">
+                              💰 Online: ₹{slot.pricing?.online} | Offline: ₹{slot.pricing?.offline}
+                            </p>
+                            <div className="flex gap-1">
+                              {slot.availableModes?.map(mode => (
+                                <span key={mode} className="text-[10px] px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full">
+                                  {mode === 'online' ? '💻' : '🏢'} {mode}
+                                </span>
+                              ))}
+                            </div>
+                            {slot.blockReason && (
+                              <p className="text-[10px] text-yellow-600 bg-yellow-100 px-2 py-1 rounded">
+                                {slot.blockReason}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => handleDeleteSlot(slot._id)}
+                          className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                          disabled={!!slot.bookingId}
+                          title={slot.bookingId ? "Cannot delete booked slot" : "Delete slot"}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              {(!Array.isArray(availableSlots) || availableSlots.length === 0) && (
+                <div className="col-span-full text-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Clock size={24} className="text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Time Slots</h3>
+                  <p className="text-gray-500 mb-6">
+                    Create your first time slot to start accepting bookings.
+                  </p>
+                  <button 
+                    onClick={() => setShowAddSlotModal(true)}
+                    className="btn-primary py-2 px-4 flex items-center gap-2 mx-auto"
+                  >
+                    <Plus size={18} />
+                    Create First Slot
+                  </button>
                 </div>
               )}
             </div>
@@ -1065,6 +1073,9 @@ const AdminDashboard = () => {
         onClose={() => setShowAddSlotModal(false)}
         onSlotAdded={handleSlotAdded}
       />
+
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
 };

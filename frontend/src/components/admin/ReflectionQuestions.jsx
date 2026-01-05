@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Save, X, AlertCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, Save, X, AlertCircle , Heart} from 'lucide-react';
 import { reflectionApi } from '../../services/reflection.api';
 
 /**
  * Admin Component for Managing Reflection Questions
  * Allows admin to view, edit, add, and delete reflection questions
  */
-  const ReflectionQuestions = () => {
+const ReflectionQuestions = () => {
+  console.log('🎯 ReflectionQuestions component mounting...');
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -58,15 +59,25 @@ import { reflectionApi } from '../../services/reflection.api';
   useEffect(() => {
     const loadQuestions = async () => {
       try {
+        console.log('🔄 Loading reflection questions...');
         setLoading(true);
         const response = await reflectionApi.admin.getQuestions();
+        console.log('📡 API Response:', response);
+        
         if (response.success) {
+          console.log('✅ Questions loaded:', response.data.length);
           setQuestions(response.data);
         } else {
+          console.error('❌ API returned error:', response.message);
           throw new Error(response.message);
         }
       } catch (err) {
-        console.error('Error loading questions:', err);
+        console.error('❌ Error loading questions:', err);
+        console.error('❌ Error details:', {
+          message: err.message,
+          response: err.response?.data,
+          status: err.response?.status
+        });
         setError('Failed to load questions from server. Showing default questions.');
         // Use default questions as fallback
         setQuestions(defaultQuestions);
@@ -195,7 +206,7 @@ import { reflectionApi } from '../../services/reflection.api';
                 <p className="text-2xl font-bold text-gray-900">{questions.length}</p>
               </div>
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Heart size={20} className="text-blue-600" />
+                {/* <Heart size={20} className="text-blue-600" /> */}
               </div>
             </div>
           </div>

@@ -35,5 +35,10 @@ export const slotApi = {
   deleteSlot: async (slotId) => {
     const response = await api.delete(`/booking/admin/slots/${slotId}`);
     return response.data;
+  },
+
+  bulkCleanup: async () => {
+    const response = await api.post('/booking/admin/slots/cleanup');
+    return response.data;
   }
 };

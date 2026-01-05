@@ -6,6 +6,7 @@ import { slotApi } from '../../services/slot.api';
 const AddSlotModal = ({ isOpen, onClose, onSlotAdded }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
     date: '',
     startTime: '',
@@ -33,25 +34,37 @@ const AddSlotModal = ({ isOpen, onClose, onSlotAdded }) => {
         throw new Error('End time must be after start time');
       }
 
+      console.log('Creating slot with data:', formData);
       const response = await slotApi.createSlot(formData);
+      console.log('Slot creation response:', response);
       
       if (response.success) {
+        console.log('Slot created successfully, calling onSlotAdded');
+        setSuccess(true);
         onSlotAdded(response.data);
-        onClose();
-        // Reset form
-        setFormData({
-          date: '',
-          startTime: '',
-          endTime: '',
-          availableModes: ['online', 'offline'],
-          pricing: {
-            online: 1200,
-            offline: 1500
-          },
-          maxBookings: 1
-        });
+        
+        // Show success message briefly before closing
+        setTimeout(() => {
+          onClose();
+          setSuccess(false);
+          // Reset form
+          setFormData({
+            date: '',
+            startTime: '',
+            endTime: '',
+            availableModes: ['online', 'offline'],
+            pricing: {
+              online: 1200,
+              offline: 1500
+            },
+            maxBookings: 1
+          });
+        }, 1500);
+      } else {
+        throw new Error(response.message || 'Failed to create slot');
       }
     } catch (err) {
+      console.error('Slot creation error:', err);
       setError(err.response?.data?.message || err.message || 'Failed to create slot');
     } finally {
       setLoading(false);
@@ -95,6 +108,12 @@ const AddSlotModal = ({ isOpen, onClose, onSlotAdded }) => {
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
               {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl">
+              ✅ Slot created successfully! Closing modal...
             </div>
           )}
 

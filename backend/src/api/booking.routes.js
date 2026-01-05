@@ -45,4 +45,7 @@ router.put('/admin/slots/:slotId', authenticateToken, requireAdmin, slotControll
 // DELETE /api/booking/admin/slots/:slotId - Delete slot
 router.delete('/admin/slots/:slotId', authenticateToken, requireAdmin, slotController.deleteSlot);
 
+// POST /api/booking/admin/slots/cleanup - Cleanup expired slots
+router.post('/admin/slots/cleanup', authenticateToken, requireAdmin, slotController.bulkCleanup);
+
 export default router;
