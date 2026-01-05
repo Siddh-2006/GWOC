@@ -214,9 +214,10 @@ const ContentDetailModal = ({ content, isOpen, onClose, onLike, user, showError 
                   {content.contentType === 'article' && <FileText size={20} />}
                   {content.contentType === 'tip' && <Lightbulb size={20} />}
                   {content.contentType === 'exercise' && <CheckCircle size={20} />}
+                  {content.contentType === 'life-area' && <BookOpen size={20} />}
                 </div>
                 <span className="text-xs font-bold text-primary uppercase tracking-widest">
-                  {content.contentType === 'qa' ? 'Q&A' : content.contentType}
+                  {content.contentType === 'qa' ? 'Q&A' : content.contentType === 'life-area' ? 'Life Area' : content.contentType}
                 </span>
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">{content.title}</h2>
@@ -257,33 +258,26 @@ const ContentDetailModal = ({ content, isOpen, onClose, onLike, user, showError 
           <div className="flex items-center gap-4 text-sm text-gray-500">
             {user && (
               <motion.button
-                key={`modal-like-${content._id}-${content.hasLiked}-${updateTrigger}`} // Include update trigger
                 onClick={() => {
                   onLike(content._id);
                 }}
-                className={`flex items-center gap-1 transition-all duration-300 ${
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className={`flex items-center gap-1 transition-colors ${
                   content.hasLiked 
                     ? 'text-red-500' 
-                    : 'hover:text-red-500 hover:scale-105'
+                    : 'text-gray-500 hover:text-red-500'
                 }`}
-                whileTap={{ scale: 0.95 }}
               >
-                <motion.div
-                  key={`modal-heart-${content._id}-${content.hasLiked}-${updateTrigger}`} // Include update trigger
-                  animate={{ 
-                    scale: content.hasLiked ? [1, 1.4, 1.2] : 1,
-                    transition: { duration: 0.3 }
-                  }}
-                  className={content.hasLiked ? 'scale-125' : ''}
-                >
-                  <Heart 
-                    size={16} 
-                    className={content.hasLiked ? "fill-red-500 text-red-500" : "text-gray-400"} 
-                    fill={content.hasLiked ? "#ef4444" : "none"}
-                    color={content.hasLiked ? "#ef4444" : "#9ca3af"}
-                  />
-                </motion.div>
-                <span className="font-medium">{content.likesCount || 0}</span>
+                <Heart 
+                  size={16} 
+                  className={
+                    content.hasLiked 
+                      ? 'fill-red-500 text-red-500' 
+                      : 'text-gray-500'
+                  } 
+                />
+                <span className="font-medium">{Array.isArray(content.likes) ? content.likes.length : content.likesCount || content.likes || 0}</span>
               </motion.button>
             )}
             {content.estimatedReadTime && (
@@ -306,7 +300,7 @@ const ContentDetailModal = ({ content, isOpen, onClose, onLike, user, showError 
 };
 
 const PsychoEducation = () => {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const { toasts, success, error: showError, removeToast } = useToast();
   const isAdmin = user?.role === 'admin';
 
@@ -322,7 +316,6 @@ const PsychoEducation = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedContent, setSelectedContent] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [updateTrigger, setUpdateTrigger] = useState(0); // Force re-render trigger
 
   const contentTypes = [
     { value: 'all', label: 'All Types', icon: BookOpen },
@@ -331,7 +324,8 @@ const PsychoEducation = () => {
     { value: 'quote', label: 'Quotes', icon: Quote },
     { value: 'article', label: 'Articles', icon: FileText },
     { value: 'tip', label: 'Tips', icon: Lightbulb },
-    { value: 'exercise', label: 'Exercises', icon: CheckCircle }
+    { value: 'exercise', label: 'Exercises', icon: CheckCircle },
+    { value: 'life-area', label: 'Life Areas', icon: BookOpen }
   ];
 
   const categories = [
@@ -393,15 +387,8 @@ const PsychoEducation = () => {
     }
   };
 
-  // Debug: Log user state
   useEffect(() => {
-    console.log('🔍 PsychoEducation - User state:', user);
-    console.log('🔍 PsychoEducation - Is authenticated:', !!user);
-    console.log('🔍 PsychoEducation - Access token exists:', !!localStorage.getItem('accessToken'));
-  }, [user]);
-
-  useEffect(() => {
-    // Reset content and fetch fresh data when filters change OR when user changes
+    // Reset content and fetch fresh data when filters change
     setContent([]);
     setPage(1);
     setHasMore(true);
@@ -412,63 +399,47 @@ const PsychoEducation = () => {
     }, 100);
     
     return () => clearTimeout(timer);
-  }, [searchTerm, selectedType, selectedCategory, sortBy, user?.userId]); // Added user?.userId dependency
+  }, [searchTerm, selectedType, selectedCategory, sortBy]);
 
   const handleLike = async (contentId) => {
+    if (!isAuthenticated) {
+      showError('Please log in to like content');
+      return;
+    }
+
     try {
-      if (!user) {
-        showError('Please log in to like content');
-        return;
-      }
-
-      // Call API to update database
       const response = await psychoEducationApi.likeContent(contentId);
-
-      if (!response.success) {
-        throw new Error(response.message || 'Failed to like content');
-      }
-
-      const newLikesCount = response.data.likes;
-      const newHasLiked = response.data.hasLiked;
-
-      // Update content array with new state from database
-      setContent(prevContent => {
-        return prevContent.map(item => {
-          if (item._id === contentId) {
-            return {
-              ...item,
-              hasLiked: newHasLiked,
-              likesCount: newLikesCount
-            };
-          }
-          return item;
-        });
-      });
-
-      // Update selected content if it's the same item
+      setContent(prev => prev.map(item =>
+        item._id === contentId
+          ? { 
+              ...item, 
+              hasLiked: response.data.hasLiked,
+              likes: response.data.likes,
+              likesCount: response.data.likes
+            }
+          : item
+      ));
+      
+      // Update selected content if it's the same
       if (selectedContent && selectedContent._id === contentId) {
         setSelectedContent(prev => ({
           ...prev,
-          hasLiked: newHasLiked,
-          likesCount: newLikesCount
+          hasLiked: response.data.hasLiked,
+          likes: response.data.likes,
+          likesCount: response.data.likes
         }));
       }
 
-      // Force re-render
-      setUpdateTrigger(prev => prev + 1);
-
-      // Show success toast
-      if (newHasLiked) {
+      // Show success message
+      if (response.data.hasLiked) {
         success('Added to your liked content!');
       } else {
         success('Removed from your liked content');
       }
-
     } catch (err) {
-      console.error('❌ Like content error:', err);
-      
+      console.error('Like content error:', err);
       if (err.response?.status === 401) {
-        showError('Your session has expired. Please log in again.');
+        showError('Please log in to like content');
       } else {
         showError('Failed to like content. Please try again.');
       }
@@ -755,36 +726,29 @@ const PsychoEducation = () => {
 
               <div className="mt-auto pt-6 border-t border-gray-50 flex justify-between items-center">
                 <div className="flex gap-4">
-                  {user && (
+                  {isAuthenticated && (
                     <motion.button
-                      key={`like-${item._id}-${item.hasLiked}-${updateTrigger}`} // Include update trigger
-                      className={`flex items-center gap-1.5 transition-all duration-300 ${
-                        item.hasLiked 
-                          ? 'text-red-500' 
-                          : 'text-gray-400 hover:text-red-400 hover:scale-105'
-                      }`}
                       onClick={(e) => { 
                         e.stopPropagation(); 
                         handleLike(item._id); 
                       }}
-                      whileTap={{ scale: 0.95 }}
+                      whileHover={{ scale: 1.2 }}
+                      whileTap={{ scale: 0.8 }}
+                      className={`flex items-center gap-2 transition-colors ${
+                        item.hasLiked 
+                          ? 'text-red-500' 
+                          : 'text-gray-500 hover:text-red-500'
+                      }`}
                     >
-                      <motion.div
-                        key={`heart-${item._id}-${item.hasLiked}-${updateTrigger}`} // Include update trigger
-                        animate={{ 
-                          scale: item.hasLiked ? [1, 1.4, 1.2] : 1,
-                          transition: { duration: 0.3 }
-                        }}
-                        className={item.hasLiked ? 'scale-125' : ''}
-                      >
-                        <Heart 
-                          size={18} 
-                          className={item.hasLiked ? "fill-red-500 text-red-500" : "text-gray-400"} 
-                          fill={item.hasLiked ? "#ef4444" : "none"}
-                          color={item.hasLiked ? "#ef4444" : "#9ca3af"}
-                        />
-                      </motion.div>
-                      <span className="text-sm font-bold">{item.likesCount || 0}</span>
+                      <Heart 
+                        size={18} 
+                        className={
+                          item.hasLiked 
+                            ? 'fill-red-500 text-red-500' 
+                            : 'text-gray-500'
+                        } 
+                      />
+                      <span className="text-sm font-medium">{Array.isArray(item.likes) ? item.likes.length : item.likesCount || item.likes || 0}</span>
                     </motion.button>
                   )}
                 </div>

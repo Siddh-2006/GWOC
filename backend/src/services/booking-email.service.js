@@ -21,7 +21,7 @@ const createTransporter = () => {
 };
 
 // Send booking confirmation to user
-export const sendBookingConfirmation = async (booking, slot, status) => {
+export const sendBookingConfirmation = async (booking, slot, status, rejectionReason = null) => {
   try {
     const emailUser = process.env.EMAIL_USER;
     const emailPassword = process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS;
@@ -153,6 +153,66 @@ export const sendBookingConfirmation = async (booking, slot, status) => {
                 • For any changes, contact us at least 24 hours in advance
               </p>
             </div>
+          </div>
+          
+          <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+            <p style="color: #64748b; margin: 0; font-size: 12px;">
+              MindSettler Studio, Surat, Gujarat, India<br>
+              This email was sent to ${booking.personalInfo.email}
+            </p>
+          </div>
+        </div>
+      `;
+    } else if (status === 'rejected') {
+      subject = 'Booking Request Update - MindSettler';
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+          <div style="background-color: #dc2626; padding: 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px;">MindSettler</h1>
+            <p style="color: #fecaca; margin: 10px 0 0 0; font-size: 16px;">Booking Update</p>
+          </div>
+          
+          <div style="padding: 40px 30px;">
+            <h2 style="color: #1e293b; margin-bottom: 20px;">Booking Request Update</h2>
+            
+            <p style="color: #64748b; font-size: 16px; line-height: 1.6;">
+              Dear ${booking.personalInfo.name},
+            </p>
+            
+            <p style="color: #64748b; font-size: 16px; line-height: 1.6;">
+              Thank you for your interest in booking a session with MindSettler. After careful review, we're unable to accommodate your booking request for the following session:
+            </p>
+            
+            <div style="background-color: #fef2f2; padding: 25px; border-radius: 12px; margin: 25px 0; border-left: 4px solid #dc2626;">
+              <h3 style="color: #1e293b; margin-top: 0; margin-bottom: 15px;">Original Booking Details</h3>
+              <p style="margin: 8px 0; color: #475569;"><strong>Date:</strong> ${formatDate(slot.date)}</p>
+              <p style="margin: 8px 0; color: #475569;"><strong>Time:</strong> ${formatTime(slot.startTime)} - ${formatTime(slot.endTime)}</p>
+              <p style="margin: 8px 0; color: #475569;"><strong>Session Mode:</strong> ${booking.sessionMode === 'online' ? 'Online' : 'In-Person'}</p>
+            </div>
+            
+            ${rejectionReason ? `
+            <div style="background-color: #f1f5f9; padding: 20px; border-radius: 8px; margin: 25px 0;">
+              <h4 style="color: #1e293b; margin-top: 0;">Reason:</h4>
+              <p style="color: #475569; margin-bottom: 0;">${rejectionReason}</p>
+            </div>
+            ` : ''}
+            
+            <div style="background-color: #dbeafe; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin: 25px 0;">
+              <p style="color: #1e40af; margin: 0; font-size: 14px;">
+                <strong>We'd love to help you find an alternative:</strong><br>
+                • Check our available slots for other times that might work<br>
+                • Contact us directly to discuss your needs<br>
+                • We're committed to supporting your wellness journey
+              </p>
+            </div>
+            
+            <p style="color: #64748b; font-size: 16px; line-height: 1.6;">
+              Please don't hesitate to reach out if you have any questions or would like to explore other options. You can contact us at <a href="mailto:${emailUser}" style="color: #6366f1;">${emailUser}</a>
+            </p>
+            
+            <p style="color: #64748b; font-size: 16px; line-height: 1.6;">
+              Thank you for understanding, and we hope to support you in the future.
+            </p>
           </div>
           
           <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">

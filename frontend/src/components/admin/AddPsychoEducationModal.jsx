@@ -28,7 +28,8 @@ const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
     { value: 'quote', label: 'Quote', icon: Quote },
     { value: 'article', label: 'Article', icon: FileText },
     { value: 'tip', label: 'Tip', icon: Lightbulb },
-    { value: 'exercise', label: 'Exercise', icon: CheckCircle }
+    { value: 'exercise', label: 'Exercise', icon: CheckCircle },
+    { value: 'life-area', label: 'Life Area', icon: BookOpen }
   ];
 
   const categories = [

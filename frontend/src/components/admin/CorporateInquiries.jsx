@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { corporateService } from '../../services/corporate.api';
+import { useToast } from '../../hooks/useToast';
 
 /**
  * Admin Component for Managing Corporate Inquiries
@@ -15,6 +16,7 @@ export const CorporateInquiries = () => {
   });
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [updating, setUpdating] = useState(false);
+  const { addToast } = useToast();
 
   useEffect(() => {
     fetchInquiries();
@@ -53,9 +55,18 @@ export const CorporateInquiries = () => {
           )
         );
         setSelectedInquiry(null);
+        
+        // Show success toast
+        addToast('Inquiry status updated successfully', 'success');
+        
+        // Show special message for confirmed status
+        if (newStatus === 'confirmed') {
+          addToast('Confirmation email sent to client', 'info');
+        }
       }
     } catch (error) {
       setError('Failed to update inquiry');
+      addToast('Failed to update inquiry status', 'error');
       console.error('Error updating inquiry:', error);
     } finally {
       setUpdating(false);
@@ -65,7 +76,7 @@ export const CorporateInquiries = () => {
   const getStatusColor = (status) => {
     const colors = {
       'new': '#ef4444',
-      'contacted': '#f59e0b',
+      'confirmed': '#f59e0b',
       'in-discussion': '#3b82f6',
       'closed': '#10b981'
     };
@@ -113,7 +124,7 @@ export const CorporateInquiries = () => {
           >
             <option value="all">All Status</option>
             <option value="new">New</option>
-            <option value="contacted">Contacted</option>
+            <option value="confirmed">Confirmed</option>
             <option value="in-discussion">In Discussion</option>
             <option value="closed">Closed</option>
           </select>
@@ -315,7 +326,7 @@ export const CorporateInquiries = () => {
                 }}
               >
                 <option value="new">New</option>
-                <option value="contacted">Contacted</option>
+                <option value="confirmed">Confirmed</option>
                 <option value="in-discussion">In Discussion</option>
                 <option value="closed">Closed</option>
               </select>

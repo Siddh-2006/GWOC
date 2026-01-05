@@ -26,6 +26,12 @@ router.get('/admin/all', authenticateToken, requireAdmin, bookingController.getA
 // PUT /api/booking/admin/confirm/:bookingId - Confirm booking (admin only)
 router.put('/admin/confirm/:bookingId', authenticateToken, requireAdmin, bookingController.confirmBooking);
 
+// PUT /api/booking/admin/review/:bookingId - Review booking (admin only)
+router.put('/admin/review/:bookingId', authenticateToken, requireAdmin, bookingController.reviewBooking);
+
+// DELETE /api/booking/admin/reject/:bookingId - Reject booking (admin only)
+router.delete('/admin/reject/:bookingId', authenticateToken, requireAdmin, bookingController.rejectBooking);
+
 // Slot management routes (admin only)
 // POST /api/booking/admin/slots - Create new slot
 router.post('/admin/slots', authenticateToken, requireAdmin, slotController.createSlot);

@@ -1,692 +1,351 @@
-import { ReflectionSession } from '../models/ReflectionSession.model.js';
 import { ReflectionQuestion } from '../models/ReflectionQuestion.model.js';
+import { User } from '../models/User.model.js';
+import { Booking } from '../models/Booking.model.js';
 import { geminiService } from '../services/gemini-reflection.service.js';
-import { contentValidator } from '../services/content-validator.service.js';
+
+/**
+ * NEW REFLECTION CONTROLLER - FIRST SESSION ONLY
+ * 
+ * Core Rules:
+ * 1. Reflection quiz ONLY for users who haven't had a confirmed session
+ * 2. Fixed 10 questions (admin-editable)
+ * 3. One-time AI summary generation
+ * 4. No adaptive learning or repeated reflections
+ */
 
 export const reflectionController = {
-  // Start new reflection session
-  startReflection: async (req, res) => {
+  
+  /**
+   * Check if user is eligible for reflection (first session only)
+   */
+  checkEligibility: async (req, res) => {
     try {
-      console.log('Reflection start request received from user:', req.user.userId);
       const userId = req.user.userId;
       
-      // Check if user has an active reflection session
-      console.log('Checking for existing active session...');
-      const existingSession = await ReflectionSession.findOne({
-        userId,
-        status: 'active'
-      });
-
-      if (existingSession) {
-        console.log('Found existing active session:', existingSession._id);
-        return res.json({
-          success: true,
-          message: 'Active reflection session found',
-          data: {
-            sessionId: existingSession._id,
-            status: existingSession.status,
-            startedAt: existingSession.startedAt,
-            questionCount: existingSession.responses.length
-          }
+      // Get user data
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
         });
       }
 
-      // Create new reflection session
-      console.log('Creating new reflection session...');
-      const session = new ReflectionSession({
+      // Check if user has confirmed sessions
+      const hasConfirmedSession = await Booking.exists({
         userId,
-        status: 'active',
-        startedAt: new Date()
+        status: 'confirmed'
       });
 
-      await session.save();
-      console.log('New session created:', session._id);
+      // Update user's session status
+      if (hasConfirmedSession && !user.hasConfirmedSession) {
+        await User.findByIdAndUpdate(userId, { hasConfirmedSession: true });
+      }
 
-      // Generate first question
-      try {
-        console.log('Generating first question...');
-        const firstQuestion = await geminiService.generateNextQuestion([], [], 1);
-        console.log('Generated question:', firstQuestion);
-        
-        // Validate question content
-        const validation = contentValidator.validateQuestion(firstQuestion.question, firstQuestion.options);
-        
-        if (!validation.isValid) {
-          console.error('First question validation failed:', validation.violations);
-          // Use fallback question
-          const fallbackQuestion = geminiService.getFallbackQuestion(1);
-          firstQuestion.question = fallbackQuestion.question;
-          firstQuestion.options = fallbackQuestion.options;
-          console.log('Using fallback question:', fallbackQuestion);
+      const isEligible = !hasConfirmedSession && !user.reflectionCompleted;
+
+      res.json({
+        success: true,
+        data: {
+          isEligible,
+          hasConfirmedSession: hasConfirmedSession || user.hasConfirmedSession,
+          reflectionCompleted: user.reflectionCompleted,
+          reflectionSummary: user.reflectionSummary
         }
+      });
 
-        // Store the question
-        const questionDoc = new ReflectionQuestion({
-          sessionId: session._id,
-          questionNumber: 1,
-          questionText: firstQuestion.question,
-          questionType: 'multiple_choice',
-          options: firstQuestion.options,
-          internalThemes: firstQuestion.internalThemes,
-          nextFocus: firstQuestion.nextFocus
-        });
-
-        await questionDoc.save();
-
-        res.status(201).json({
-          success: true,
-          message: 'Reflection session started successfully',
-          data: {
-            sessionId: session._id,
-            question: {
-              id: questionDoc._id,
-              number: 1,
-              text: firstQuestion.question,
-              options: firstQuestion.options,
-              type: 'multiple_choice'
-            }
-          }
-        });
-      } catch (questionError) {
-        console.error('Failed to generate first question:', questionError);
-        
-        // Use fallback question
-        const fallbackQuestion = geminiService.getFallbackQuestion(1);
-        
-        const questionDoc = new ReflectionQuestion({
-          sessionId: session._id,
-          questionNumber: 1,
-          questionText: fallbackQuestion.question,
-          questionType: 'multiple_choice',
-          options: fallbackQuestion.options,
-          internalThemes: fallbackQuestion.internalThemes,
-          nextFocus: fallbackQuestion.nextFocus
-        });
-
-        await questionDoc.save();
-
-        res.status(201).json({
-          success: true,
-          message: 'Reflection session started successfully (using fallback question)',
-          data: {
-            sessionId: session._id,
-            question: {
-              id: questionDoc._id,
-              number: 1,
-              text: fallbackQuestion.question,
-              options: fallbackQuestion.options,
-              type: 'multiple_choice'
-            }
-          }
-        });
-      }
     } catch (error) {
-      console.error('Start reflection error:', error);
-      console.error('Error stack:', error.stack);
+      console.error('❌ Error checking reflection eligibility:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to start reflection session',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        message: 'Failed to check reflection eligibility'
       });
     }
   },
-  // Submit answer to current question
-  submitAnswer: async (req, res) => {
-    try {
-      const { sessionId } = req.params;
-      const userId = req.user.userId;
-      const { questionId, answer, skipped = false } = req.body;
 
-      // Validate input
-      if (!questionId) {
+  /**
+   * Get reflection questions (first session only)
+   */
+  getQuestions: async (req, res) => {
+    try {
+      const userId = req.user.userId;
+      
+      // Check eligibility first
+      const user = await User.findById(userId);
+      const hasConfirmedSession = await Booking.exists({
+        userId,
+        status: 'confirmed'
+      });
+
+      if (hasConfirmedSession || user.hasConfirmedSession || user.reflectionCompleted) {
+        return res.status(403).json({
+          success: false,
+          message: 'Reflection quiz is only available for first-time clients'
+        });
+      }
+
+      // Get active questions in order
+      const questions = await ReflectionQuestion.find({ isActive: true })
+        .sort({ questionNumber: 1 })
+        .select('questionNumber category questionText options');
+
+      if (questions.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'No reflection questions available'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          questions,
+          totalQuestions: questions.length,
+          message: 'This short reflection helps us understand you better before your first conversation. It\'s optional and there are no right or wrong answers.'
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ Error fetching reflection questions:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch reflection questions'
+      });
+    }
+  },
+
+  /**
+   * Submit reflection responses (first session only)
+   */
+  submitReflection: async (req, res) => {
+    try {
+      const userId = req.user.userId;
+      const { responses } = req.body;
+
+      if (!responses || typeof responses !== 'object') {
         return res.status(400).json({
           success: false,
-          message: 'Question ID is required'
+          message: 'Invalid responses format'
         });
       }
 
-      // Find and validate session
-      const session = await ReflectionSession.findOne({
-        _id: sessionId,
+      // Check eligibility
+      const user = await User.findById(userId);
+      const hasConfirmedSession = await Booking.exists({
         userId,
-        status: 'active'
+        status: 'confirmed'
       });
 
-      if (!session) {
-        return res.status(404).json({
+      if (hasConfirmedSession || user.hasConfirmedSession || user.reflectionCompleted) {
+        return res.status(403).json({
           success: false,
-          message: 'Active reflection session not found'
+          message: 'Reflection quiz is only available for first-time clients'
         });
       }
 
-      // Find the question
-      const question = await ReflectionQuestion.findById(questionId);
-      if (!question || question.sessionId.toString() !== sessionId) {
-        return res.status(404).json({
-          success: false,
-          message: 'Question not found'
-        });
-      }
+      // Get questions for validation
+      const questions = await ReflectionQuestion.find({ isActive: true })
+        .sort({ questionNumber: 1 });
 
-      // Add response to session
-      await session.addResponse(questionId, question.questionText, answer || '', skipped);
-
-      // Check if we should generate next question (max 10 questions)
-      const currentQuestionCount = session.responses.length;
-      
-      if (currentQuestionCount >= 10) {
-        // Session complete, generate summary
-        return res.json({
-          success: true,
-          message: 'Maximum questions reached. Ready to complete reflection.',
-          data: {
-            sessionId: session._id,
-            questionCount: currentQuestionCount,
-            canContinue: false,
-            nextAction: 'complete'
-          }
-        });
-      }
-
-      // Generate next question
-      try {
-        const responses = session.responses.map(r => ({
-          questionText: r.questionText,
-          answer: r.answer,
-          skipped: r.skipped
-        }));
-
-        const currentThemes = session.responses
-          .map(r => r.questionText)
-          .join(' ')
-          .toLowerCase()
-          .includes('feeling') ? ['emotions', 'wellbeing'] : ['general'];
-
-        const nextQuestion = await geminiService.generateNextQuestion(
-          responses, 
-          currentThemes, 
-          currentQuestionCount + 1
-        );
-
-        // Validate next question
-        const validation = contentValidator.validateQuestion(nextQuestion.question, nextQuestion.options);
+      // Validate responses
+      const validatedResponses = {};
+      for (const question of questions) {
+        const questionKey = `q${question.questionNumber}`;
+        const response = responses[questionKey];
         
-        if (!validation.isValid) {
-          console.error('Next question validation failed:', validation.violations);
-          // Use fallback question
-          const fallbackQuestion = geminiService.getFallbackQuestion(currentQuestionCount + 1);
-          nextQuestion.question = fallbackQuestion.question;
-          nextQuestion.options = fallbackQuestion.options;
+        if (response) {
+          // Validate that the response is a valid option
+          const validOption = question.options.find(opt => opt.value === response);
+          if (validOption) {
+            validatedResponses[questionKey] = {
+              questionText: question.questionText,
+              category: question.category,
+              selectedValue: response,
+              selectedLabel: validOption.label
+            };
+          }
         }
-
-        // Store next question
-        const nextQuestionDoc = new ReflectionQuestion({
-          sessionId: session._id,
-          questionNumber: currentQuestionCount + 1,
-          questionText: nextQuestion.question,
-          questionType: 'multiple_choice',
-          options: nextQuestion.options,
-          internalThemes: nextQuestion.internalThemes,
-          nextFocus: nextQuestion.nextFocus
-        });
-
-        await nextQuestionDoc.save();
-
-        res.json({
-          success: true,
-          message: 'Answer submitted successfully',
-          data: {
-            sessionId: session._id,
-            questionCount: currentQuestionCount,
-            nextQuestion: {
-              id: nextQuestionDoc._id,
-              number: currentQuestionCount + 1,
-              text: nextQuestion.question,
-              options: nextQuestion.options,
-              type: 'multiple_choice'
-            },
-            canContinue: true
-          }
-        });
-      } catch (questionError) {
-        console.error('Failed to generate next question:', questionError);
-        
-        // Use fallback question
-        const fallbackQuestion = geminiService.getFallbackQuestion(currentQuestionCount + 1);
-        
-        const nextQuestionDoc = new ReflectionQuestion({
-          sessionId: session._id,
-          questionNumber: currentQuestionCount + 1,
-          questionText: fallbackQuestion.question,
-          questionType: 'multiple_choice',
-          options: fallbackQuestion.options,
-          internalThemes: fallbackQuestion.internalThemes,
-          nextFocus: fallbackQuestion.nextFocus
-        });
-
-        await nextQuestionDoc.save();
-
-        res.json({
-          success: true,
-          message: 'Answer submitted successfully (using fallback question)',
-          data: {
-            sessionId: session._id,
-            questionCount: currentQuestionCount,
-            nextQuestion: {
-              id: nextQuestionDoc._id,
-              number: currentQuestionCount + 1,
-              text: fallbackQuestion.question,
-              options: fallbackQuestion.options,
-              type: 'multiple_choice'
-            },
-            canContinue: true
-          }
-        });
       }
-    } catch (error) {
-      console.error('Submit answer error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to submit answer',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
-    }
-  },
-  // Complete reflection session
-  completeReflection: async (req, res) => {
-    try {
-      console.log('🏁 Completing reflection session:', req.params.sessionId);
-      const { sessionId } = req.params;
-      const userId = req.user.userId;
-
-      // Find and validate session
-      const session = await ReflectionSession.findOne({
-        _id: sessionId,
-        userId,
-        status: 'active'
-      });
-
-      if (!session) {
-        console.log('❌ Active reflection session not found');
-        return res.status(404).json({
-          success: false,
-          message: 'Active reflection session not found'
-        });
-      }
-
-      console.log(`📊 Session has ${session.responses.length} responses`);
 
       // Generate AI summary
+      let aiSummary = null;
       try {
-        const responses = session.responses
-          .filter(r => !r.skipped && r.answer.trim())
-          .map(r => ({
-            questionText: r.questionText,
-            answer: r.answer
-          }));
-
-        console.log(`📝 Processing ${responses.length} valid responses for summary`);
-
-        if (responses.length === 0) {
-          console.log('⚠️ No responses to summarize, using default summary');
-          // No responses to summarize
-          await session.completeSession({
-            summary: "The client started a reflection session but did not provide responses to summarize.",
-            keyThemes: ["Reflection initiated"],
-            possibleApproaches: ["Client-Centred Therapy"],
-            suggestedQuestions: [
-              "What feels most important to talk about today?",
-              "How are you feeling about being here?",
-              "Where would you like to begin?"
-            ]
-          });
-        } else {
-          console.log('🤖 Generating AI summary...');
-          const aiSummary = await geminiService.generateSummary(responses);
-          console.log('📋 Generated summary:', aiSummary);
-          
-          // Validate summary
-          const validation = contentValidator.validateSummary(aiSummary);
-          
-          if (!validation.isValid) {
-            console.error('❌ Summary validation failed:', validation.violations);
-            // Use fallback summary
-            const fallbackSummary = geminiService.getFallbackSummary();
-            console.log('🔄 Using fallback summary');
-            await session.completeSession(fallbackSummary);
-          } else {
-            console.log('✅ Summary validation passed, saving AI summary');
-            await session.completeSession(aiSummary);
-          }
-        }
-
-        console.log('✅ Reflection session completed successfully');
-
-        res.json({
-          success: true,
-          message: 'Reflection session completed successfully',
-          data: {
-            sessionId: session._id,
-            status: 'completed',
-            completedAt: session.completedAt,
-            totalQuestions: session.metadata.totalQuestions,
-            questionsAnswered: session.metadata.questionsAnswered,
-            questionsSkipped: session.metadata.questionsSkipped,
-            duration: session.metadata.sessionDuration
-          }
-        });
-      } catch (summaryError) {
-        console.error('Failed to generate summary:', summaryError);
-        
-        // Complete session with fallback summary
-        const fallbackSummary = geminiService.getFallbackSummary();
-        await session.completeSession(fallbackSummary);
-
-        res.json({
-          success: true,
-          message: 'Reflection session completed successfully (using fallback summary)',
-          data: {
-            sessionId: session._id,
-            status: 'completed',
-            completedAt: session.completedAt,
-            totalQuestions: session.metadata.totalQuestions,
-            questionsAnswered: session.metadata.questionsAnswered,
-            questionsSkipped: session.metadata.questionsSkipped,
-            duration: session.metadata.sessionDuration
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Complete reflection error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to complete reflection session',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
-    }
-  },
-
-  // Get reflection session data
-  getReflectionSession: async (req, res) => {
-    try {
-      const { sessionId } = req.params;
-      const userId = req.user.userId;
-
-      const session = await ReflectionSession.findOne({
-        _id: sessionId,
-        userId
-      });
-
-      if (!session) {
-        return res.status(404).json({
-          success: false,
-          message: 'Reflection session not found'
-        });
+        aiSummary = await geminiService.generateFirstSessionSummary(validatedResponses, questions);
+      } catch (aiError) {
+        console.error('❌ AI summary generation failed:', aiError);
+        // Continue without AI summary - don't fail the entire process
       }
 
-      // Get questions for this session
-      const questions = await ReflectionQuestion.find({
-        sessionId: session._id
-      }).sort({ questionNumber: 1 });
+      // Save to user profile (permanent, one-time)
+      await User.findByIdAndUpdate(userId, {
+        reflectionCompleted: true,
+        reflectionResponses: validatedResponses,
+        reflectionSummary: aiSummary
+      });
 
       res.json({
         success: true,
+        message: 'Reflection completed successfully',
         data: {
-          session: {
-            id: session._id,
-            status: session.status,
-            startedAt: session.startedAt,
-            completedAt: session.completedAt,
-            metadata: session.metadata
-          },
-          questions: questions.map(q => ({
-            id: q._id,
-            number: q.questionNumber,
-            text: q.questionText,
-            type: q.questionType,
-            options: q.options
-          })),
-          responses: session.responses.map(r => ({
-            questionId: r.questionId,
-            answer: r.answer,
-            skipped: r.skipped,
-            answeredAt: r.answeredAt
-          }))
+          responsesCount: Object.keys(validatedResponses).length,
+          summaryGenerated: !!aiSummary
         }
       });
+
     } catch (error) {
-      console.error('Get reflection session error:', error);
+      console.error('❌ Error submitting reflection:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to get reflection session',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
-    }
-  },
-  // Abandon reflection session
-  abandonReflection: async (req, res) => {
-    try {
-      const { sessionId } = req.params;
-      const userId = req.user.userId;
-
-      const session = await ReflectionSession.findOne({
-        _id: sessionId,
-        userId,
-        status: 'active'
-      });
-
-      if (!session) {
-        return res.status(404).json({
-          success: false,
-          message: 'Active reflection session not found'
-        });
-      }
-
-      await session.abandonSession();
-
-      res.json({
-        success: true,
-        message: 'Reflection session abandoned successfully',
-        data: {
-          sessionId: session._id,
-          status: 'abandoned'
-        }
-      });
-    } catch (error) {
-      console.error('Abandon reflection error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to abandon reflection session',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        message: 'Failed to submit reflection'
       });
     }
   },
 
-  // Get user's reflection sessions
-  getUserReflectionSessions: async (req, res) => {
+  /**
+   * Get user's reflection summary (for admin view)
+   */
+  getUserReflection: async (req, res) => {
     try {
-      const userId = req.user.userId;
-      const { status, limit = 10, page = 1 } = req.query;
-
-      let query = { userId };
-      if (status) {
-        query.status = status;
-      }
-
-      const skip = (page - 1) * limit;
-
-      const sessions = await ReflectionSession.find(query)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(parseInt(limit))
-        .select('-responses.questionId -aiSummary'); // Exclude detailed data
-
-      const total = await ReflectionSession.countDocuments(query);
-
-      res.json({
-        success: true,
-        data: sessions.map(session => ({
-          id: session._id,
-          status: session.status,
-          startedAt: session.startedAt,
-          completedAt: session.completedAt,
-          metadata: session.metadata,
-          createdAt: session.createdAt
-        })),
-        pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total,
-          pages: Math.ceil(total / limit)
-        }
-      });
-    } catch (error) {
-      console.error('Get user reflection sessions error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to get reflection sessions',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
-    }
-  },
-  // Admin: Get all reflection sessions
-  getAllReflectionSessions: async (req, res) => {
-    try {
-      const { status, date, page = 1, limit = 10 } = req.query;
-
-      let query = {};
-      if (status) query.status = status;
-      if (date) {
-        const targetDate = new Date(date);
-        const nextDay = new Date(targetDate);
-        nextDay.setDate(nextDay.getDate() + 1);
-        
-        query.createdAt = {
-          $gte: targetDate,
-          $lt: nextDay
-        };
-      }
-
-      const skip = (page - 1) * limit;
-
-      const sessions = await ReflectionSession.find(query)
-        .populate('userId', 'firstName lastName email')
-        .populate('bookingId', 'personalInfo.name slotId')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(parseInt(limit));
-
-      const total = await ReflectionSession.countDocuments(query);
-
-      res.json({
-        success: true,
-        data: sessions,
-        pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total,
-          pages: Math.ceil(total / limit)
-        }
-      });
-    } catch (error) {
-      console.error('Get all reflection sessions error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to get reflection sessions',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
-    }
-  },
-
-  // Admin: Get reflection summary
-  getReflectionSummary: async (req, res) => {
-    try {
-      const { sessionId } = req.params;
-
-      const session = await ReflectionSession.findById(sessionId)
-        .populate('userId', 'firstName lastName email')
-        .populate('bookingId', 'personalInfo slotId');
-
-      if (!session) {
-        return res.status(404).json({
-          success: false,
-          message: 'Reflection session not found'
-        });
-      }
-
-      // Get questions for context
-      const questions = await ReflectionQuestion.find({
-        sessionId: session._id
-      }).sort({ questionNumber: 1 });
-
-      res.json({
-        success: true,
-        data: {
-          session: {
-            id: session._id,
-            status: session.status,
-            startedAt: session.startedAt,
-            completedAt: session.completedAt,
-            metadata: session.metadata,
-            user: session.userId,
-            booking: session.bookingId
-          },
-          questions: questions.map(q => ({
-            number: q.questionNumber,
-            text: q.questionText,
-            type: q.questionType,
-            options: q.options
-          })),
-          responses: session.responses.map(r => ({
-            questionText: r.questionText,
-            answer: r.answer,
-            skipped: r.skipped,
-            answeredAt: r.answeredAt
-          })),
-          aiSummary: session.aiSummary,
-          disclaimer: "For preparation only. Human judgment required."
-        }
-      });
-    } catch (error) {
-      console.error('Get reflection summary error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to get reflection summary',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
-    }
-  },
-
-  // Admin: Delete reflection session
-  deleteReflectionSession: async (req, res) => {
-    try {
-      const { sessionId } = req.params;
-
-      const session = await ReflectionSession.findById(sessionId);
-      if (!session) {
-        return res.status(404).json({
-          success: false,
-          message: 'Reflection session not found'
-        });
-      }
-
-      // Delete associated questions
-      await ReflectionQuestion.deleteMany({ sessionId: session._id });
+      const { userId } = req.params;
       
-      // Delete session
-      await ReflectionSession.findByIdAndDelete(sessionId);
+      const user = await User.findById(userId)
+        .select('reflectionCompleted reflectionResponses reflectionSummary hasConfirmedSession createdAt');
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
 
       res.json({
         success: true,
-        message: 'Reflection session deleted successfully'
+        data: {
+          hasReflection: user.reflectionCompleted,
+          summary: user.reflectionSummary,
+          responses: user.reflectionResponses,
+          isFirstTimeClient: !user.hasConfirmedSession,
+          accountAge: Math.floor((Date.now() - user.createdAt.getTime()) / (1000 * 60 * 60 * 24)) // days
+        }
       });
+
     } catch (error) {
-      console.error('Delete reflection session error:', error);
+      console.error('❌ Error fetching user reflection:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to delete reflection session',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        message: 'Failed to fetch user reflection'
       });
+    }
+  },
+
+  /**
+   * Admin: Get all reflection questions
+   */
+  admin: {
+    getQuestions: async (req, res) => {
+      try {
+        const questions = await ReflectionQuestion.find()
+          .sort({ questionNumber: 1 });
+
+        res.json({
+          success: true,
+          data: questions
+        });
+      } catch (error) {
+        console.error('❌ Error fetching admin questions:', error);
+        res.status(500).json({
+          success: false,
+          message: 'Failed to fetch questions'
+        });
+      }
+    },
+
+    /**
+     * Admin: Update question
+     */
+    updateQuestion: async (req, res) => {
+      try {
+        const { questionId } = req.params;
+        const updateData = req.body;
+
+        const question = await ReflectionQuestion.findByIdAndUpdate(
+          questionId,
+          updateData,
+          { new: true, runValidators: true }
+        );
+
+        if (!question) {
+          return res.status(404).json({
+            success: false,
+            message: 'Question not found'
+          });
+        }
+
+        res.json({
+          success: true,
+          message: 'Question updated successfully',
+          data: question
+        });
+      } catch (error) {
+        console.error('❌ Error updating question:', error);
+        res.status(500).json({
+          success: false,
+          message: 'Failed to update question'
+        });
+      }
+    },
+
+    /**
+     * Admin: Add new question
+     */
+    addQuestion: async (req, res) => {
+      try {
+        const questionData = req.body;
+        
+        const question = new ReflectionQuestion(questionData);
+        await question.save();
+
+        res.status(201).json({
+          success: true,
+          message: 'Question added successfully',
+          data: question
+        });
+      } catch (error) {
+        console.error('❌ Error adding question:', error);
+        res.status(500).json({
+          success: false,
+          message: 'Failed to add question'
+        });
+      }
+    },
+
+    /**
+     * Admin: Delete question
+     */
+    deleteQuestion: async (req, res) => {
+      try {
+        const { questionId } = req.params;
+
+        const question = await ReflectionQuestion.findByIdAndDelete(questionId);
+
+        if (!question) {
+          return res.status(404).json({
+            success: false,
+            message: 'Question not found'
+          });
+        }
+
+        res.json({
+          success: true,
+          message: 'Question deleted successfully'
+        });
+      } catch (error) {
+        console.error('❌ Error deleting question:', error);
+        res.status(500).json({
+          success: false,
+          message: 'Failed to delete question'
+        });
+      }
     }
   }
 };

@@ -9,9 +9,10 @@ import {
   updateProfile,
   forgotPassword,
   resetPassword,
-  validateToken
+  validateToken,
+  markUserConfirmedSession
 } from '../controllers/auth.controller.js';
-import { authenticateToken } from '../middleware/auth.middleware.js';
+import { authenticateToken, requireAdmin } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
@@ -28,5 +29,8 @@ router.post('/logout', authenticateToken, logout);
 router.post('/logout-all', authenticateToken, logoutAll);
 router.get('/profile', authenticateToken, getProfile);
 router.put('/profile', authenticateToken, updateProfile);
+
+// Admin routes
+router.post('/users/:userId/mark-confirmed-session', authenticateToken, requireAdmin, markUserConfirmedSession);
 
 export default router;

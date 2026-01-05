@@ -27,7 +27,9 @@
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.0.0",
     "multer": "^2.0.2",
-    "nodemailer": "^6.10.1",
+    "node-cron": "^3.0.3",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^7.0.12",
     "streamifier": "^0.1.1"
   },
   "devDependencies": {

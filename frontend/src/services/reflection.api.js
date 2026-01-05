@@ -5,7 +5,7 @@ export const reflectionApi = {
   startReflection: async () => {
     try {
       console.log('Making API call to start reflection...');
-      const response = await apiClient.post('/api/reflection/start');
+      const response = await apiClient.post('/reflection/start');
       console.log('API response received:', response.data);
       return response.data;
     } catch (error) {
@@ -19,7 +19,7 @@ export const reflectionApi = {
   // Submit answer to current question
   submitAnswer: async (sessionId, answerData) => {
     try {
-      const response = await apiClient.post(`/api/reflection/${sessionId}/answer`, answerData);
+      const response = await apiClient.post(`/reflection/${sessionId}/answer`, answerData);
       return response.data;
     } catch (error) {
       console.error('Submit answer API error:', error);
@@ -30,7 +30,7 @@ export const reflectionApi = {
   // Complete reflection session
   completeReflection: async (sessionId) => {
     try {
-      const response = await apiClient.post(`/api/reflection/${sessionId}/complete`);
+      const response = await apiClient.post(`/reflection/${sessionId}/complete`);
       return response.data;
     } catch (error) {
       console.error('Complete reflection API error:', error);
@@ -41,7 +41,7 @@ export const reflectionApi = {
   // Get reflection session data
   getReflectionSession: async (sessionId) => {
     try {
-      const response = await apiClient.get(`/api/reflection/${sessionId}`);
+      const response = await apiClient.get(`/reflection/${sessionId}`);
       return response.data;
     } catch (error) {
       console.error('Get reflection session API error:', error);
@@ -52,7 +52,7 @@ export const reflectionApi = {
   // Abandon reflection session
   abandonReflection: async (sessionId) => {
     try {
-      const response = await apiClient.delete(`/api/reflection/${sessionId}`);
+      const response = await apiClient.delete(`/reflection/${sessionId}`);
       return response.data;
     } catch (error) {
       console.error('Abandon reflection API error:', error);
@@ -63,7 +63,7 @@ export const reflectionApi = {
   // Get user's reflection sessions
   getUserReflectionSessions: async (params = {}) => {
     try {
-      const response = await apiClient.get('/api/reflection/user/sessions', { params });
+      const response = await apiClient.get('/reflection/user/sessions', { params });
       return response.data;
     } catch (error) {
       console.error('Get user reflection sessions API error:', error);
@@ -75,7 +75,7 @@ export const reflectionApi = {
   admin: {
     getAllReflectionSessions: async (params = {}) => {
       try {
-        const response = await apiClient.get('/api/reflection/admin/all', { params });
+        const response = await apiClient.get('/reflection/admin/all', { params });
         return response.data;
       } catch (error) {
         console.error('Get all reflection sessions API error:', error);
@@ -86,7 +86,7 @@ export const reflectionApi = {
     // Get reflection summary for admin
     getReflectionSummary: async (sessionId) => {
       try {
-        const response = await apiClient.get(`/api/reflection/admin/summary/${sessionId}`);
+        const response = await apiClient.get(`/reflection/admin/summary/${sessionId}`);
         return response.data;
       } catch (error) {
         console.error('Get reflection summary API error:', error);
@@ -97,10 +97,51 @@ export const reflectionApi = {
     // Delete reflection session
     deleteReflectionSession: async (sessionId) => {
       try {
-        const response = await apiClient.delete(`/api/reflection/admin/${sessionId}`);
+        const response = await apiClient.delete(`/reflection/admin/${sessionId}`);
         return response.data;
       } catch (error) {
         console.error('Delete reflection session API error:', error);
+        throw error.response?.data || { success: false, message: 'Network error' };
+      }
+    },
+
+    // Question Management
+    getQuestions: async () => {
+      try {
+        const response = await apiClient.get('/reflection/admin/questions');
+        return response.data;
+      } catch (error) {
+        console.error('Get admin questions API error:', error);
+        throw error.response?.data || { success: false, message: 'Network error' };
+      }
+    },
+
+    addQuestion: async (questionData) => {
+      try {
+        const response = await apiClient.post('/reflection/admin/questions', questionData);
+        return response.data;
+      } catch (error) {
+        console.error('Add question API error:', error);
+        throw error.response?.data || { success: false, message: 'Network error' };
+      }
+    },
+
+    updateQuestion: async (questionId, questionData) => {
+      try {
+        const response = await apiClient.put(`/reflection/admin/questions/${questionId}`, questionData);
+        return response.data;
+      } catch (error) {
+        console.error('Update question API error:', error);
+        throw error.response?.data || { success: false, message: 'Network error' };
+      }
+    },
+
+    deleteQuestion: async (questionId) => {
+      try {
+        const response = await apiClient.delete(`/reflection/admin/questions/${questionId}`);
+        return response.data;
+      } catch (error) {
+        console.error('Delete question API error:', error);
         throw error.response?.data || { success: false, message: 'Network error' };
       }
     }

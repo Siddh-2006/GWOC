@@ -39,7 +39,7 @@ const corporateInquirySchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['new', 'contacted', 'in-discussion', 'closed'],
+    enum: ['new', 'confirmed', 'in-discussion', 'closed'],
     default: 'new'
   },
   adminNotes: {
@@ -47,6 +47,22 @@ const corporateInquirySchema = new mongoose.Schema({
     trim: true,
     maxlength: 1000,
     default: ''
+  },
+  // Admin action tracking
+  statusUpdatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Auth'
+  },
+  statusUpdatedAt: {
+    type: Date
+  },
+  // Email notification tracking
+  emailNotifications: {
+    confirmationSent: {
+      type: Boolean,
+      default: false
+    },
+    confirmationSentAt: Date
   },
   // Additional context fields for better inquiry handling
   organizationSize: {

@@ -363,7 +363,21 @@ export const psychoEducationController = {
         });
       }
 
-      const content = await PsychoEducation.findById(contentId);
+      // Add retry logic for database operations
+      let retries = 3;
+      let content = null;
+      
+      while (retries > 0) {
+        try {
+          content = await PsychoEducation.findById(contentId);
+          break;
+        } catch (dbError) {
+          retries--;
+          if (retries === 0) throw dbError;
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+        }
+      }
+
       if (!content) {
         return res.status(404).json({
           success: false,
@@ -371,48 +385,50 @@ export const psychoEducationController = {
         });
       }
 
-      // Clean up and ensure proper array format
-      if (!Array.isArray(content.likes)) {
-        content.likes = [];
-      }
-      
-      // Clean up helpful field if it has invalid data
-      if (!Array.isArray(content.helpful)) {
-        content.helpful = [];
-      } else {
-        // Remove any invalid entries
-        content.helpful = content.helpful.filter(id => {
-          try {
-            return mongoose.Types.ObjectId.isValid(id);
-          } catch (e) {
-            return false;
-          }
-        });
-      }
-
-      const hasLiked = content.likes.includes(userId);
+      const hasLiked = content.likes.some(likeId => likeId.toString() === userId.toString());
       
       if (hasLiked) {
-        // Unlike - remove user ID from likes array
+        // Unlike
         content.likes = content.likes.filter(id => id.toString() !== userId.toString());
       } else {
-        // Like - add user ID to likes array
+        // Like
         content.likes.push(userId);
       }
 
-      // Save to database immediately
-      await content.save();
+      // Retry save operation
+      retries = 3;
+      while (retries > 0) {
+        try {
+          await content.save();
+          break;
+        } catch (dbError) {
+          retries--;
+          if (retries === 0) throw dbError;
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
 
       res.json({
         success: true,
         message: hasLiked ? 'Content unliked successfully' : 'Content liked successfully',
         data: { 
           likes: content.likes.length,
-          hasLiked: !hasLiked
+          hasLiked: !hasLiked,
+          likesCount: content.likes.length
         }
       });
     } catch (error) {
-      console.error('❌ Like content error:', error);
+      console.error('❌ Like content error:', error.message);
+      
+      // Check if it's a connection error
+      if (error.name === 'MongoServerSelectionError' || error.name === 'MongoNetworkError') {
+        return res.status(503).json({
+          success: false,
+          message: 'Database connection issue. Please try again in a moment.',
+          error: 'Service temporarily unavailable'
+        });
+      }
+      
       res.status(500).json({
         success: false,
         message: 'Failed to like content',

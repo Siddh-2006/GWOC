@@ -44,12 +44,17 @@ const AuthLoader = () => (
 );
 
 // Protected Route Component
-const ProtectedRoute = ({ children, adminOnly = false }) => {
+const ProtectedRoute = ({ children, adminOnly = false, redirectAdminToAdmin = false }) => {
   const { isAuthenticated, user, isInitialized } = useAuthStore();
 
   if (!isInitialized) return <AuthLoader />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (adminOnly && user?.role !== 'admin') return <Navigate to="/" replace />;
+  
+  // Special case: redirect admin users to admin dashboard for profile route
+  if (redirectAdminToAdmin && user?.role === 'admin') {
+    return <Navigate to="/admin" replace />;
+  }
 
   return children;
 };
@@ -129,7 +134,7 @@ function App() {
           <Route
             path="/profile"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute redirectAdminToAdmin>
                 <Profile />
               </ProtectedRoute>
             }

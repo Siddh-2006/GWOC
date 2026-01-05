@@ -133,7 +133,13 @@ export const updateInquiry = async (req, res) => {
       });
     }
 
-    const updatedInquiry = await CorporateService.updateInquiry(id, value);
+    // Get admin info from authenticated user
+    const adminInfo = req.user ? {
+      adminId: req.user.id,
+      adminEmail: req.user.email
+    } : null;
+
+    const updatedInquiry = await CorporateService.updateInquiry(id, value, adminInfo);
 
     res.json({
       success: true,

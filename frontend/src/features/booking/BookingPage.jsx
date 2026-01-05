@@ -106,6 +106,43 @@ const BookingPage = () => {
     fetchSlots(selectedDate);
   }, [selectedDate]);
 
+  // Check reflection eligibility on component mount
+  useEffect(() => {
+    const checkReflectionEligibility = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/api/reflection/eligibility', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          if (data.data.isEligible) {
+            // First-time client - show reflection option
+            setStep(0);
+          } else {
+            // Returning client - skip directly to slot selection
+            setStep(1);
+          }
+        } else {
+          // Default to slot selection if check fails
+          setStep(1);
+        }
+      } catch (error) {
+        console.error('Failed to check reflection eligibility:', error);
+        // Default to slot selection if check fails
+        setStep(1);
+      }
+    };
+
+    if (user) {
+      checkReflectionEligibility();
+    }
+  }, [user]);
+
   // Scroll to top on step change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });

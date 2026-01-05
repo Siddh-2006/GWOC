@@ -92,7 +92,7 @@ const BookingSchema = new mongoose.Schema({
   // Booking Status
   status: { 
     type: String, 
-    enum: ['pending', 'confirmed', 'cancelled', 'completed', 'rescheduled'], 
+    enum: ['pending', 'under_review', 'confirmed', 'rejected', 'cancelled', 'completed', 'rescheduled'], 
     default: 'pending' 
   },
   
@@ -106,7 +106,18 @@ const BookingSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Auth'
     },
-    confirmedAt: Date
+    confirmedAt: Date,
+    rejectionReason: String,
+    rejectedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Auth'
+    },
+    rejectedAt: Date,
+    reviewedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Auth'
+    },
+    reviewedAt: Date
   },
   
   // Payment Information

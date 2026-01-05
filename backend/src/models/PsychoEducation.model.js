@@ -29,7 +29,7 @@ const psychoEducationSchema = new mongoose.Schema({
   },
   contentType: {
     type: String,
-    enum: ['qa', 'theory', 'quote', 'article', 'tip', 'exercise'],
+    enum: ['qa', 'theory', 'quote', 'article', 'tip', 'exercise', 'life-area'],
     required: true
   },
   content: {

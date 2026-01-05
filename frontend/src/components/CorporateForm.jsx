@@ -1,13 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { corporateService } from '../services/corporate.api';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, Lock, User } from 'lucide-react';
+import useAuthStore from '../store/useAuthStore';
 
 /**
  * Corporate Inquiry Form
  * Calm, human-centered form for starting conversations
- * No "Submit" or "Request proposal" - uses "Start a conversation"
+ * Requires authentication and prefills user data
  */
 export const CorporateForm = () => {
+  const { isAuthenticated, user } = useAuthStore();
+  
   const [formData, setFormData] = useState({
     organizationName: '',
     contactPerson: '',
@@ -22,6 +26,17 @@ export const CorporateForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState('');
+
+  // Prefill form data when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setFormData(prev => ({
+        ...prev,
+        contactPerson: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+        email: user.email || ''
+      }));
+    }
+  }, [isAuthenticated, user]);
 
   const engagementTypes = [
     { value: '', label: 'Please select...' },
@@ -122,6 +137,46 @@ export const CorporateForm = () => {
     );
   }
 
+  // Show login prompt if user is not authenticated
+  if (!isAuthenticated) {
+    return (
+      <section className="py-24 px-8 max-w-6xl mx-auto">
+        <div className="glass-card rounded-3xl p-16 shadow-xl my-16">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Lock className="w-10 h-10 text-purple-600" />
+            </div>
+            <h3 className="text-3xl font-bold mb-6 text-primary">
+              Login Required
+            </h3>
+            <p className="text-lg leading-relaxed text-gray-700 max-w-2xl mx-auto mb-8">
+              To ensure we can properly follow up on your corporate inquiry and provide personalized service, 
+              please log in to your account before submitting the form.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                to="/login"
+                className="bg-primary text-white px-8 py-3 rounded-2xl font-bold hover:bg-primary/90 transition-colors flex items-center gap-2 justify-center"
+              >
+                <User className="w-5 h-5" />
+                Login to Continue
+              </Link>
+              <Link
+                to="/signup"
+                className="border border-primary text-primary px-8 py-3 rounded-2xl font-bold hover:bg-primary/5 transition-colors"
+              >
+                Create Account
+              </Link>
+            </div>
+            <p className="text-sm text-gray-500 mt-6">
+              Don't have an account? <Link to="/signup" className="text-primary hover:underline">Sign up</Link> - it only takes a minute!
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-2 px-6 max-w-5xl mx-auto">
       <div className="bg-white/70 backdrop-blur-2xl rounded-[3rem] p-8 md:p-20 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] my-16 border border-white/50 relative overflow-hidden">
@@ -134,6 +189,19 @@ export const CorporateForm = () => {
           <p className="text-center text-slate-500 mb-16 text-lg max-w-2xl mx-auto">
             Ready to explore how we can support your organization? Share a few details, and we'll start exploring the possibilities together.
           </p>
+
+          {/* User info notice */}
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-8 max-w-3xl mx-auto">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-green-600" />
+              </div>
+              <div>
+                <p className="text-green-800 font-medium">Welcome, {user?.firstName}!</p>
+                <p className="text-green-700 text-sm">Your contact information has been prefilled from your account.</p>
+              </div>
+            </div>
+          </div>
 
           <form className="max-w-3xl mx-auto space-y-8" onSubmit={handleSubmit}>
             <div className="grid md:grid-cols-2 gap-8">

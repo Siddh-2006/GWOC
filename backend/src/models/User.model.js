@@ -5,6 +5,13 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   phone: { type: String },
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
+  
+  // Reflection System - First Session Only
+  hasConfirmedSession: { type: Boolean, default: false },
+  reflectionCompleted: { type: Boolean, default: false },
+  reflectionResponses: { type: Object, default: null },
+  reflectionSummary: { type: String, default: null },
+  
   createdAt: { type: Date, default: Date.now }
 });
 

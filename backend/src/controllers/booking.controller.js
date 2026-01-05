@@ -1,5 +1,6 @@
 import { Booking } from '../models/Booking.model.js';
 import { Slot } from '../models/Slot.model.js';
+import { User } from '../models/User.model.js';
 import Auth from '../models/Auth.model.js';
 import { sendBookingConfirmation, sendBookingNotification, sendBookingReminder } from '../services/booking-email.service.js';
 
@@ -277,10 +278,20 @@ export const bookingController = {
   // Admin: Get all bookings
   getAllBookings: async (req, res) => {
     try {
-      const { status, date, page = 1, limit = 10 } = req.query;
+      const { status, date, page = 1, limit = 10, upcoming } = req.query;
       
       let query = {};
-      if (status) query.status = status;
+      
+      // Status filter
+      if (status) {
+        if (status === 'all') {
+          // No status filter
+        } else {
+          query.status = status;
+        }
+      }
+      
+      // Date filter
       if (date) {
         const targetDate = new Date(date);
         const nextDay = new Date(targetDate);
@@ -292,12 +303,137 @@ export const bookingController = {
         };
       }
       
+      // Upcoming filter - exclude sessions where end time has passed
+      if (upcoming === 'true') {
+        const now = new Date();
+        
+        // We need to filter based on slot end time
+        // This requires a more complex aggregation
+        const bookings = await Booking.aggregate([
+          {
+            $lookup: {
+              from: 'slots',
+              localField: 'slotId',
+              foreignField: '_id',
+              as: 'slotInfo'
+            }
+          },
+          {
+            $unwind: '$slotInfo'
+          },
+          {
+            $addFields: {
+              sessionEndDateTime: {
+                $dateFromString: {
+                  dateString: {
+                    $concat: [
+                      { $dateToString: { format: "%Y-%m-%d", date: "$slotInfo.date" } },
+                      "T",
+                      "$slotInfo.endTime",
+                      ":00.000Z"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            $match: {
+              sessionEndDateTime: { $gt: now },
+              ...query
+            }
+          },
+          {
+            $lookup: {
+              from: 'auths',
+              localField: 'userId',
+              foreignField: '_id',
+              as: 'userInfo'
+            }
+          },
+          {
+            $lookup: {
+              from: 'auths',
+              localField: 'adminResponse.confirmedBy',
+              foreignField: '_id',
+              as: 'confirmedByInfo'
+            }
+          },
+          {
+            $sort: { createdAt: -1 }
+          },
+          {
+            $skip: (page - 1) * limit
+          },
+          {
+            $limit: parseInt(limit)
+          }
+        ]);
+        
+        // Get total count for pagination
+        const totalPipeline = [
+          {
+            $lookup: {
+              from: 'slots',
+              localField: 'slotId',
+              foreignField: '_id',
+              as: 'slotInfo'
+            }
+          },
+          {
+            $unwind: '$slotInfo'
+          },
+          {
+            $addFields: {
+              sessionEndDateTime: {
+                $dateFromString: {
+                  dateString: {
+                    $concat: [
+                      { $dateToString: { format: "%Y-%m-%d", date: "$slotInfo.date" } },
+                      "T",
+                      "$slotInfo.endTime",
+                      ":00.000Z"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            $match: {
+              sessionEndDateTime: { $gt: now },
+              ...query
+            }
+          },
+          {
+            $count: "total"
+          }
+        ];
+        
+        const totalResult = await Booking.aggregate(totalPipeline);
+        const total = totalResult.length > 0 ? totalResult[0].total : 0;
+        
+        return res.json({
+          success: true,
+          data: bookings,
+          pagination: {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total,
+            pages: Math.ceil(total / limit)
+          }
+        });
+      }
+      
+      // Regular query without upcoming filter
       const skip = (page - 1) * limit;
       
       const bookings = await Booking.find(query)
         .populate('userId', 'firstName lastName email')
         .populate('slotId')
         .populate('adminResponse.confirmedBy', 'firstName lastName')
+        .populate('adminResponse.reviewedBy', 'firstName lastName')
+        .populate('adminResponse.rejectedBy', 'firstName lastName')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(parseInt(limit));
@@ -324,7 +460,101 @@ export const bookingController = {
     }
   },
 
-  // Admin: Confirm booking
+  // Admin: Review booking (mark as under review)
+  reviewBooking: async (req, res) => {
+    try {
+      const { bookingId } = req.params;
+      const adminId = req.user.userId;
+      
+      const booking = await Booking.findById(bookingId);
+      
+      if (!booking) {
+        return res.status(404).json({
+          success: false,
+          message: 'Booking not found'
+        });
+      }
+      
+      if (booking.status !== 'pending') {
+        return res.status(400).json({
+          success: false,
+          message: 'Only pending bookings can be reviewed'
+        });
+      }
+      
+      booking.status = 'under_review';
+      booking.adminResponse = {
+        ...booking.adminResponse,
+        reviewedBy: adminId,
+        reviewedAt: new Date()
+      };
+      
+      await booking.save();
+      
+      res.json({
+        success: true,
+        message: 'Booking marked as under review',
+        data: booking
+      });
+    } catch (error) {
+      console.error('Review booking error:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to review booking',
+        error: error.message 
+      });
+    }
+  },
+
+  // Admin: Reject booking (delete from database)
+  rejectBooking: async (req, res) => {
+    try {
+      const { bookingId } = req.params;
+      const adminId = req.user.userId;
+      const { rejectionReason } = req.body;
+      
+      const booking = await Booking.findById(bookingId)
+        .populate('userId')
+        .populate('slotId');
+      
+      if (!booking) {
+        return res.status(404).json({
+          success: false,
+          message: 'Booking not found'
+        });
+      }
+      
+      // Make slot available again before deleting booking
+      if (booking.slotId) {
+        booking.slotId.isAvailable = true;
+        booking.slotId.bookingId = null;
+        await booking.slotId.save();
+      }
+      
+      // Send rejection email to user before deleting
+      try {
+        await sendBookingConfirmation(booking, booking.slotId, 'rejected', rejectionReason);
+      } catch (emailError) {
+        console.error('Rejection email error:', emailError);
+      }
+      
+      // Delete the booking from database
+      await Booking.findByIdAndDelete(bookingId);
+      
+      res.json({
+        success: true,
+        message: 'Booking rejected and removed from database',
+        data: { bookingId, rejectionReason }
+      });
+    } catch (error) {
+      console.error('Reject booking error:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to reject booking',
+        error: error.message 
+      });
+    }
+  },
   confirmBooking: async (req, res) => {
     try {
       const { bookingId } = req.params;
@@ -371,6 +601,16 @@ export const bookingController = {
         await booking.slotId.save();
       }
       
+      // Mark user as having confirmed session (for reflection system)
+      try {
+        await User.findByIdAndUpdate(booking.userId._id, {
+          hasConfirmedSession: true
+        });
+        console.log(`✅ Marked user ${booking.userId._id} as having confirmed session`);
+      } catch (userUpdateError) {
+        console.error('Error marking user session as confirmed:', userUpdateError);
+      }
+
       // Send confirmation email to user
       try {
         await sendBookingConfirmation(booking, booking.slotId, 'confirmed');

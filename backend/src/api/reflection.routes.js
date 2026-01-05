@@ -4,33 +4,32 @@ import { authenticateToken, requireAdmin } from '../middleware/auth.middleware.j
 
 const router = Router();
 
+// NEW FIRST-SESSION-ONLY REFLECTION SYSTEM
+
 // Protected routes (authentication required)
-// POST /api/reflection/start - Start new reflection session
-router.post('/start', authenticateToken, reflectionController.startReflection);
+// GET /api/reflection/eligibility - Check if user is eligible for reflection (first session only)
+router.get('/eligibility', authenticateToken, reflectionController.checkEligibility);
 
-// POST /api/reflection/:sessionId/answer - Submit answer to question
-router.post('/:sessionId/answer', authenticateToken, reflectionController.submitAnswer);
+// GET /api/reflection/questions - Get reflection questions (first session only)
+router.get('/questions', authenticateToken, reflectionController.getQuestions);
 
-// POST /api/reflection/:sessionId/complete - Complete reflection session
-router.post('/:sessionId/complete', authenticateToken, reflectionController.completeReflection);
+// POST /api/reflection/submit - Submit reflection responses (first session only)
+router.post('/submit', authenticateToken, reflectionController.submitReflection);
 
-// GET /api/reflection/:sessionId - Get reflection session data
-router.get('/:sessionId', authenticateToken, reflectionController.getReflectionSession);
+// GET /api/reflection/user/:userId - Get user's reflection data (for admin)
+router.get('/user/:userId', authenticateToken, requireAdmin, reflectionController.getUserReflection);
 
-// DELETE /api/reflection/:sessionId - Abandon reflection session
-router.delete('/:sessionId', authenticateToken, reflectionController.abandonReflection);
+// Admin routes for question management
+// GET /api/reflection/admin/questions - Get all questions for admin management
+router.get('/admin/questions', authenticateToken, requireAdmin, reflectionController.admin.getQuestions);
 
-// GET /api/reflection/user/sessions - Get user's reflection sessions
-router.get('/user/sessions', authenticateToken, reflectionController.getUserReflectionSessions);
+// PUT /api/reflection/admin/questions/:questionId - Update question
+router.put('/admin/questions/:questionId', authenticateToken, requireAdmin, reflectionController.admin.updateQuestion);
 
-// Admin routes (admin authentication required)
-// GET /api/reflection/admin/all - Get all reflection sessions (admin only)
-router.get('/admin/all', authenticateToken, requireAdmin, reflectionController.getAllReflectionSessions);
+// POST /api/reflection/admin/questions - Add new question
+router.post('/admin/questions', authenticateToken, requireAdmin, reflectionController.admin.addQuestion);
 
-// GET /api/reflection/admin/summary/:sessionId - Get reflection summary for admin
-router.get('/admin/summary/:sessionId', authenticateToken, requireAdmin, reflectionController.getReflectionSummary);
-
-// DELETE /api/reflection/admin/:sessionId - Delete reflection session (admin only)
-router.delete('/admin/:sessionId', authenticateToken, requireAdmin, reflectionController.deleteReflectionSession);
+// DELETE /api/reflection/admin/questions/:questionId - Delete question
+router.delete('/admin/questions/:questionId', authenticateToken, requireAdmin, reflectionController.admin.deleteQuestion);
 
 export default router;

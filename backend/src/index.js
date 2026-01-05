@@ -21,6 +21,9 @@ import psychoEducationRoutes from './api/psychoEducation.routes.js';
 import reflectionRoutes from './api/reflection.routes.js';
 import sessionsRoutes from './api/sessions.routes.js';
 
+// Import reminder service
+import { sessionReminderService } from './services/session-reminder.service.js';
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -62,4 +65,7 @@ app.listen(PORT, () => {
   if (process.env.NODE_ENV !== 'production') {
     console.log(`🚀 Server running on port ${PORT}`);
   }
+  
+  // Start the session reminder service
+  sessionReminderService.start();
 });

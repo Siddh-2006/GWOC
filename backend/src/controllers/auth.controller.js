@@ -654,3 +654,40 @@ export const resetPassword = async (req, res) => {
     });
   }
 };
+/**
+ * Mark user as having a confirmed session (for reflection eligibility)
+ * Admin only - called when booking is confirmed
+ */
+export const markUserConfirmedSession = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Import User model
+    const { User } = await import('../models/User.model.js');
+    
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { hasConfirmedSession: true },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'User session status updated'
+    });
+
+  } catch (error) {
+    console.error('❌ Error marking user confirmed session:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update user session status'
+    });
+  }
+};

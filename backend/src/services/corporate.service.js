@@ -1,4 +1,5 @@
 import CorporateInquiry from '../models/CorporateInquiry.model.js';
+import { sendCorporateConfirmation } from './corporate-email.service.js';
 
 export class CorporateService {
   
@@ -102,13 +103,23 @@ export class CorporateService {
   /**
    * Update inquiry status and admin notes
    */
-  static async updateInquiry(inquiryId, updateData) {
+  static async updateInquiry(inquiryId, updateData, adminInfo = null) {
     try {
+      const previousInquiry = await CorporateInquiry.findById(inquiryId);
+      if (!previousInquiry) {
+        throw new Error('Inquiry not found');
+      }
+
       const inquiry = await CorporateInquiry.findByIdAndUpdate(
         inquiryId,
         { 
           ...updateData,
-          updatedAt: new Date()
+          updatedAt: new Date(),
+          // Track admin action if provided
+          ...(adminInfo && {
+            lastActionBy: adminInfo.adminId,
+            lastActionAt: new Date()
+          })
         },
         { 
           new: true,
@@ -118,6 +129,23 @@ export class CorporateService {
 
       if (!inquiry) {
         throw new Error('Inquiry not found');
+      }
+
+      // Send email notification if status changed to 'confirmed'
+      if (updateData.status === 'confirmed' && previousInquiry.status !== 'confirmed') {
+        try {
+          const emailResult = await sendCorporateConfirmation(inquiry);
+          if (emailResult.success) {
+            // Update inquiry to mark email as sent
+            await CorporateInquiry.findByIdAndUpdate(inquiryId, {
+              emailNotificationSent: true,
+              emailSentAt: new Date()
+            });
+          }
+        } catch (emailError) {
+          console.error('❌ Failed to send corporate confirmation email:', emailError);
+          // Don't fail the update if email fails, just log it
+        }
       }
 
       return inquiry;

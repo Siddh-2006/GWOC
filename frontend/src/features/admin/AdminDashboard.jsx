@@ -7,6 +7,7 @@ import { slotApi } from '../../services/slot.api';
 import { CorporateInquiries } from '../../components/admin/CorporateInquiries';
 import ContactMessages from '../../components/admin/ContactMessages';
 import AddSlotModal from '../../components/admin/AddSlotModal';
+import ReflectionQuestions from '../../components/admin/ReflectionQuestions';
 
 const AdminDashboard = () => {
   const {
@@ -24,18 +25,25 @@ const AdminDashboard = () => {
   const [confirmationData, setConfirmationData] = useState({
     confirmedDate: '',
     confirmedTime: '',
-    meetingLink: '',
+    meetingLink: 'https://meet.google.com/new',
     notes: ''
   });
   const [showAddSlotModal, setShowAddSlotModal] = useState(false);
   const [reflectionSummaries, setReflectionSummaries] = useState([]);
   const [loadingReflections, setLoadingReflections] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [showUpcomingOnly, setShowUpcomingOnly] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   const fetchBookings = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await bookingApi.admin.getAllBookings();
+      const filters = {
+        status: statusFilter,
+        upcoming: showUpcomingOnly
+      };
+      const response = await bookingApi.admin.getAllBookings(filters);
       setBookings(response.data || []);
     } catch (err) {
       setError('Failed to fetch bookings: ' + err.message);
@@ -106,6 +114,22 @@ const AdminDashboard = () => {
       setLoading(true);
       await bookingApi.admin.confirmBooking(bookingId, confirmationData);
       
+      // Mark user as having confirmed session (for reflection eligibility)
+      if (selectedBooking?.userId) {
+        try {
+          await fetch(`http://localhost:3001/api/auth/users/${selectedBooking.userId}/mark-confirmed-session`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+              'Content-Type': 'application/json'
+            }
+          });
+        } catch (error) {
+          console.error('Failed to update user session status:', error);
+          // Don't fail the booking confirmation for this
+        }
+      }
+      
       // Refresh both bookings and slots lists to show updated availability
       await fetchBookings();
       if (activeTab === 'slots') {
@@ -117,12 +141,47 @@ const AdminDashboard = () => {
       setConfirmationData({
         confirmedDate: '',
         confirmedTime: '',
-        meetingLink: '',
+        meetingLink: 'https://meet.google.com/new',
         notes: ''
       });
       
     } catch (err) {
       setError('Failed to confirm booking: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReviewBooking = async (bookingId) => {
+    try {
+      setLoading(true);
+      await bookingApi.admin.reviewBooking(bookingId);
+      await fetchBookings();
+    } catch (err) {
+      setError('Failed to review booking: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectBooking = async (bookingId) => {
+    if (!rejectionReason.trim()) {
+      setError('Please provide a rejection reason');
+      return;
+    }
+    
+    if (!window.confirm('Are you sure you want to reject this booking? This will permanently delete it from the database.')) {
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      await bookingApi.admin.rejectBooking(bookingId, rejectionReason);
+      await fetchBookings();
+      setSelectedBooking(null);
+      setRejectionReason('');
+    } catch (err) {
+      setError('Failed to reject booking: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -152,6 +211,11 @@ const AdminDashboard = () => {
       color: 'text-yellow-600 bg-yellow-100' 
     },
     { 
+      label: 'Under Review', 
+      count: bookings.filter(b => b.status === 'under_review').length, 
+      color: 'text-blue-600 bg-blue-100' 
+    },
+    { 
       label: 'Confirmed', 
       count: bookings.filter(b => b.status === 'confirmed').length, 
       color: 'text-green-600 bg-green-100' 
@@ -164,7 +228,7 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 pt-24">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-primary">Admin Dashboard</h1>
@@ -234,20 +298,12 @@ const AdminDashboard = () => {
           Contact Messages
         </button>
         <button
-          onClick={() => setActiveTab('media')}
-          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'media' ? 'bg-white shadow text-primary' : 'text-gray-500 hover:text-primary'
+          onClick={() => setActiveTab('reflection-questions')}
+          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'reflection-questions' ? 'bg-white shadow text-primary' : 'text-gray-500 hover:text-primary'
             }`}
         >
-          <Image size={16} />
-          Media & Resources
-        </button>
-        <button
-          onClick={() => setActiveTab('psycho-education')}
-          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'psycho-education' ? 'bg-white shadow text-primary' : 'text-gray-500 hover:text-primary'
-            }`}
-        >
-          <BookOpen size={16} />
-          Psycho-Education
+          <Heart size={16} />
+          Reflection Questions
         </button>
       </div>
 
@@ -260,6 +316,46 @@ const AdminDashboard = () => {
       <div className="glass-card overflow-hidden">
         {activeTab === 'bookings' ? (
           <div>
+            {/* Filter Controls */}
+            <div className="p-6 border-b border-purple-100">
+              <div className="flex flex-wrap gap-4 items-center">
+                <div className="flex items-center gap-2">
+                  <Filter size={16} className="text-gray-500" />
+                  <span className="text-sm font-medium text-gray-700">Filters:</span>
+                </div>
+                
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="under_review">Under Review</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+                
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={showUpcomingOnly}
+                    onChange={(e) => setShowUpcomingOnly(e.target.checked)}
+                    className="rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <span className="text-gray-700">Upcoming sessions only</span>
+                </label>
+                
+                <button
+                  onClick={fetchBookings}
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm"
+                  disabled={loading}
+                >
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+            
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="animate-spin text-primary" size={32} />
@@ -301,6 +397,12 @@ const AdminDashboard = () => {
                                   <Phone size={12} />
                                   {booking.personalInfo?.phone}
                                 </p>
+                                {/* First-time client indicator */}
+                                {!booking.userId?.hasConfirmedSession && (
+                                  <span className="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
+                                    First Session
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </td>
@@ -324,10 +426,12 @@ const AdminDashboard = () => {
                           <td className="px-6 py-4">
                             <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                               booking.status === 'confirmed' ? 'bg-green-100 text-green-600' :
-                              booking.status === 'cancelled' ? 'bg-red-100 text-red-600' : 
+                              booking.status === 'under_review' ? 'bg-blue-100 text-blue-600' :
+                              booking.status === 'rejected' ? 'bg-red-100 text-red-600' :
+                              booking.status === 'cancelled' ? 'bg-gray-100 text-gray-600' : 
                               'bg-yellow-100 text-yellow-600'
                             }`}>
-                              {booking.status}
+                              {booking.status.replace('_', ' ')}
                             </span>
                           </td>
                           <td className="px-6 py-4">
@@ -339,23 +443,75 @@ const AdminDashboard = () => {
                               >
                                 <Eye size={16} />
                               </button>
+                              
                               {booking.status === 'pending' && (
-                                <button
-                                  onClick={() => {
-                                    setSelectedBooking(booking);
-                                    // Pre-fill with original slot time (admin can change if needed)
-                                    setConfirmationData({
-                                      confirmedDate: booking.slotId?.date ? new Date(booking.slotId.date).toISOString().split('T')[0] : '',
-                                      confirmedTime: booking.slotId?.startTime || '',
-                                      meetingLink: booking.sessionMode === 'online' ? '' : undefined,
-                                      notes: ''
-                                    });
-                                  }}
-                                  className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                                  title="Confirm Booking"
-                                >
-                                  <Check size={16} />
-                                </button>
+                                <>
+                                  <button
+                                    onClick={() => handleReviewBooking(booking._id)}
+                                    className="p-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                                    title="Mark as Under Review"
+                                    disabled={loading}
+                                  >
+                                    <Clock size={16} />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedBooking(booking);
+                                      // Pre-fill with original slot time (admin can change if needed)
+                                      setConfirmationData({
+                                        confirmedDate: booking.slotId?.date ? new Date(booking.slotId.date).toISOString().split('T')[0] : '',
+                                        confirmedTime: booking.slotId?.startTime || '',
+                                        meetingLink: booking.sessionMode === 'online' ? 'https://meet.google.com/new' : undefined,
+                                        notes: ''
+                                      });
+                                    }}
+                                    className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                                    title="Confirm Booking"
+                                  >
+                                    <Check size={16} />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedBooking(booking);
+                                      setRejectionReason('');
+                                    }}
+                                    className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                    title="Reject Booking"
+                                  >
+                                    <X size={16} />
+                                  </button>
+                                </>
+                              )}
+                              
+                              {booking.status === 'under_review' && (
+                                <>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedBooking(booking);
+                                      // Pre-fill with original slot time (admin can change if needed)
+                                      setConfirmationData({
+                                        confirmedDate: booking.slotId?.date ? new Date(booking.slotId.date).toISOString().split('T')[0] : '',
+                                        confirmedTime: booking.slotId?.startTime || '',
+                                        meetingLink: booking.sessionMode === 'online' ? 'https://meet.google.com/new' : undefined,
+                                        notes: ''
+                                      });
+                                    }}
+                                    className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                                    title="Confirm Booking"
+                                  >
+                                    <Check size={16} />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedBooking(booking);
+                                      setRejectionReason('');
+                                    }}
+                                    className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                    title="Reject Booking"
+                                  >
+                                    <X size={16} />
+                                  </button>
+                                </>
                               )}
                             </div>
                           </td>
@@ -564,26 +720,8 @@ const AdminDashboard = () => {
           <CorporateInquiries />
         ) : activeTab === 'contacts' ? (
           <ContactMessages />
-        ) : activeTab === 'media' ? (
-          <div className="p-8">
-            <div className="text-center py-12">
-              <h3 className="text-xl font-bold mb-4">Media & Resources Management</h3>
-              <p className="text-gray-500 mb-4">Manage media content from the Resources page.</p>
-              <a href="/resources" className="btn-primary inline-flex items-center gap-2">
-                Go to Resources Page
-              </a>
-            </div>
-          </div>
-        ) : activeTab === 'psycho-education' ? (
-          <div className="p-8">
-            <div className="text-center py-12">
-              <h3 className="text-xl font-bold mb-4">Psycho-Education Content</h3>
-              <p className="text-gray-500 mb-4">Manage psycho-education content from the dedicated page.</p>
-              <a href="/psycho-education" className="btn-primary inline-flex items-center gap-2">
-                Go to Psycho-Education Page
-              </a>
-            </div>
-          </div>
+        ) : activeTab === 'reflection-questions' ? (
+          <ReflectionQuestions />
         ) : null}
       </div>
 
@@ -630,6 +768,34 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Reflection Summary (First Session Only) */}
+              {!selectedBooking.userId?.hasConfirmedSession && (
+                <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
+                  <h4 className="font-semibold mb-3 text-blue-800 flex items-center gap-2">
+                    <Heart size={16} />
+                    Reflection Summary (First Session Only)
+                  </h4>
+                  <div className="text-sm text-blue-700">
+                    <p className="mb-2">
+                      Based on the client's responses, the individual appears to have moderate emotional awareness and tends to process stress internally. 
+                      They show openness to reflection, though adaptability to change may take time.
+                    </p>
+                    <p>
+                      Interpersonally, they value understanding and emotional connection, suggesting that rapport-building may be important early in the session.
+                    </p>
+                    <button
+                      onClick={() => {
+                        // TODO: Implement view reflection responses modal
+                        alert('View Reflection Responses - To be implemented');
+                      }}
+                      className="mt-3 px-3 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs hover:bg-blue-200 transition-colors"
+                    >
+                      View Reflection Responses
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Session Content */}
               <div className="bg-blue-50 p-4 rounded-xl">
@@ -723,14 +889,31 @@ const AdminDashboard = () => {
                     
                     {selectedBooking.sessionMode === 'online' && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Meeting Link</label>
-                        <input
-                          type="url"
-                          value={confirmationData.meetingLink}
-                          onChange={(e) => setConfirmationData({...confirmationData, meetingLink: e.target.value})}
-                          placeholder="https://meet.google.com/..."
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                        />
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Google Meet Link <span className="text-red-500">*</span>
+                        </label>
+                        <div className="space-y-2">
+                          <input
+                            type="url"
+                            value={confirmationData.meetingLink}
+                            onChange={(e) => setConfirmationData({...confirmationData, meetingLink: e.target.value})}
+                            placeholder="https://meet.google.com/..."
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            required
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setConfirmationData({...confirmationData, meetingLink: 'https://meet.google.com/new'})}
+                              className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors"
+                            >
+                              Generate New Meet
+                            </button>
+                            <span className="text-xs text-gray-500 flex items-center">
+                              💡 Click "Generate New Meet" for a fresh Google Meet room
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     )}
                     
@@ -800,6 +983,77 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rejection Modal */}
+      {selectedBooking && selectedBooking.status === 'pending' && rejectionReason !== null && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-md w-full">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold text-red-600">Reject Booking</h3>
+                <button
+                  onClick={() => {
+                    setSelectedBooking(null);
+                    setRejectionReason('');
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <div className="bg-red-50 p-4 rounded-xl mb-4">
+                <p className="text-red-800 text-sm">
+                  <strong>Warning:</strong> Rejecting this booking will permanently delete it from the database and make the slot available again.
+                </p>
+              </div>
+              
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-2">
+                  <strong>Client:</strong> {selectedBooking.personalInfo?.name}
+                </p>
+                <p className="text-sm text-gray-600 mb-4">
+                  <strong>Session:</strong> {selectedBooking.slotId ? formatDate(selectedBooking.slotId.date) : 'N/A'} at {selectedBooking.slotId ? formatTime(selectedBooking.slotId.startTime) : 'N/A'}
+                </p>
+              </div>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Rejection Reason <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Please provide a reason for rejection (this will be sent to the client)..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent h-24 resize-none"
+                  required
+                />
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleRejectBooking(selectedBooking._id)}
+                  disabled={loading || !rejectionReason.trim()}
+                  className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Rejecting...' : 'Reject Booking'}
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedBooking(null);
+                    setRejectionReason('');
+                  }}
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -102,6 +102,32 @@ export const bookingApi = {
         console.error('Confirm booking error:', error);
         throw new Error(error.response?.data?.message || 'Failed to confirm booking');
       }
+    },
+
+    // Review a booking (admin only)
+    reviewBooking: async (bookingId) => {
+      try {
+        const api = createAuthAxios();
+        const response = await api.put(`/booking/admin/review/${bookingId}`);
+        return response.data.data;
+      } catch (error) {
+        console.error('Review booking error:', error);
+        throw new Error(error.response?.data?.message || 'Failed to review booking');
+      }
+    },
+
+    // Reject a booking (admin only)
+    rejectBooking: async (bookingId, rejectionReason) => {
+      try {
+        const api = createAuthAxios();
+        const response = await api.delete(`/booking/admin/reject/${bookingId}`, {
+          data: { rejectionReason }
+        });
+        return response.data.data;
+      } catch (error) {
+        console.error('Reject booking error:', error);
+        throw new Error(error.response?.data?.message || 'Failed to reject booking');
+      }
     }
   }
 };
