@@ -41,13 +41,6 @@ const ToolsSection = ({ fadeInUp, staggerContainer }) => {
             </Link>
           ))}
         </motion.div>
-
-        <motion.div {...fadeInUp} className="mt-16 p-8 rounded-[2rem] bg-white/50 border border-white max-w-2xl mx-auto flex items-start gap-4 italic text-gray-400 text-sm">
-          <Info size={32} className="shrink-0 text-purple-300" />
-          <p>
-            These tools are for awareness and support, intended to help you navigate daily life. They are not a substitute for professional mental health care or therapy.
-          </p>
-        </motion.div>
       </div>
     </section>
   );

@@ -32,7 +32,7 @@ export const CorporateEthics = () => {
 
   return (
     <section className="py-24 px-8 max-w-7xl mx-auto">
-      <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl p-8 md:p-16 my-16 text-center shadow-inner">
+      <div className="bg-gradient-to-br from-purple-100 via-purple-50 to-pink-50 rounded-3xl p-8 md:p-16 my-16 text-center shadow-inner">
         <h2 className="text-3xl font-bold text-primary mb-8 relative inline-block">
           Ethics & Confidentiality
           <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-24 h-1.5 bg-gradient-to-r from-pink-200 to-pink-400 rounded-full"></div>

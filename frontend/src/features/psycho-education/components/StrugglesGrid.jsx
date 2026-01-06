@@ -7,16 +7,10 @@ const StrugglesGrid = ({ fadeInUp, staggerContainer }) => {
   return (
     <section id="struggles" className="py-24 px-6 bg-peach-light/30">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
-          <motion.div {...fadeInUp} className="max-w-2xl">
+        <div className="flex flex-col items-center text-center mb-16 gap-8 mx-auto max-w-2xl">
+          <motion.div {...fadeInUp}>
             <h2 className="text-3xl md:text-5xl font-bold text-primary mb-6">Common Struggles</h2>
             <p className="text-gray-500 text-lg">We use human language, not clinical labels. Understanding why you feel this way is the first step.</p>
-          </motion.div>
-          <motion.div {...fadeInUp}>
-            {/* Dynamic link to the Full Library */}
-            <Link to="/psycho-education/library" className="text-primary font-bold border-b-2 border-primary pb-1 hover:text-secondary hover:border-secondary transition-colors">
-              View All Topics
-            </Link>
           </motion.div>
         </div>
 
@@ -27,11 +21,11 @@ const StrugglesGrid = ({ fadeInUp, staggerContainer }) => {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
         >
           {[
-            { title: "Stress & Burnout", slug: "stress-burnout", desc: "Feeling overwhelmed by life's demands and constant 'doing'.", icon: <Zap />, bg: "bg-amber-50" },
-            { title: "Anxiety & Constant Worry", slug: "anxiety", desc: "When the 'what-ifs' keep you from enjoying the present.", icon: <Compass />, bg: "bg-indigo-50" },
-            { title: "Low Mood & Exhaustion", slug: "low-mood", desc: "Dealing with a heavy heart and reduced emotional energy.", icon: <Moon />, bg: "bg-blue-50" },
-            { title: "Exam / Performance Pressure", slug: "performance-pressure", desc: "Managing expectations and the fear of falling short.", icon: <GraduationCap />, bg: "bg-emerald-50" },
-            { title: "Sleep Difficulties", slug: "sleep-issues", desc: "When rest feels out of reach despite being tired.", icon: <Coffee />, bg: "bg-rose-50" }
+            { title: "Stress & Burnout", slug: "stress-burnout", desc: "Feeling overwhelmed by life's demands and constant 'doing'.", icon: <Zap />, bg: "bg-purple-50" },
+            { title: "Anxiety & Constant Worry", slug: "anxiety", desc: "When the 'what-ifs' keep you from enjoying the present.", icon: <Compass />, bg: "bg-pink-50" },
+            { title: "Low Mood & Exhaustion", slug: "low-mood", desc: "Dealing with a heavy heart and reduced emotional energy.", icon: <Moon />, bg: "bg-lavender" },
+            { title: "Exam / Performance Pressure", slug: "performance-pressure", desc: "Managing expectations and the fear of falling short.", icon: <GraduationCap />, bg: "bg-peach-light" },
+            { title: "Sleep Difficulties", slug: "sleep-issues", desc: "When rest feels out of reach despite being tired.", icon: <Coffee />, bg: "bg-purple-100/50" }
           ].map((card, i) => (
             <Link
               to={`/psycho-education/read/${card.slug}`}

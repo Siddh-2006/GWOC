@@ -82,37 +82,6 @@ const ResourceReader = () => {
           {resource.content}
         </motion.div>
 
-        {/* Footer Actions */}
-        <AnimatePresence>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="mt-16 flex flex-col md:flex-row justify-between items-center gap-8 border-t border-gray-100 pt-12"
-          >
-            <div className="flex items-center gap-6">
-              <span className="text-gray-400 font-bold uppercase tracking-[0.2em] text-xs">
-                {copied ? 'Link Copied!' : 'Share this path'}
-              </span>
-              <div className="flex gap-3">
-                <button
-                  onClick={handleShare}
-                  className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all shadow-sm ${copied
-                      ? 'bg-secondary border-secondary text-white scale-110'
-                      : 'bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-primary'
-                    }`}
-                >
-                  <Share2 size={18} />
-                </button>
-              </div>
-            </div>
-
-            <Link to="/psycho-education/library" className="group flex items-center gap-4 bg-gray-900 text-white px-10 py-5 rounded-full font-bold hover:bg-primary transition-all shadow-xl hover:scale-[1.02] active:scale-[0.98]">
-              Browse Library <BookOpen size={20} className="opacity-50 group-hover:opacity-100 transition-opacity" />
-            </Link>
-          </motion.div>
-        </AnimatePresence>
-
       </div>
     </div>
   );
