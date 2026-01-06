@@ -31,7 +31,7 @@ const AdminDashboard = () => {
   const { toasts, success, error: showToast, removeToast } = useToast();
   const [statusFilter, setStatusFilter] = useState('all');
   const [showUpcomingOnly, setShowUpcomingOnly] = useState(false);
-  const [rejectionReason, setRejectionReason] = useState('');
+  const [rejectionReason, setRejectionReason] = useState(null); // Initialize as null to differentiate modes
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -75,7 +75,7 @@ const AdminDashboard = () => {
 
   const handleDeleteSlot = async (slotId) => {
     if (!window.confirm('Are you sure you want to delete this slot?')) return;
-    
+
     try {
       await slotApi.deleteSlot(slotId);
       setAvailableSlots(prev => {
@@ -101,7 +101,7 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       await bookingApi.admin.confirmBooking(bookingId, confirmationData);
-      
+
       // Mark user as having confirmed session (for reflection eligibility)
       if (selectedBooking?.userId) {
         try {
@@ -117,13 +117,13 @@ const AdminDashboard = () => {
           // Don't fail the booking confirmation for this
         }
       }
-      
+
       // Refresh both bookings and slots lists to show updated availability
       await fetchBookings();
       if (activeTab === 'slots') {
         await fetchSlots();
       }
-      
+
       // Close the modal and reset form
       setSelectedBooking(null);
       setConfirmationData({
@@ -132,7 +132,7 @@ const AdminDashboard = () => {
         meetingLink: 'https://meet.google.com/new',
         notes: ''
       });
-      
+
     } catch (err) {
       setError('Failed to confirm booking: ' + err.message);
     } finally {
@@ -157,17 +157,17 @@ const AdminDashboard = () => {
       setError('Please provide a rejection reason');
       return;
     }
-    
+
     if (!window.confirm('Are you sure you want to reject this booking? This will permanently delete it from the database.')) {
       return;
     }
-    
+
     try {
       setLoading(true);
       await bookingApi.admin.rejectBooking(bookingId, rejectionReason);
       await fetchBookings();
       setSelectedBooking(null);
-      setRejectionReason('');
+      setRejectionReason(null);
     } catch (err) {
       setError('Failed to reject booking: ' + err.message);
     } finally {
@@ -193,25 +193,25 @@ const AdminDashboard = () => {
   };
 
   const stats = [
-    { 
-      label: 'Pending', 
-      count: bookings.filter(b => b.status === 'pending').length, 
-      color: 'text-yellow-600 bg-yellow-100' 
+    {
+      label: 'Pending',
+      count: bookings.filter(b => b.status === 'pending').length,
+      color: 'text-yellow-600 bg-yellow-100'
     },
-    { 
-      label: 'Under Review', 
-      count: bookings.filter(b => b.status === 'under_review').length, 
-      color: 'text-blue-600 bg-blue-100' 
+    {
+      label: 'Under Review',
+      count: bookings.filter(b => b.status === 'under_review').length,
+      color: 'text-blue-600 bg-blue-100'
     },
-    { 
-      label: 'Confirmed', 
-      count: bookings.filter(b => b.status === 'confirmed').length, 
-      color: 'text-green-600 bg-green-100' 
+    {
+      label: 'Confirmed',
+      count: bookings.filter(b => b.status === 'confirmed').length,
+      color: 'text-green-600 bg-green-100'
     },
-    { 
-      label: 'Total Bookings', 
-      count: bookings.length, 
-      color: 'text-purple-600 bg-purple-100' 
+    {
+      label: 'Total Bookings',
+      count: bookings.length,
+      color: 'text-purple-600 bg-purple-100'
     },
   ];
 
@@ -303,7 +303,7 @@ const AdminDashboard = () => {
                   <Filter size={16} className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-700">Filters:</span>
                 </div>
-                
+
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
@@ -315,7 +315,7 @@ const AdminDashboard = () => {
                   <option value="confirmed">Confirmed</option>
                   <option value="rejected">Rejected</option>
                 </select>
-                
+
                 <label className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
@@ -325,7 +325,7 @@ const AdminDashboard = () => {
                   />
                   <span className="text-gray-700">Upcoming sessions only</span>
                 </label>
-                
+
                 <button
                   onClick={fetchBookings}
                   className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm"
@@ -335,7 +335,7 @@ const AdminDashboard = () => {
                 </button>
               </div>
             </div>
-            
+
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="animate-spin text-primary" size={32} />
@@ -404,26 +404,28 @@ const AdminDashboard = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                              booking.status === 'confirmed' ? 'bg-green-100 text-green-600' :
-                              booking.status === 'under_review' ? 'bg-blue-100 text-blue-600' :
-                              booking.status === 'rejected' ? 'bg-red-100 text-red-600' :
-                              booking.status === 'cancelled' ? 'bg-gray-100 text-gray-600' : 
-                              'bg-yellow-100 text-yellow-600'
-                            }`}>
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${booking.status === 'confirmed' ? 'bg-green-100 text-green-600' :
+                                booking.status === 'under_review' ? 'bg-blue-100 text-blue-600' :
+                                  booking.status === 'rejected' ? 'bg-red-100 text-red-600' :
+                                    booking.status === 'cancelled' ? 'bg-gray-100 text-gray-600' :
+                                      'bg-yellow-100 text-yellow-600'
+                              }`}>
                               {booking.status.replace('_', ' ')}
                             </span>
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex gap-2">
                               <button
-                                onClick={() => setSelectedBooking(booking)}
+                                onClick={() => {
+                                  setSelectedBooking(booking);
+                                  setRejectionReason(null);
+                                }}
                                 className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                                 title="View Details"
                               >
                                 <Eye size={16} />
                               </button>
-                              
+
                               {booking.status === 'pending' && (
                                 <>
                                   <button
@@ -437,7 +439,7 @@ const AdminDashboard = () => {
                                   <button
                                     onClick={() => {
                                       setSelectedBooking(booking);
-                                      // Pre-fill with original slot time (admin can change if needed)
+                                      setRejectionReason(null);
                                       setConfirmationData({
                                         confirmedDate: booking.slotId?.date ? new Date(booking.slotId.date).toISOString().split('T')[0] : '',
                                         confirmedTime: booking.slotId?.startTime || '',
@@ -462,13 +464,13 @@ const AdminDashboard = () => {
                                   </button>
                                 </>
                               )}
-                              
+
                               {booking.status === 'under_review' && (
                                 <>
                                   <button
                                     onClick={() => {
                                       setSelectedBooking(booking);
-                                      // Pre-fill with original slot time (admin can change if needed)
+                                      setRejectionReason(null);
                                       setConfirmationData({
                                         confirmedDate: booking.slotId?.date ? new Date(booking.slotId.date).toISOString().split('T')[0] : '',
                                         confirmedTime: booking.slotId?.startTime || '',
@@ -527,7 +529,7 @@ const AdminDashboard = () => {
                 </div>
               </div>
               <div className="flex gap-3">
-                <button 
+                <button
                   onClick={async () => {
                     try {
                       const result = await slotApi.bulkCleanup();
@@ -544,7 +546,7 @@ const AdminDashboard = () => {
                   <Trash2 size={16} />
                   Cleanup Expired
                 </button>
-                <button 
+                <button
                   onClick={() => setShowAddSlotModal(true)}
                   className="btn-primary py-2 px-4 flex items-center gap-2 text-sm"
                 >
@@ -568,7 +570,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-white border border-gray-200 rounded-xl p-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -582,7 +584,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-white border border-gray-200 rounded-xl p-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -596,7 +598,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-white border border-gray-200 rounded-xl p-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -635,10 +637,10 @@ const AdminDashboard = () => {
                   slotDateTime.setHours(parseInt(hours), parseInt(minutes));
                   const now = new Date();
                   const isExpired = slotDateTime < now;
-                  
+
                   let statusColor = 'green';
                   let statusText = 'Available';
-                  
+
                   if (isExpired) {
                     statusColor = 'gray';
                     statusText = 'Expired';
@@ -654,22 +656,20 @@ const AdminDashboard = () => {
                   }
 
                   return (
-                    <div key={slot._id} className={`p-4 rounded-xl border group hover:shadow-md transition-all ${
-                      isExpired ? 'border-gray-200 bg-gray-50' : 
-                      slot.bookingId ? 'border-red-200 bg-red-50' :
-                      slot.isBlocked ? 'border-yellow-200 bg-yellow-50' :
-                      'border-green-200 bg-green-50'
-                    }`}>
+                    <div key={slot._id} className={`p-4 rounded-xl border group hover:shadow-md transition-all ${isExpired ? 'border-gray-200 bg-gray-50' :
+                        slot.bookingId ? 'border-red-200 bg-red-50' :
+                          slot.isBlocked ? 'border-yellow-200 bg-yellow-50' :
+                            'border-green-200 bg-green-50'
+                      }`}>
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <p className="font-bold text-gray-800">{slot.startTime} - {slot.endTime}</p>
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                              statusColor === 'green' ? 'bg-green-100 text-green-700' :
-                              statusColor === 'red' ? 'bg-red-100 text-red-700' :
-                              statusColor === 'yellow' ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-gray-100 text-gray-700'
-                            }`}>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusColor === 'green' ? 'bg-green-100 text-green-700' :
+                                statusColor === 'red' ? 'bg-red-100 text-red-700' :
+                                  statusColor === 'yellow' ? 'bg-yellow-100 text-yellow-700' :
+                                    'bg-gray-100 text-gray-700'
+                              }`}>
                               {statusText}
                             </span>
                           </div>
@@ -692,7 +692,7 @@ const AdminDashboard = () => {
                             )}
                           </div>
                         </div>
-                        <button 
+                        <button
                           onClick={() => handleDeleteSlot(slot._id)}
                           className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity p-1"
                           disabled={!!slot.bookingId}
@@ -713,7 +713,7 @@ const AdminDashboard = () => {
                   <p className="text-gray-500 mb-6">
                     Create your first time slot to start accepting bookings.
                   </p>
-                  <button 
+                  <button
                     onClick={() => setShowAddSlotModal(true)}
                     className="btn-primary py-2 px-4 flex items-center gap-2 mx-auto"
                   >
@@ -734,7 +734,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Booking Details Modal */}
-      {selectedBooking && (
+      {selectedBooking && rejectionReason === null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200">
@@ -748,7 +748,7 @@ const AdminDashboard = () => {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6 space-y-6">
               {/* Client Information */}
               <div className="bg-gray-50 p-4 rounded-xl">
@@ -786,7 +786,7 @@ const AdminDashboard = () => {
                   </h4>
                   <div className="text-sm text-blue-700">
                     <p className="mb-2">
-                      Based on the client's responses, the individual appears to have moderate emotional awareness and tends to process stress internally. 
+                      Based on the client's responses, the individual appears to have moderate emotional awareness and tends to process stress internally.
                       They show openness to reflection, though adaptability to change may take time.
                     </p>
                     <p>
@@ -853,8 +853,8 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              {/* Confirmation Form (for pending bookings) */}
-              {selectedBooking.status === 'pending' && (
+              {/* Confirmation Form (for pending OR under_review bookings) */}
+              {(selectedBooking.status === 'pending' || selectedBooking.status === 'under_review') && (
                 <div className="bg-green-50 p-4 rounded-xl">
                   <h4 className="font-semibold mb-3">Confirm Booking</h4>
                   <div className="bg-blue-50 p-3 rounded-lg mb-4 text-sm text-blue-700">
@@ -870,7 +870,7 @@ const AdminDashboard = () => {
                         <input
                           type="date"
                           value={confirmationData.confirmedDate}
-                          onChange={(e) => setConfirmationData({...confirmationData, confirmedDate: e.target.value})}
+                          onChange={(e) => setConfirmationData({ ...confirmationData, confirmedDate: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                           placeholder="Leave empty to use original date"
                         />
@@ -885,7 +885,7 @@ const AdminDashboard = () => {
                         <input
                           type="time"
                           value={confirmationData.confirmedTime}
-                          onChange={(e) => setConfirmationData({...confirmationData, confirmedTime: e.target.value})}
+                          onChange={(e) => setConfirmationData({ ...confirmationData, confirmedTime: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                           placeholder="Leave empty to use original time"
                         />
@@ -894,7 +894,7 @@ const AdminDashboard = () => {
                         </p>
                       </div>
                     </div>
-                    
+
                     {selectedBooking.sessionMode === 'online' && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -904,7 +904,7 @@ const AdminDashboard = () => {
                           <input
                             type="url"
                             value={confirmationData.meetingLink}
-                            onChange={(e) => setConfirmationData({...confirmationData, meetingLink: e.target.value})}
+                            onChange={(e) => setConfirmationData({ ...confirmationData, meetingLink: e.target.value })}
                             placeholder="https://meet.google.com/..."
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                             required
@@ -912,7 +912,7 @@ const AdminDashboard = () => {
                           <div className="flex gap-2">
                             <button
                               type="button"
-                              onClick={() => setConfirmationData({...confirmationData, meetingLink: 'https://meet.google.com/new'})}
+                              onClick={() => setConfirmationData({ ...confirmationData, meetingLink: 'https://meet.google.com/new' })}
                               className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors"
                             >
                               Generate New Meet
@@ -924,21 +924,21 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
                       <textarea
                         value={confirmationData.notes}
-                        onChange={(e) => setConfirmationData({...confirmationData, notes: e.target.value})}
+                        onChange={(e) => setConfirmationData({ ...confirmationData, notes: e.target.value })}
                         placeholder="Any additional notes for the client..."
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent h-20"
                       />
                     </div>
-                    
+
                     <div className="bg-yellow-50 p-3 rounded-lg text-sm text-yellow-700">
                       <p><strong>Note:</strong> Confirming this booking will permanently mark the original time slot as "booked" and remove it from availability.</p>
                     </div>
-                    
+
                     <div className="flex gap-3">
                       <button
                         onClick={() => handleConfirmBooking(selectedBooking._id)}
@@ -997,7 +997,7 @@ const AdminDashboard = () => {
       )}
 
       {/* Rejection Modal */}
-      {selectedBooking && selectedBooking.status === 'pending' && rejectionReason !== null && (
+      {selectedBooking && ['pending', 'under_review'].includes(selectedBooking.status) && rejectionReason !== null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl max-w-md w-full">
             <div className="p-6 border-b border-gray-200">
@@ -1014,14 +1014,14 @@ const AdminDashboard = () => {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6">
               <div className="bg-red-50 p-4 rounded-xl mb-4">
                 <p className="text-red-800 text-sm">
                   <strong>Warning:</strong> Rejecting this booking will permanently delete it from the database and make the slot available again.
                 </p>
               </div>
-              
+
               <div className="mb-4">
                 <p className="text-sm text-gray-600 mb-2">
                   <strong>Client:</strong> {selectedBooking.personalInfo?.name}
@@ -1030,7 +1030,7 @@ const AdminDashboard = () => {
                   <strong>Session:</strong> {selectedBooking.slotId ? formatDate(selectedBooking.slotId.date) : 'N/A'} at {selectedBooking.slotId ? formatTime(selectedBooking.slotId.startTime) : 'N/A'}
                 </p>
               </div>
-              
+
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Rejection Reason <span className="text-red-500">*</span>
@@ -1043,7 +1043,7 @@ const AdminDashboard = () => {
                   required
                 />
               </div>
-              
+
               <div className="flex gap-3">
                 <button
                   onClick={() => handleRejectBooking(selectedBooking._id)}

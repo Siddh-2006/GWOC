@@ -6,10 +6,12 @@ export const useBookingStore = create((set) => ({
   isBookingModalOpen: false,
   availableSlots: [],
 
-  setAvailableSlots: (slots) => set({ availableSlots: slots }),
+  setAvailableSlots: (slots) => set((state) => ({
+    availableSlots: typeof slots === 'function' ? slots(state.availableSlots) : slots
+  })),
   setSelectedSlot: (slot) => set({ selectedSlot: slot }),
   setBookingModalOpen: (isOpen) => set({ isBookingModalOpen: isOpen }),
-  
+
   addAppointment: (appointment) => set((state) => ({
     appointments: [...state.appointments, { ...appointment, id: Date.now(), status: 'pending' }]
   })),

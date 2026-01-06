@@ -26,7 +26,7 @@ export const slotController = {
       const slotDate = new Date(date);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       if (slotDate < today) {
         return res.status(400).json({
           success: false,
@@ -132,12 +132,12 @@ export const slotController = {
       // First, clean up expired slots
       await slotController.cleanupExpiredSlots();
 
-      const { 
-        date, 
-        month, 
-        year, 
-        isAvailable, 
-        page = 1, 
+      const {
+        date,
+        month,
+        year,
+        isAvailable,
+        page = 1,
         limit = 50,
         includeExpired = false
       } = req.query;
@@ -149,7 +149,7 @@ export const slotController = {
         const targetDate = new Date(date);
         const nextDay = new Date(targetDate);
         nextDay.setDate(nextDay.getDate() + 1);
-        
+
         query.date = {
           $gte: targetDate,
           $lt: nextDay
@@ -157,7 +157,7 @@ export const slotController = {
       } else if (month && year) {
         const startDate = new Date(year, month - 1, 1);
         const endDate = new Date(year, month, 0);
-        
+
         query.date = {
           $gte: startDate,
           $lte: endDate
@@ -233,7 +233,7 @@ export const slotController = {
   cleanupExpiredSlots: async () => {
     try {
       const now = new Date();
-      
+
       // Find slots that have passed their start time and are not booked
       const expiredSlots = await Slot.find({
         isAvailable: true,
@@ -253,18 +253,12 @@ export const slotController = {
       });
 
       if (expiredSlots.length > 0) {
-        // Mark expired slots as unavailable instead of deleting them
-        await Slot.updateMany(
-          {
-            _id: { $in: expiredSlots.map(slot => slot._id) }
-          },
-          {
-            isAvailable: false,
-            blockReason: 'Automatically expired'
-          }
-        );
+        // Permanently delete expired slots instead of marking them as unavailable
+        await Slot.deleteMany({
+          _id: { $in: expiredSlots.map(slot => slot._id) }
+        });
 
-        console.log(`🧹 Cleaned up ${expiredSlots.length} expired slots`);
+        console.log(`🧹 Permanently deleted ${expiredSlots.length} expired slots`);
       }
 
       return expiredSlots.length;
@@ -383,7 +377,7 @@ export const slotController = {
   bulkCleanup: async (req, res) => {
     try {
       const cleanedCount = await slotController.cleanupExpiredSlots();
-      
+
       res.json({
         success: true,
         message: `Cleaned up ${cleanedCount} expired slots`,

@@ -1,113 +1,61 @@
-import React, { useRef, useState, useEffect, Suspense } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { useTexture } from '@react-three/drei';
-import * as THREE from 'three';
+import React, { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-const ParallaxLayer = React.forwardRef(({ texturePath, depth, opacity = 1, scale = 1 }, ref) => {
-  const texture = useTexture(texturePath);
-
-  return (
-    <mesh ref={ref} position={[0, 0, depth]} scale={[16 * scale, 9 * scale, 1]}>
-      <planeGeometry args={[1, 1]} />
-      <meshBasicMaterial
-        map={texture}
-        transparent
-        opacity={opacity}
-        toneMapped={false}
-      />
-    </mesh>
-  );
-});
+gsap.registerPlugin(ScrollTrigger);
 
 const JourneyScene = ({ scrollProgress }) => {
-  const bgRef = useRef();
-  const auraRef = useRef();
-
-  useFrame((state) => {
-    if (bgRef.current) {
-      bgRef.current.position.y = scrollProgress * 2;
-      const time = state.clock.getElapsedTime();
-      bgRef.current.position.y += Math.sin(time * 0.4) * 0.05;
-    }
-    if (auraRef.current) {
-      const time = state.clock.getElapsedTime();
-      auraRef.current.position.y = scrollProgress * 1.2 + Math.cos(time * 0.3) * 0.1;
-      auraRef.current.rotation.z = Math.sin(time * 0.2) * 0.05;
-    }
-  });
-
-  return (
-    <>
-      <ambientLight intensity={1.5} />
-      <ParallaxLayer
-        ref={bgRef}
-        texturePath="/assets/journey_light_bg.png"
-        depth={-3}
-        scale={2.5}
-        opacity={0.6}
-      />
-      <ParallaxLayer
-        ref={auraRef}
-        texturePath="/assets/journey_light_bg.png"
-        depth={-1}
-        scale={1.8}
-        opacity={0.2}
-      />
-    </>
-  );
-};
-
-const JourneyCanvas = ({ scrollProgress }) => {
-  const [webglError, setWebglError] = useState(false);
+  const canvasRef = useRef(null);
+  const pathRef = useRef(null);
 
   useEffect(() => {
-    // Basic WebGL support check
-    try {
-      const canvas = document.createElement('canvas');
-      const support = !!(window.WebGLRenderingContext &&
-        (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
-      if (!support) setWebglError(true);
-    } catch (e) {
-      setWebglError(true);
+    // This component will handle the visual "Game World"
+    // The path animation will be driven by the parent's scroll or a local ScrollTrigger
+
+    if (pathRef.current) {
+      const length = pathRef.current.getTotalLength();
+
+      // Reset path to be hidden
+      gsap.set(pathRef.current, {
+        strokeDasharray: length,
+        strokeDashoffset: length,
+        visibility: 'visible'
+      });
+
+      // Animate path drawing based on visual progress
+      gsap.to(pathRef.current, {
+        strokeDashoffset: 0,
+        ease: "none",
+        scrollTrigger: {
+          trigger: "#journey-container",
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 1,
+        }
+      });
     }
+
   }, []);
 
-  if (webglError) {
-    return (
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-purple-50">
-        <img
-          src="/assets/journey_light_bg.png"
-          alt="Journey Background"
-          className="w-full h-full object-cover opacity-30 mix-blend-multiply"
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-      <Canvas
-        camera={{ position: [0, 0, 5], fov: 45 }}
-        gl={{
-          antialias: false, // Turn off antialias for better performance/stability
-          alpha: true,
-          powerPreference: "low-power", // Request low power to avoid context issues
-          failIfMajorPerformanceCaveat: false
-        }}
-        onCreated={({ gl }) => {
-          gl.domElement.addEventListener('webglcontextlost', (e) => {
-            e.preventDefault();
-            setWebglError(true);
-          }, false);
-        }}
-        onError={() => setWebglError(true)}
-      >
-        <Suspense fallback={null}>
-          <JourneyScene scrollProgress={scrollProgress} />
-        </Suspense>
-      </Canvas>
+    <div className="fixed inset-0 w-full h-full pointer-events-none z-0">
+      {/* Background Layers (Parallax) */}
+      <div id="layer-clouds" className="absolute inset-0 bg-[url('/assets/journey_clouds.png')] bg-cover opacity-20" />
+
+      {/* Dynamic Path SVG */}
+      <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+        <path
+          ref={pathRef}
+          d="M 50,0 Q 400,300 50,600 T 50,1200" // Simple S-curve placeholder, needs to be dynamic or responsive
+          fill="none"
+          stroke="#cbd5e1" // Slate-300
+          strokeWidth="4"
+          visibility="hidden"
+          className="drop-shadow-lg"
+        />
+      </svg>
     </div>
   );
 };
 
-export default JourneyCanvas;
+export default JourneyScene;

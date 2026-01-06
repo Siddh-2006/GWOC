@@ -43,8 +43,8 @@ const HowItWorks = () => {
           }
         },
         {
-          threshold: 0.5,
-          rootMargin: "-20% 0px -20% 0px"
+          threshold: 0.6, // Increased threshold for better centering focus
+          rootMargin: "-10% 0px -10% 0px"
         }
       );
 
@@ -59,57 +59,62 @@ const HowItWorks = () => {
 
   return (
     <section
-      className="relative py-32 px-6 bg-fixed bg-cover bg-center"
-      style={{ backgroundImage: "url('/assets/background_1_home.jpg')" }}
+      className="relative py-32 px-6 bg-stone-50"
     >
-      <div className="absolute inset-0 bg-white/50"></div>
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-24">
+        <div className="mb-32 text-center md:text-left">
           <motion.span
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="text-secondary font-bold tracking-widest uppercase text-sm mb-4 block"
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-stone-500 font-bold tracking-[0.2em] uppercase text-sm mb-4 block"
           >
             Our Methodology
           </motion.span>
-          <h2 className="text-4xl md:text-6xl font-bold text-primary mb-6">How It Works</h2>
-          <p className="text-gray-500 text-xl max-w-2xl">A structured, gentle approach to your mental wellness journey.</p>
+          <h2 className="text-4xl md:text-6xl font-serif text-stone-900 mb-6">How It Works</h2>
+          <p className="text-stone-600 text-xl max-w-2xl font-light leading-relaxed">A structured, gentle approach to your mental wellness journey.</p>
         </div>
 
         {/* Sticky Container */}
-        <div className="relative flex flex-col md:flex-row gap-8 lg:gap-24">
+        <div className="relative flex flex-col md:flex-row gap-12 lg:gap-24">
 
           {/* Left Side: Scrolling Text Boxes */}
-          <div className="w-full md:w-1/2 space-y-[30vh] pb-[5vh]">
+          <div className="w-full md:w-1/2 space-y-[40vh] pb-[10vh]">
             {stages.map((stage, index) => (
-              <div
+              <motion.div
                 key={stage.id}
                 ref={el => scrollRef.current[index] = el}
-                className={`p-10 md:p-14 rounded-[2.5rem] transition-all duration-700 bg-white shadow-sm border border-purple-50
-                  ${activeIndex === index ? 'scale-100 border-secondary/20 shadow-xl' : 'scale-95'}`}
+                initial={{ opacity: 0.3 }}
+                animate={{ opacity: activeIndex === index ? 1 : 0.3 }}
+                transition={{ duration: 0.5 }}
+                className={`p-10 md:p-14 rounded-[2rem] transition-all duration-500 border
+                  ${activeIndex === index
+                    ? 'bg-white border-stone-200 shadow-2xl scale-100'
+                    : 'bg-transparent border-transparent scale-95 grayscale'}`}
               >
-                <span className="text-sm font-bold text-secondary mb-6 block tracking-widest">STAGE {stage.id}</span>
-                <h3 className="text-3xl font-bold text-primary mb-6">{stage.title}</h3>
-                <p className="text-gray-600 text-lg leading-relaxed">{stage.description}</p>
-              </div>
+                <span className={`text-sm font-bold mb-6 block tracking-widest ${activeIndex === index ? 'text-stone-500' : 'text-stone-300'}`}>STAGE {stage.id}</span>
+                <h3 className={`text-3xl md:text-4xl font-serif mb-6 ${activeIndex === index ? 'text-stone-800' : 'text-stone-300'}`}>{stage.title}</h3>
+                <p className={`text-lg leading-relaxed ${activeIndex === index ? 'text-stone-600' : 'text-stone-300'}`}>{stage.description}</p>
+              </motion.div>
             ))}
           </div>
 
           {/* Right Side: Sticky Images */}
-          <div className="hidden md:block w-1/2 sticky top-48 h-[350px] lg:h-[350px] self-start overflow-hidden rounded-[3rem] shadow-2xl border-8 border-white">
-            <AnimatePresence>
-              <motion.img
-                key={activeIndex}
-                src={stages[activeIndex].image}
-                alt={stages[activeIndex].title}
-                initial={{ opacity: 0, scale: 1.1, rotate: 2 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                exit={{ opacity: 0, scale: 0.9, rotate: -2 }}
-                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            </AnimatePresence>
-            <div className="absolute inset-0 bg-linear-to-t from-primary/10 via-transparent to-transparent pointer-events-none" />
+          <div className="hidden md:block w-1/2 sticky top-48 h-[500px] self-start">
+            <div className="relative w-full h-full overflow-hidden rounded-[2.5rem] shadow-2xl border-4 border-white">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={activeIndex}
+                  src={stages[activeIndex].image}
+                  alt={stages[activeIndex].title}
+                  initial={{ opacity: 0, scale: 1.1 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.7, ease: "easeInOut" }}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              </AnimatePresence>
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-900/20 to-transparent pointer-events-none" />
+            </div>
           </div>
         </div>
       </div>
