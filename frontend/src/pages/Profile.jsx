@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  User, Calendar, Heart,
-  Clock, Edit2, Play, Plus,
-  Shield, TrendingUp,
-  Star, Award, Settings,
-  CheckCircle, Target, CalendarDays
+  User, Heart,
+  Clock, Play,
+  Shield, CheckCircle, CalendarDays
 } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 import { useLikedMedia } from '../hooks/useLikedMedia';
 import { useSessions } from '../hooks/useSessions';
 import { useToast } from '../hooks/useToast';
-import MediaCard from '../components/MediaCard';
-import SessionCard from '../components/SessionCard';
+import EnhancedSessionCard from '../components/user/EnhancedSessionCard';
 import SessionNotesModal from '../components/SessionNotesModal';
 import SessionNotesViewer from '../components/SessionNotesViewer';
+import SessionTasksModal from '../components/user/SessionTasksModal';
+import AdminRemarksModal from '../components/user/AdminRemarksModal';
+import MediaCard from '../components/MediaCard';
 import ToastContainer from '../components/ToastContainer';
 
 const ProfileCard = ({ children, className = "" }) => (
@@ -44,63 +44,50 @@ const SectionHeading = ({ icon: Icon, title, subtitle }) => (
 
 const Profile = () => {
   const { user, isAuthenticated, isInitialized } = useAuthStore();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('sessions');
   const { likedMedia, loading: likedLoading, error: likedError, toggleLike } = useLikedMedia();
   const { categorizedSessions, loading: sessionsLoading, error: sessionsError, fetchSessions } = useSessions();
-  const { toasts, success, error: showError, removeToast } = useToast();
+  const { toasts, success, removeToast } = useToast();
+
+  // Session notes modal state
   const [selectedSession, setSelectedSession] = useState(null);
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [showNotesViewer, setShowNotesViewer] = useState(false);
+  const [showTasksModal, setShowTasksModal] = useState(false);
+  const [showAdminRemarksModal, setShowAdminRemarksModal] = useState(false);
 
-  // Mock data for demonstration
-  const [achievements] = useState([
-    { id: 1, title: 'First Session', description: 'Completed your first therapy session', icon: '🎯', earned: true, date: '2024-01-15' },
-    { id: 2, title: 'Week Streak', description: 'Maintained wellness routine for a week', icon: '🔥', earned: true, date: '2024-01-20' },
-    { id: 3, title: 'Mindful Moments', description: 'Completed 10 meditation sessions', icon: '🧘', earned: false },
-    { id: 4, title: 'Progress Tracker', description: 'Logged mood for 30 days', icon: '📊', earned: false }
-  ]);
+  // Tab configuration - Only My Sessions and Liked Content
+  const tabs = [
+    { id: 'sessions', label: 'My Sessions', icon: CalendarDays },
+    { id: 'liked', label: 'Liked Content', icon: Heart }
+  ];
 
-  const [moodData] = useState([
-    { date: '2024-01-20', mood: 4, note: 'Feeling positive after session' },
-    { date: '2024-01-19', mood: 3, note: 'Neutral day, practiced breathing' },
-    { date: '2024-01-18', mood: 5, note: 'Great session today!' },
-    { date: '2024-01-17', mood: 2, note: 'Challenging day, but managed well' }
-  ]);
+  // Loading State
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const [goals] = useState([
-    { id: 1, title: 'Practice daily meditation', progress: 75, target: 100, category: 'wellness', dueDate: '2024-01-25' },
-    { id: 2, title: 'Complete anxiety management course', progress: 40, target: 100, category: 'learning', dueDate: '2024-01-30' },
-    { id: 3, title: 'Attend weekly therapy sessions', progress: 90, target: 100, category: 'therapy', dueDate: '2024-01-25' }
-  ]);
+  // Authentication Check
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center">
+        <div className="text-center">
+          <User size={64} className="mx-auto text-gray-300 mb-4" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Please Sign In</h2>
+          <p className="text-gray-600">You need to be signed in to view your profile.</p>
+        </div>
+      </div>
+    );
+  }
 
-  // Fetch user's liked media
-  useEffect(() => {
-    // The useLikedMedia hook handles fetching automatically
-  }, [isAuthenticated, user, likedMedia, likedLoading, likedError]);
-
-  // Handle unliking media from profile
-  const handleRemoveFromLiked = async (mediaId) => {
-    try {
-      const mediaItem = likedMedia.find(item => item._id === mediaId);
-      await toggleLike(mediaId);
-
-      // Show success message
-      if (mediaItem) {
-        success(`Removed "${mediaItem.title}" from your liked content`);
-      }
-    } catch (error) {
-      console.error('Failed to remove from liked:', error);
-      showError('Failed to remove from liked content. Please try again.');
-    }
-  };
-
-  // Handle session actions
-  const handleViewSessionDetails = (session) => {
-    setSelectedSession(session);
-    // Could open a detailed view modal here
-  };
-
-  const handleAddNotes = (session) => {
+  const handleNotesClick = (session) => {
     setSelectedSession(session);
     setShowNotesModal(true);
   };
@@ -110,132 +97,43 @@ const Profile = () => {
     setShowNotesViewer(true);
   };
 
-  const handleNotesModalClose = () => {
-    setShowNotesModal(false);
-    setSelectedSession(null);
-  };
-
-  const handleNotesViewerClose = () => {
-    setShowNotesViewer(false);
-    setSelectedSession(null);
-  };
-
-  const handleEditFromViewer = (session) => {
-    setShowNotesViewer(false);
+  const handleTasksClick = (session) => {
     setSelectedSession(session);
-    setShowNotesModal(true);
+    setShowTasksModal(true);
   };
 
-  const handleNotesSaved = () => {
+  const handleAdminRemarksClick = (session) => {
+    setSelectedSession(session);
+    setShowAdminRemarksModal(true);
+  };
+
+  const handleNotesSuccess = () => {
     success('Session notes saved successfully!');
-    fetchSessions(); // Refresh sessions data
+    fetchSessions(); // Refresh sessions to show updated notes
   };
-
-  // Tab configuration
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: User },
-    { id: 'sessions', label: 'My Sessions', icon: CalendarDays },
-    { id: 'wellness', label: 'Wellness', icon: Heart },
-    { id: 'liked', label: 'Liked Content', icon: Heart },
-    { id: 'achievements', label: 'Achievements', icon: Award },
-    { id: 'settings', label: 'Settings', icon: Settings }
-  ];
-
-  // Loading State
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-500 font-medium">Loading your profile...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Auth Guard
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 mb-6 text-lg">Please log in to access your profile.</p>
-          <a href="/login" className="btn-primary inline-block">
-            Log In
-          </a>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 pt-32 pb-20">
-      <div className="max-w-7xl mx-auto px-6">
-
-        {/* Header Section */}
-        <section className="mb-12">
-          <ProfileCard className="relative overflow-hidden">
-            {/* Background Decoration */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full opacity-20 -translate-y-48 translate-x-48" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-blue-100 to-purple-100 rounded-full opacity-20 translate-y-32 -translate-x-32" />
-
-            <div className="flex flex-col lg:flex-row items-start gap-8 relative z-10">
-              <div className="relative">
-                <div className="w-40 h-40 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-6xl shadow-xl">
-                  <div className="bg-white rounded-full w-36 h-36 flex items-center justify-center">
-                    {user?.avatar || '😊'}
-                  </div>
-                </div>
-                <button className="absolute bottom-2 right-2 p-3 bg-primary text-white rounded-full shadow-lg hover:bg-primary-dark transition-colors">
-                  <Edit2 size={16} />
-                </button>
-                <div className="absolute -bottom-2 -right-2 p-2 bg-green-500 text-white rounded-full">
-                  <CheckCircle size={16} />
-                </div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        
+        {/* Profile Header */}
+        <section className="mb-8">
+          <ProfileCard>
+            <div className="text-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold shadow-lg">
+                {user.firstName?.[0]}{user.lastName?.[0]}
               </div>
-
-              <div className="flex-1">
-                <h1 className="text-4xl font-bold text-gray-800 mb-2">
-                  {user?.firstName} {user?.lastName}
-                </h1>
-                <p className="text-xl text-gray-600 mb-2">
-                  Premium Member
-                </p>
-
-                <p className="text-lg text-gray-500 mb-6 italic">
-                  "Prioritizing my peace, one step at a time."
-                </p>
-
-                <div className="flex flex-wrap gap-4 mb-6">
-                  <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
-                    <Clock size={16} /> Member since {new Date().getFullYear()}
-                  </span>
-                  <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
-                    <Shield size={16} /> Verified Account
-                  </span>
-                  <span className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
-                    <Star size={16} /> Level 1
-                  </span>
-                </div>
-
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-800">12</div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Sessions</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-800">8</div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Achievements</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-800">45</div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Days Active</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-800">4.2</div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Avg Mood</div>
-                  </div>
-                </div>
+              
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                {user.firstName} {user.lastName}
+              </h1>
+              
+              <p className="text-gray-600 mb-4">{user.email}</p>
+              
+              <div className="flex justify-center gap-4">
+                <span className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
+                  <Shield size={16} /> Verified Account
+                </span>
               </div>
             </div>
           </ProfileCard>
@@ -243,18 +141,19 @@ const Profile = () => {
 
         {/* Navigation Tabs */}
         <section className="mb-8">
-          <div className="overflow-x-auto no-scrollbar pb-2">
-            <div className="flex bg-white rounded-2xl p-2 shadow-sm border border-purple-50 w-max min-w-full">
+          <div className="flex justify-center">
+            <div className="flex bg-white rounded-2xl p-2 shadow-sm border border-purple-50">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === tab.id
-                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                    : 'text-gray-500 hover:bg-purple-50 hover:text-primary'
-                    }`}
+                  className={`flex items-center justify-center gap-2 px-8 py-3 rounded-xl transition-all whitespace-nowrap font-medium ${
+                    activeTab === tab.id
+                      ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                      : 'text-gray-600 hover:text-primary hover:bg-purple-50'
+                  }`}
                 >
-                  <tab.icon size={18} />
+                  <tab.icon size={20} />
                   {tab.label}
                 </button>
               ))}
@@ -265,60 +164,15 @@ const Profile = () => {
         {/* Tab Content */}
         <div className="space-y-8">
 
-          {/* Overview Tab */}
-          {activeTab === 'overview' && (
-            <ProfileCard>
-              <SectionHeading
-                icon={TrendingUp}
-                title="Your Mental Health Journey"
-                subtitle="Track your progress over time"
-              />
-              <div className="text-center py-12">
-                <TrendingUp size={64} className="mx-auto text-gray-300 mb-4" />
-                <p className="text-gray-500">Journey tracking coming soon...</p>
-              </div>
-            </ProfileCard>
-          )}
-
-          {/* Sessions Tab */}
+          {/* My Sessions Tab */}
           {activeTab === 'sessions' && (
-            <div className="space-y-8">
+            <div className="space-y-6">
               <ProfileCard>
                 <SectionHeading
                   icon={CalendarDays}
                   title="My Sessions"
-                  subtitle="Manage your therapy sessions and notes"
+                  subtitle="Manage your session notes and track assigned tasks"
                 />
-
-                {/* Sessions Overview Stats */}
-                {(categorizedSessions.upcoming.length > 0 || categorizedSessions.ongoing.length > 0 || categorizedSessions.past.length > 0) && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600 mb-1">
-                        {categorizedSessions.ongoing.length}
-                      </div>
-                      <div className="text-sm text-gray-600">Ongoing</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600 mb-1">
-                        {categorizedSessions.upcoming.length}
-                      </div>
-                      <div className="text-sm text-gray-600">Upcoming</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-gray-600 mb-1">
-                        {categorizedSessions.past.length}
-                      </div>
-                      <div className="text-sm text-gray-600">Completed</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-purple-600 mb-1">
-                        {categorizedSessions.past.filter(s => s.hasNotes).length}
-                      </div>
-                      <div className="text-sm text-gray-600">With Notes</div>
-                    </div>
-                  </div>
-                )}
 
                 {sessionsLoading ? (
                   <div className="text-center py-12">
@@ -337,107 +191,77 @@ const Profile = () => {
                       Retry
                     </button>
                   </div>
-                ) :
+                ) : (
                   /* Check if we have any sessions at all */
                   categorizedSessions.upcoming.length === 0 &&
-                    categorizedSessions.ongoing.length === 0 &&
-                    categorizedSessions.past.length === 0 ? (
+                  categorizedSessions.ongoing.length === 0 &&
+                  categorizedSessions.past.length === 0 ? (
                     /* Complete Empty State */
                     <div className="text-center py-16">
                       <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.5 }}
-                        className="max-w-md mx-auto"
                       >
-                        <div className="mb-6">
-                          <CalendarDays size={80} className="mx-auto text-gray-300 mb-4" />
-                        </div>
-
-                        <h3 className="text-xl font-semibold text-gray-700 mb-3">
-                          No sessions yet
-                        </h3>
-
-                        <p className="text-gray-500 mb-6 leading-relaxed">
-                          Book your first therapy session to start your mental health journey. Our qualified therapists are here to support you.
+                        <CalendarDays size={64} className="mx-auto text-gray-300 mb-6" />
+                        <h3 className="text-xl font-semibold text-gray-800 mb-2">No Sessions Yet</h3>
+                        <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                          You haven't booked any sessions yet. Start your mental health journey by booking your first session.
                         </p>
-
-                        <motion.a
-                          href="/booking"
+                        <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl font-medium hover:bg-purple-700 transition-colors shadow-lg"
+                          className="bg-primary text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
+                          onClick={() => window.location.href = '/booking'}
                         >
-                          <Plus size={18} />
-                          Book a Session
-                        </motion.a>
+                          Book Your First Session
+                        </motion.button>
                       </motion.div>
                     </div>
                   ) : (
-                    /* Sessions Layout - Compact for fewer sessions */
+                    /* Sessions List */
                     <div className="space-y-8">
-                      {/* Priority Sessions (Ongoing + Upcoming) */}
-                      {(categorizedSessions.ongoing.length > 0 || categorizedSessions.upcoming.length > 0) && (
-                        <div className="space-y-6">
-                          {/* Ongoing Sessions */}
-                          {categorizedSessions.ongoing.length > 0 && (
-                            <div>
-                              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                <Play className="text-green-600" size={20} />
-                                Ongoing Sessions
-                                <span className="ml-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                                  {categorizedSessions.ongoing.length}
-                                </span>
-                              </h3>
-                              <div className={`grid gap-4 ${categorizedSessions.ongoing.length === 1
-                                ? 'grid-cols-1 max-w-md'
-                                : categorizedSessions.ongoing.length === 2
-                                  ? 'grid-cols-1 md:grid-cols-2 max-w-4xl'
-                                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-                                }`}>
-                                {categorizedSessions.ongoing.map((session) => (
-                                  <SessionCard
-                                    key={session._id}
-                                    session={session}
-                                    hasNotes={session.hasNotes}
-                                    onViewDetails={handleViewSessionDetails}
-                                    onAddNotes={handleAddNotes}
-                                    onViewNotes={handleViewNotes}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                      {/* Upcoming Sessions */}
+                      {categorizedSessions.upcoming.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            <Clock size={20} className="text-blue-600" />
+                            Upcoming Sessions ({categorizedSessions.upcoming.length})
+                          </h3>
+                          <div className="space-y-4">
+                            {categorizedSessions.upcoming.map((session) => (
+                              <EnhancedSessionCard
+                                key={session._id}
+                                session={session}
+                                onNotesClick={handleNotesClick}
+                                onViewNotes={handleViewNotes}
+                                onTasksClick={handleTasksClick}
+                                onAdminRemarksClick={handleAdminRemarksClick}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
-                          {/* Upcoming Sessions */}
-                          {categorizedSessions.upcoming.length > 0 && (
-                            <div>
-                              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                <Calendar className="text-blue-600" size={20} />
-                                Upcoming Sessions
-                                <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
-                                  {categorizedSessions.upcoming.length}
-                                </span>
-                              </h3>
-                              <div className={`grid gap-4 ${categorizedSessions.upcoming.length === 1
-                                ? 'grid-cols-1 max-w-md'
-                                : categorizedSessions.upcoming.length === 2
-                                  ? 'grid-cols-1 md:grid-cols-2 max-w-4xl'
-                                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-                                }`}>
-                                {categorizedSessions.upcoming.map((session) => (
-                                  <SessionCard
-                                    key={session._id}
-                                    session={session}
-                                    hasNotes={session.hasNotes}
-                                    onViewDetails={handleViewSessionDetails}
-                                    onAddNotes={handleAddNotes}
-                                    onViewNotes={handleViewNotes}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                      {/* Ongoing Sessions */}
+                      {categorizedSessions.ongoing.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            <Play size={20} className="text-green-600" />
+                            Ongoing Sessions ({categorizedSessions.ongoing.length})
+                          </h3>
+                          <div className="space-y-4">
+                            {categorizedSessions.ongoing.map((session) => (
+                              <EnhancedSessionCard
+                                key={session._id}
+                                session={session}
+                                onNotesClick={handleNotesClick}
+                                onViewNotes={handleViewNotes}
+                                onTasksClick={handleTasksClick}
+                                onAdminRemarksClick={handleAdminRemarksClick}
+                              />
+                            ))}
+                          </div>
                         </div>
                       )}
 
@@ -445,135 +269,26 @@ const Profile = () => {
                       {categorizedSessions.past.length > 0 && (
                         <div>
                           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                            <CheckCircle className="text-gray-600" size={20} />
-                            Past Sessions
-                            <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-                              {categorizedSessions.past.length}
-                            </span>
+                            <CheckCircle size={20} className="text-purple-600" />
+                            Past Sessions ({categorizedSessions.past.length})
                           </h3>
-                          <div className={`grid gap-4 ${categorizedSessions.past.length === 1
-                            ? 'grid-cols-1 max-w-md'
-                            : categorizedSessions.past.length === 2
-                              ? 'grid-cols-1 md:grid-cols-2 max-w-4xl'
-                              : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-                            }`}>
-                            {categorizedSessions.past.slice(0, 6).map((session) => (
-                              <SessionCard
+                          <div className="space-y-4">
+                            {categorizedSessions.past.map((session) => (
+                              <EnhancedSessionCard
                                 key={session._id}
                                 session={session}
-                                hasNotes={session.hasNotes}
-                                onViewDetails={handleViewSessionDetails}
-                                onAddNotes={handleAddNotes}
+                                onNotesClick={handleNotesClick}
                                 onViewNotes={handleViewNotes}
+                                onTasksClick={handleTasksClick}
+                                onAdminRemarksClick={handleAdminRemarksClick}
                               />
                             ))}
-                          </div>
-                          {categorizedSessions.past.length > 6 && (
-                            <div className="text-center mt-6">
-                              <button className="px-6 py-2 text-purple-600 hover:text-purple-700 font-medium transition-colors">
-                                View All Past Sessions ({categorizedSessions.past.length - 6} more)
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Quick Actions for users with few sessions */}
-                      {(categorizedSessions.upcoming.length + categorizedSessions.ongoing.length + categorizedSessions.past.length) < 3 && (
-                        <div className="mt-8 p-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl border border-purple-100">
-                          <div className="text-center">
-                            <h4 className="text-lg font-semibold text-gray-800 mb-2">
-                              Continue Your Journey
-                            </h4>
-                            <p className="text-gray-600 mb-4">
-                              Regular sessions help build momentum in your mental health journey
-                            </p>
-                            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                              <motion.a
-                                href="/booking"
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl font-medium hover:bg-purple-700 transition-colors shadow-md"
-                              >
-                                <Plus size={18} />
-                                Book Another Session
-                              </motion.a>
-                              <motion.a
-                                href="/resources"
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-purple-600 border border-purple-200 rounded-xl font-medium hover:bg-purple-50 transition-colors"
-                              >
-                                <Heart size={18} />
-                                Explore Resources
-                              </motion.a>
-                            </div>
                           </div>
                         </div>
                       )}
                     </div>
                   )
-                }
-              </ProfileCard>
-            </div>
-          )}
-
-          {/* Wellness Tab */}
-          {activeTab === 'wellness' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <ProfileCard>
-                <SectionHeading
-                  icon={Heart}
-                  title="Mood Tracking"
-                  subtitle="Monitor your emotional wellbeing"
-                />
-                <div className="space-y-4">
-                  {moodData.map((entry, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div>
-                        <p className="font-medium text-gray-800">{new Date(entry.date).toLocaleDateString()}</p>
-                        <p className="text-sm text-gray-500">{entry.note}</p>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            size={16}
-                            className={`${entry.mood >= star ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ProfileCard>
-
-              <ProfileCard>
-                <SectionHeading
-                  icon={Target}
-                  title="Personal Goals"
-                  subtitle="Track your wellness objectives"
-                />
-                <div className="space-y-4">
-                  {goals.map((goal) => (
-                    <div key={goal.id} className="p-4 bg-gray-50 rounded-xl">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-gray-800">{goal.title}</h4>
-                        <span className="text-sm text-gray-500">{goal.progress}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                        <div
-                          className="bg-primary h-2 rounded-full transition-all duration-500"
-                          style={{ width: `${goal.progress}%` }}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <span className="capitalize">{goal.category}</span>
-                        <span>Due: {new Date(goal.dueDate).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                )}
               </ProfileCard>
             </div>
           )}
@@ -584,12 +299,12 @@ const Profile = () => {
               <SectionHeading
                 icon={Heart}
                 title="Liked Content"
-                subtitle="Your saved posts and reels"
+                subtitle="Your favorite resources and media"
               />
 
               {likedLoading ? (
                 <div className="text-center py-12">
-                  <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                   <p className="text-gray-500">Loading your liked content...</p>
                 </div>
               ) : likedError ? (
@@ -597,143 +312,102 @@ const Profile = () => {
                   <div className="text-red-500 mb-4">⚠️</div>
                   <p className="text-red-600 mb-2">Failed to load liked content</p>
                   <p className="text-sm text-gray-500">{likedError}</p>
-                  <button
-                    onClick={() => window.location.reload()}
-                    className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
-                  >
-                    Retry
-                  </button>
                 </div>
-              ) : likedMedia.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {likedMedia.map((media) => (
-                    <MediaCard
-                      key={media._id}
-                      media={media}
-                      onUnlike={handleRemoveFromLiked}
-                      showLikeButton={false}
-                      showRemoveButton={true}
-                    />
-                  ))}
-                </div>
-              ) : (
+              ) : likedMedia.length === 0 ? (
                 <div className="text-center py-16">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5 }}
-                    className="max-w-md mx-auto"
                   >
-                    <div className="mb-6">
-                      <Heart size={80} className="mx-auto text-gray-300 mb-4" />
-                    </div>
-
-                    <h3 className="text-xl font-semibold text-gray-700 mb-3">
-                      No liked content yet
-                    </h3>
-
-                    <p className="text-gray-500 mb-6 leading-relaxed">
-                      Discover and save content that resonates with you. When you like posts, videos, or articles, they'll appear here for easy access.
+                    <Heart size={64} className="mx-auto text-gray-300 mb-6" />
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">No Liked Content Yet</h3>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                      Start exploring our resources and like content that resonates with you.
                     </p>
-
-                    <motion.a
-                      href="/resources"
+                    <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl font-medium hover:bg-purple-700 transition-colors shadow-lg"
+                      className="bg-primary text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
+                      onClick={() => window.location.href = '/resources'}
                     >
-                      <Heart size={18} />
                       Explore Resources
-                    </motion.a>
+                    </motion.button>
                   </motion.div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {likedMedia.map((media) => (
+                    <MediaCard
+                      key={media._id}
+                      media={media}
+                      onUnlike={toggleLike}
+                      showLikeButton={false}
+                      showRemoveButton={true}
+                    />
+                  ))}
                 </div>
               )}
             </ProfileCard>
           )}
 
-          {/* Achievements Tab */}
-          {activeTab === 'achievements' && (
-            <ProfileCard>
-              <SectionHeading
-                icon={Award}
-                title="Achievements & Milestones"
-                subtitle="Celebrate your mental health journey"
-              />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {achievements.map((achievement) => (
-                  <motion.div
-                    key={achievement.id}
-                    whileHover={{ scale: 1.02 }}
-                    className={`p-6 rounded-2xl border-2 transition-all ${achievement.earned
-                      ? 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200'
-                      : 'bg-gray-50 border-gray-200 grayscale opacity-50'
-                      }`}
-                  >
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className={`text-4xl ${achievement.earned ? '' : 'grayscale opacity-50'}`}>
-                        {achievement.icon}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className={`font-semibold mb-2 ${achievement.earned ? 'text-gray-800' : 'text-gray-500'}`}>
-                          {achievement.title}
-                        </h4>
-                        <p className={`text-sm mb-3 ${achievement.earned ? 'text-gray-600' : 'text-gray-400'}`}>
-                          {achievement.description}
-                        </p>
-                        {achievement.earned ? (
-                          <div className="flex items-center gap-2 text-green-700 text-sm">
-                            <CheckCircle size={16} />
-                            <span>Earned {new Date(achievement.date).toLocaleDateString()}</span>
-                          </div>
-                        ) : (
-                          <div className="text-sm text-gray-500">
-                            <span>Progress</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </ProfileCard>
-          )}
-
-          {/* Settings Tab */}
-          {activeTab === 'settings' && (
-            <ProfileCard>
-              <SectionHeading
-                icon={Settings}
-                title="Account Settings"
-                subtitle="Manage your preferences"
-              />
-              <div className="text-center py-12">
-                <Settings size={64} className="mx-auto text-gray-300 mb-4" />
-                <p className="text-gray-500">Settings panel coming soon...</p>
-              </div>
-            </ProfileCard>
-          )}
-
         </div>
+
+        {/* Session Notes Modal */}
+        {showNotesModal && selectedSession && (
+          <SessionNotesModal
+            session={selectedSession}
+            isOpen={showNotesModal}
+            onClose={() => {
+              setShowNotesModal(false);
+              setSelectedSession(null);
+            }}
+            onSave={handleNotesSuccess}
+          />
+        )}
+
+        {/* Session Notes Viewer */}
+        {showNotesViewer && selectedSession && (
+          <SessionNotesViewer
+            session={selectedSession}
+            onClose={() => {
+              setShowNotesViewer(false);
+              setSelectedSession(null);
+            }}
+            onEdit={() => {
+              setShowNotesViewer(false);
+              setShowNotesModal(true);
+            }}
+          />
+        )}
+
+        {/* Session Tasks Modal */}
+        {showTasksModal && selectedSession && (
+          <SessionTasksModal
+            session={selectedSession}
+            isOpen={showTasksModal}
+            onClose={() => {
+              setShowTasksModal(false);
+              setSelectedSession(null);
+            }}
+          />
+        )}
+
+        {/* Admin Remarks Modal */}
+        {showAdminRemarksModal && selectedSession && (
+          <AdminRemarksModal
+            session={selectedSession}
+            isOpen={showAdminRemarksModal}
+            onClose={() => {
+              setShowAdminRemarksModal(false);
+              setSelectedSession(null);
+            }}
+          />
+        )}
+
+        {/* Toast Notifications */}
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
       </div>
-
-      {/* Toast Container */}
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
-
-      {/* Session Notes Modal */}
-      <SessionNotesModal
-        session={selectedSession}
-        isOpen={showNotesModal}
-        onClose={handleNotesModalClose}
-        onSave={handleNotesSaved}
-      />
-
-      {/* Session Notes Viewer */}
-      <SessionNotesViewer
-        session={selectedSession}
-        isOpen={showNotesViewer}
-        onClose={handleNotesViewerClose}
-        onEdit={handleEditFromViewer}
-      />
     </div>
   );
 };

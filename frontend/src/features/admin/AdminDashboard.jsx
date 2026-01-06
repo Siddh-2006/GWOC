@@ -7,6 +7,8 @@ import { CorporateInquiries } from '../../components/admin/CorporateInquiries';
 import ContactMessages from '../../components/admin/ContactMessages';
 import AddSlotModal from '../../components/admin/AddSlotModal';
 import ReflectionQuestions from '../../components/admin/ReflectionQuestions';
+import TaskAssignmentModal from '../../components/admin/TaskAssignmentModal';
+import BookingTasks from '../../components/admin/BookingTasks';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../../components/ToastContainer';
 
@@ -29,6 +31,8 @@ const AdminDashboard = () => {
     transactionId: ''
   });
   const [showAddSlotModal, setShowAddSlotModal] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [taskBooking, setTaskBooking] = useState(null);
   const { toasts, success, error: showToast, removeToast } = useToast();
   const [statusFilter, setStatusFilter] = useState('all');
   const [showUpcomingOnly, setShowUpcomingOnly] = useState(false);
@@ -173,6 +177,18 @@ const AdminDashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Task assignment handlers
+  const handleAssignTask = (booking) => {
+    setTaskBooking(booking);
+    setShowTaskModal(true);
+  };
+
+  const handleTaskCreated = () => {
+    success('Task assigned successfully!');
+    // Refresh bookings to update any task counts if needed
+    fetchBookings();
   };
 
   const formatDate = (dateString) => {
@@ -508,6 +524,15 @@ const AdminDashboard = () => {
                                   </button>
                                 </>
                               )}
+                              
+                              {/* Assign Task Button - Available for all bookings */}
+                              <button
+                                onClick={() => handleAssignTask(booking)}
+                                className="p-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                                title="Assign Task"
+                              >
+                                <Plus size={16} />
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -1014,6 +1039,16 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               )}
+              
+              {/* Tasks Section */}
+              <div className="border-t border-gray-200 pt-6">
+                <BookingTasks 
+                  bookingId={selectedBooking._id} 
+                  onTasksChange={() => {
+                    // Optionally refresh booking data if needed
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -1099,6 +1134,17 @@ const AdminDashboard = () => {
 
       {/* Toast Notifications */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
+      
+      {/* Task Assignment Modal */}
+      <TaskAssignmentModal
+        booking={taskBooking}
+        isOpen={showTaskModal}
+        onClose={() => {
+          setShowTaskModal(false);
+          setTaskBooking(null);
+        }}
+        onTaskCreated={handleTaskCreated}
+      />
     </div>
   );
 };

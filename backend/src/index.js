@@ -20,6 +20,7 @@ import mediaRoutes from './api/media.routes.js';
 import psychoEducationRoutes from './api/psychoEducation.routes.js';
 import reflectionRoutes from './api/reflection.routes.js';
 import sessionsRoutes from './api/sessions.routes.js';
+import taskRoutes from './api/task.routes.js';
 
 // Import reminder service
 import { sessionReminderService } from './services/session-reminder.service.js';
@@ -55,6 +56,7 @@ app.use('/api/media', mediaRoutes);
 app.use('/api/psycho-education', psychoEducationRoutes);
 app.use('/api/reflection', reflectionRoutes);
 app.use('/api/sessions', sessionsRoutes);
+app.use('/api/tasks', taskRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
