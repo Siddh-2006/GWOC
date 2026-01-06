@@ -13,6 +13,15 @@ const MediaCard = ({
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Debug log
+  console.log('MediaCard rendered with props:', {
+    mediaId: media?._id,
+    showLikeButton,
+    showRemoveButton,
+    hasOnUnlike: !!onUnlike,
+    hasOnLike: !!onLike
+  });
+
   const handleLikeClick = async (e) => {
     e.stopPropagation();
     if (isProcessing || !onLike) return;
@@ -36,6 +45,8 @@ const MediaCard = ({
       } else if (onLike) {
         await onLike(media._id);
       }
+    } catch (error) {
+      console.error('Error in handleRemoveClick:', error);
     } finally {
       setIsProcessing(false);
     }
@@ -84,8 +95,9 @@ const MediaCard = ({
                     ? 'bg-gray-400 cursor-not-allowed' 
                     : 'bg-red-500 hover:bg-red-600 cursor-pointer'
                 } text-white`}
-                title={isProcessing ? "Processing..." : "Remove from liked content"}
+                title={isProcessing ? "Removing..." : "Remove from liked content"}
                 type="button"
+                style={{ zIndex: 1000 }}
               >
                 {isProcessing ? (
                   <Loader2 size={18} className="animate-spin" />

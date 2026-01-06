@@ -47,7 +47,18 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState('sessions');
   const { likedMedia, loading: likedLoading, error: likedError, toggleLike } = useLikedMedia();
   const { categorizedSessions, loading: sessionsLoading, error: sessionsError, fetchSessions } = useSessions();
-  const { toasts, success, removeToast } = useToast();
+  const { toasts, success, error: showError, removeToast } = useToast();
+
+  // Handle removing from liked content with feedback
+  const handleRemoveFromLiked = async (mediaId) => {
+    try {
+      await toggleLike(mediaId);
+      success('Removed from liked content');
+    } catch (error) {
+      console.error('Error removing from liked:', error);
+      showError(error.message || 'Failed to remove from liked content');
+    }
+  };
 
   // Session notes modal state
   const [selectedSession, setSelectedSession] = useState(null);
@@ -341,7 +352,7 @@ const Profile = () => {
                     <MediaCard
                       key={media._id}
                       media={media}
-                      onUnlike={toggleLike}
+                      onUnlike={handleRemoveFromLiked}
                       showLikeButton={false}
                       showRemoveButton={true}
                     />
