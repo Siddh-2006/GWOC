@@ -25,7 +25,8 @@ const AdminDashboard = () => {
     confirmedDate: '',
     confirmedTime: '',
     meetingLink: 'https://meet.google.com/new',
-    notes: ''
+    notes: '',
+    transactionId: ''
   });
   const [showAddSlotModal, setShowAddSlotModal] = useState(false);
   const { toasts, success, error: showToast, removeToast } = useToast();
@@ -102,21 +103,7 @@ const AdminDashboard = () => {
       setLoading(true);
       await bookingApi.admin.confirmBooking(bookingId, confirmationData);
 
-      // Mark user as having confirmed session (for reflection eligibility)
-      if (selectedBooking?.userId) {
-        try {
-          await fetch(`http://localhost:3001/api/auth/users/${selectedBooking.userId}/mark-confirmed-session`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-              'Content-Type': 'application/json'
-            }
-          });
-        } catch (error) {
-          console.error('Failed to update user session status:', error);
-          // Don't fail the booking confirmation for this
-        }
-      }
+
 
       // Refresh both bookings and slots lists to show updated availability
       await fetchBookings();
@@ -135,6 +122,19 @@ const AdminDashboard = () => {
 
     } catch (err) {
       setError('Failed to confirm booking: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApproveBooking = async (bookingId) => {
+    try {
+      setLoading(true);
+      await bookingApi.admin.approveBooking(bookingId);
+      await fetchBookings();
+      success('Booking approved and payment request sent!');
+    } catch (err) {
+      setError('Failed to approve booking: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -202,6 +202,11 @@ const AdminDashboard = () => {
       label: 'Under Review',
       count: bookings.filter(b => b.status === 'under_review').length,
       color: 'text-blue-600 bg-blue-100'
+    },
+    {
+      label: 'Payment Pending',
+      count: bookings.filter(b => b.status === 'awaiting_payment').length,
+      color: 'text-orange-600 bg-orange-100'
     },
     {
       label: 'Confirmed',
@@ -312,6 +317,7 @@ const AdminDashboard = () => {
                   <option value="all">All Status</option>
                   <option value="pending">Pending</option>
                   <option value="under_review">Under Review</option>
+                  <option value="awaiting_payment">Payment Pending</option>
                   <option value="confirmed">Confirmed</option>
                   <option value="rejected">Rejected</option>
                 </select>
@@ -398,14 +404,24 @@ const AdminDashboard = () => {
                                 <Heart size={12} />
                                 {booking.sessionMode} • {booking.personalInfo?.relationshipStatus}
                               </p>
-                              <p className="text-xs text-green-600 font-medium">
+                              <p className={`text-xs font-medium ${booking.payment?.status === 'completed' ? 'text-green-600' :
+                                booking.status === 'awaiting_payment' ? 'text-orange-600' : 'text-gray-500'
+                                }`}>
                                 ₹{booking.payment?.amount || 'N/A'}
+                                {booking.payment?.status === 'completed' && ' (Paid)'}
+                                {booking.status === 'awaiting_payment' && ' (Payment Pending)'}
                               </p>
+                              {booking.payment?.paymentId && (
+                                <p className="text-[10px] text-gray-500 font-mono mt-0.5">
+                                  Ref: {booking.payment.paymentId}
+                                </p>
+                              )}
                             </div>
                           </td>
                           <td className="px-6 py-4">
                             <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${booking.status === 'confirmed' ? 'bg-green-100 text-green-600' :
-                                booking.status === 'under_review' ? 'bg-blue-100 text-blue-600' :
+                              booking.status === 'under_review' ? 'bg-blue-100 text-blue-600' :
+                                booking.status === 'awaiting_payment' ? 'bg-orange-100 text-orange-600' :
                                   booking.status === 'rejected' ? 'bg-red-100 text-red-600' :
                                     booking.status === 'cancelled' ? 'bg-gray-100 text-gray-600' :
                                       'bg-yellow-100 text-yellow-600'
@@ -426,32 +442,28 @@ const AdminDashboard = () => {
                                 <Eye size={16} />
                               </button>
 
-                              {booking.status === 'pending' && (
+                              {(booking.status === 'pending' || booking.status === 'under_review') && (
                                 <>
+                                  {booking.status === 'pending' && (
+                                    <button
+                                      onClick={() => handleReviewBooking(booking._id)}
+                                      className="p-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                                      title="Mark as Under Review"
+                                      disabled={loading}
+                                    >
+                                      <Clock size={16} />
+                                    </button>
+                                  )}
+
                                   <button
-                                    onClick={() => handleReviewBooking(booking._id)}
-                                    className="p-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-                                    title="Mark as Under Review"
+                                    onClick={() => handleApproveBooking(booking._id)}
+                                    className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                                    title="Approve & Request Payment"
                                     disabled={loading}
                                   >
-                                    <Clock size={16} />
+                                    <Mail size={16} />
                                   </button>
-                                  <button
-                                    onClick={() => {
-                                      setSelectedBooking(booking);
-                                      setRejectionReason(null);
-                                      setConfirmationData({
-                                        confirmedDate: booking.slotId?.date ? new Date(booking.slotId.date).toISOString().split('T')[0] : '',
-                                        confirmedTime: booking.slotId?.startTime || '',
-                                        meetingLink: booking.sessionMode === 'online' ? 'https://meet.google.com/new' : undefined,
-                                        notes: ''
-                                      });
-                                    }}
-                                    className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                                    title="Confirm Booking"
-                                  >
-                                    <Check size={16} />
-                                  </button>
+
                                   <button
                                     onClick={() => {
                                       setSelectedBooking(booking);
@@ -465,7 +477,7 @@ const AdminDashboard = () => {
                                 </>
                               )}
 
-                              {booking.status === 'under_review' && (
+                              {booking.status === 'awaiting_payment' && (
                                 <>
                                   <button
                                     onClick={() => {
@@ -475,11 +487,12 @@ const AdminDashboard = () => {
                                         confirmedDate: booking.slotId?.date ? new Date(booking.slotId.date).toISOString().split('T')[0] : '',
                                         confirmedTime: booking.slotId?.startTime || '',
                                         meetingLink: booking.sessionMode === 'online' ? 'https://meet.google.com/new' : undefined,
-                                        notes: ''
+                                        notes: '',
+                                        transactionId: ''
                                       });
                                     }}
                                     className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                                    title="Confirm Booking"
+                                    title="Mark Payment Received & Confirm"
                                   >
                                     <Check size={16} />
                                   </button>
@@ -657,18 +670,18 @@ const AdminDashboard = () => {
 
                   return (
                     <div key={slot._id} className={`p-4 rounded-xl border group hover:shadow-md transition-all ${isExpired ? 'border-gray-200 bg-gray-50' :
-                        slot.bookingId ? 'border-red-200 bg-red-50' :
-                          slot.isBlocked ? 'border-yellow-200 bg-yellow-50' :
-                            'border-green-200 bg-green-50'
+                      slot.bookingId ? 'border-red-200 bg-red-50' :
+                        slot.isBlocked ? 'border-yellow-200 bg-yellow-50' :
+                          'border-green-200 bg-green-50'
                       }`}>
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <p className="font-bold text-gray-800">{slot.startTime} - {slot.endTime}</p>
                             <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusColor === 'green' ? 'bg-green-100 text-green-700' :
-                                statusColor === 'red' ? 'bg-red-100 text-red-700' :
-                                  statusColor === 'yellow' ? 'bg-yellow-100 text-yellow-700' :
-                                    'bg-gray-100 text-gray-700'
+                              statusColor === 'red' ? 'bg-red-100 text-red-700' :
+                                statusColor === 'yellow' ? 'bg-yellow-100 text-yellow-700' :
+                                  'bg-gray-100 text-gray-700'
                               }`}>
                               {statusText}
                             </span>
@@ -778,7 +791,7 @@ const AdminDashboard = () => {
               </div>
 
               {/* Reflection Summary (First Session Only) */}
-              {!selectedBooking.userId?.hasConfirmedSession && (
+              {!selectedBooking.userId?.hasConfirmedSession && selectedBooking.userId?.reflectionCompleted && (
                 <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
                   <h4 className="font-semibold mb-3 text-blue-800 flex items-center gap-2">
                     <Heart size={16} />
@@ -786,11 +799,7 @@ const AdminDashboard = () => {
                   </h4>
                   <div className="text-sm text-blue-700">
                     <p className="mb-2">
-                      Based on the client's responses, the individual appears to have moderate emotional awareness and tends to process stress internally.
-                      They show openness to reflection, though adaptability to change may take time.
-                    </p>
-                    <p>
-                      Interpersonally, they value understanding and emotional connection, suggesting that rapport-building may be important early in the session.
+                      {selectedBooking.userId?.reflectionSummary || 'Reflection submitted but no AI summary available.'}
                     </p>
                     <button
                       onClick={() => {
@@ -850,11 +859,17 @@ const AdminDashboard = () => {
                     <span className="text-gray-600">Amount:</span>
                     <p className="font-medium text-green-600">₹{selectedBooking.payment?.amount}</p>
                   </div>
+                  {selectedBooking.payment?.paymentId && (
+                    <div className="md:col-span-2 bg-gray-50 p-2 rounded border border-gray-200">
+                      <span className="text-xs text-gray-500 block">Transaction ID / Reference:</span>
+                      <p className="font-mono text-sm font-medium">{selectedBooking.payment.paymentId}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Confirmation Form (for pending OR under_review bookings) */}
-              {(selectedBooking.status === 'pending' || selectedBooking.status === 'under_review') && (
+              {/* Confirmation Form (for pending, under_review, OR awaiting_payment bookings) */}
+              {(selectedBooking.status === 'awaiting_payment' || selectedBooking.status === 'pending' || selectedBooking.status === 'under_review') && (
                 <div className="bg-green-50 p-4 rounded-xl">
                   <h4 className="font-semibold mb-3">Confirm Booking</h4>
                   <div className="bg-blue-50 p-3 rounded-lg mb-4 text-sm text-blue-700">
@@ -863,35 +878,43 @@ const AdminDashboard = () => {
                   </div>
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Transaction ID <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={confirmationData.transactionId || ''}
+                          onChange={(e) => setConfirmationData({ ...confirmationData, transactionId: e.target.value })}
+                          placeholder="Enter payment transaction ID / Reference No."
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white shadow-sm"
+                          required
+                          autoFocus
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Enter the ID to enable the Submit button.</p>
+                      </div>
+
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Confirmed Date <span className="text-gray-400">(Optional - defaults to original)</span>
+                          Confirmed Date <span className="text-gray-400">(Optional)</span>
                         </label>
                         <input
                           type="date"
                           value={confirmationData.confirmedDate}
                           onChange={(e) => setConfirmationData({ ...confirmationData, confirmedDate: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                          placeholder="Leave empty to use original date"
                         />
-                        <p className="text-xs text-gray-500 mt-1">
-                          Original: {selectedBooking.slotId ? formatDate(selectedBooking.slotId.date) : 'N/A'}
-                        </p>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Confirmed Time <span className="text-gray-400">(Optional - defaults to original)</span>
+                          Confirmed Time <span className="text-gray-400">(Optional)</span>
                         </label>
                         <input
                           type="time"
                           value={confirmationData.confirmedTime}
                           onChange={(e) => setConfirmationData({ ...confirmationData, confirmedTime: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                          placeholder="Leave empty to use original time"
                         />
-                        <p className="text-xs text-gray-500 mt-1">
-                          Original: {selectedBooking.slotId ? `${formatTime(selectedBooking.slotId.startTime)} - ${formatTime(selectedBooking.slotId.endTime)}` : 'N/A'}
-                        </p>
                       </div>
                     </div>
 
@@ -942,11 +965,11 @@ const AdminDashboard = () => {
                     <div className="flex gap-3">
                       <button
                         onClick={() => handleConfirmBooking(selectedBooking._id)}
-                        disabled={loading}
-                        className="btn-primary flex items-center gap-2 disabled:opacity-50"
+                        disabled={loading || !confirmationData.transactionId}
+                        className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium shadow-sm transition-colors"
                       >
-                        {loading ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
-                        Confirm Booking
+                        {loading ? <Loader2 className="animate-spin" size={18} /> : <Check size={18} />}
+                        Submit & Send Confirmation Email
                       </button>
                       <button
                         onClick={() => setSelectedBooking(null)}

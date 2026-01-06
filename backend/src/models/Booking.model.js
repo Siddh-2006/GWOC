@@ -2,19 +2,19 @@ import mongoose from 'mongoose';
 
 const BookingSchema = new mongoose.Schema({
   // User Reference
-  userId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Auth', 
-    required: true 
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Auth',
+    required: true
   },
-  
+
   // Slot Reference
-  slotId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Slot', 
-    required: true 
+  slotId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Slot',
+    required: true
   },
-  
+
   // Personal Information (can be pre-filled from user profile)
   personalInfo: {
     name: {
@@ -48,7 +48,7 @@ const BookingSchema = new mongoose.Schema({
       trim: true
     }
   },
-  
+
   // Session Content
   sessionContent: {
     topics: {
@@ -65,7 +65,7 @@ const BookingSchema = new mongoose.Schema({
       maxLength: 500
     }
   },
-  
+
   // Session Mode
   sessionMode: {
     type: String,
@@ -73,29 +73,29 @@ const BookingSchema = new mongoose.Schema({
     required: true,
     default: 'online'
   },
-  
+
   // Location for offline sessions
   location: {
     type: String,
-    required: function() {
+    required: function () {
       return this.sessionMode === 'offline';
     }
   },
-  
+
   // Reflection Session Reference (optional)
   reflectionSessionId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ReflectionSession',
     default: null
   },
-  
+
   // Booking Status
-  status: { 
-    type: String, 
-    enum: ['pending', 'under_review', 'confirmed', 'rejected', 'cancelled', 'completed', 'rescheduled'], 
-    default: 'pending' 
+  status: {
+    type: String,
+    enum: ['pending', 'under_review', 'awaiting_payment', 'confirmed', 'rejected', 'cancelled', 'completed', 'rescheduled'],
+    default: 'pending'
   },
-  
+
   // Admin Response
   adminResponse: {
     confirmedDate: Date,
@@ -119,7 +119,7 @@ const BookingSchema = new mongoose.Schema({
     },
     reviewedAt: Date
   },
-  
+
   // Payment Information
   payment: {
     amount: {
@@ -140,7 +140,7 @@ const BookingSchema = new mongoose.Schema({
     paymentMethod: String,
     paidAt: Date
   },
-  
+
   // Notifications
   notifications: {
     userNotified: {
@@ -160,18 +160,18 @@ const BookingSchema = new mongoose.Schema({
       default: false
     }
   },
-  
+
   // Original notes field (keeping for backward compatibility)
-  notes: { 
-    type: String 
+  notes: {
+    type: String
   },
-  
+
   // Timestamps
-  createdAt: { 
-    type: Date, 
-    default: Date.now 
+  createdAt: {
+    type: Date,
+    default: Date.now
   },
-  
+
   updatedAt: {
     type: Date,
     default: Date.now
@@ -179,7 +179,7 @@ const BookingSchema = new mongoose.Schema({
 });
 
 // Update the updatedAt field before saving
-BookingSchema.pre('save', function(next) {
+BookingSchema.pre('save', function (next) {
   this.updatedAt = Date.now();
   next();
 });

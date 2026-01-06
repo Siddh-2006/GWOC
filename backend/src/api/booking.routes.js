@@ -29,6 +29,9 @@ router.put('/admin/confirm/:bookingId', authenticateToken, requireAdmin, booking
 // PUT /api/booking/admin/review/:bookingId - Review booking (admin only)
 router.put('/admin/review/:bookingId', authenticateToken, requireAdmin, bookingController.reviewBooking);
 
+// PUT /api/booking/admin/approve/:bookingId - Approve booking & request payment (admin only)
+router.put('/admin/approve/:bookingId', authenticateToken, requireAdmin, bookingController.approveBooking);
+
 // DELETE /api/booking/admin/reject/:bookingId - Reject booking (admin only)
 router.delete('/admin/reject/:bookingId', authenticateToken, requireAdmin, bookingController.rejectBooking);
 

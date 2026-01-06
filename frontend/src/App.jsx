@@ -30,6 +30,7 @@ import Login from './features/auth/Login';
 import VerifyEmail from './features/auth/VerifyEmail';
 import ForgotPassword from './features/auth/ForgotPassword';
 import ResetPassword from './features/auth/ResetPassword';
+import PaymentPage from './pages/PaymentPage';
 
 import useAuthStore from './store/useAuthStore';
 
@@ -50,7 +51,7 @@ const ProtectedRoute = ({ children, adminOnly = false, redirectAdminToAdmin = fa
   if (!isInitialized) return <AuthLoader />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (adminOnly && user?.role !== 'admin') return <Navigate to="/" replace />;
-  
+
   // Special case: redirect admin users to admin dashboard for profile route
   if (redirectAdminToAdmin && user?.role === 'admin') {
     return <Navigate to="/admin" replace />;
@@ -64,7 +65,7 @@ const AuthRoute = ({ children }) => {
   const { isAuthenticated, user, isInitialized } = useAuthStore();
 
   if (!isInitialized) return <AuthLoader />;
-  
+
   if (isAuthenticated) {
     // Redirect based on user role
     if (user?.role === 'admin') {
@@ -169,6 +170,8 @@ function App() {
           <Route path="/verify-email" element={<AuthRoute><VerifyEmail /></AuthRoute>} />
           <Route path="/forgot-password" element={<AuthRoute><ForgotPassword /></AuthRoute>} />
           <Route path="/reset-password" element={<AuthRoute><ResetPassword /></AuthRoute>} />
+
+          <Route path="/pay" element={<PaymentPage />} />
         </Routes>
         <Chatbot />
       </Layout>
