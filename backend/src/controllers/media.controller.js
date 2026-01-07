@@ -482,13 +482,19 @@ export const mediaController = {
   // Get user's liked media
   getUserLikedMedia: async (req, res) => {
     try {
-      const userId = req.user?.userId;
+      let userId = req.user?.userId;
       const {
         type,
         category,
         page = 1,
-        limit = 20
+        limit = 20,
+        userId: targetUserId
       } = req.query;
+
+      // If requester is admin and targetUserId is provided, use it
+      if (req.user?.role === 'admin' && targetUserId) {
+        userId = targetUserId;
+      }
 
       if (!userId) {
         return res.status(401).json({

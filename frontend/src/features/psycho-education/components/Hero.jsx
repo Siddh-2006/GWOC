@@ -46,7 +46,7 @@ const Hero = () => {
           </div>
 
           {/* Right Column: Premium Visual */}
-          <div className="flex-1 relative w-full max-w-[480px]">
+          <div className="flex-1 relative w-full max-w-[480px] hidden md:block">
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}

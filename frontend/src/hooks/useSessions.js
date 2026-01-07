@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { sessionsApi } from '../services/sessions.api';
 import useAuthStore from '../store/useAuthStore';
 
-export const useSessions = () => {
+export const useSessions = (userId = null) => {
   const { isAuthenticated } = useAuthStore();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -14,8 +14,11 @@ export const useSessions = () => {
     setLoading(true);
     setError(null);
     
+    // Merge userId into params if provided
+    const callParams = userId ? { ...params, userId } : params;
+    
     try {
-      const response = await sessionsApi.getUserSessions(params);
+      const response = await sessionsApi.getUserSessions(callParams);
       if (response.success) {
         setSessions(response.data);
       } else {
@@ -33,7 +36,6 @@ export const useSessions = () => {
     try {
       const response = await sessionsApi.updateSessionNotes(sessionId, notesData);
       if (response.success) {
-        // Refresh sessions to get updated data
         await fetchSessions();
         return response.data;
       } else {
@@ -88,7 +90,7 @@ export const useSessions = () => {
     } else {
       setSessions([]);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, userId]);
 
   return {
     sessions,

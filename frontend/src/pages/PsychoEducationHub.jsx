@@ -4,7 +4,6 @@ import Hero from '../features/psycho-education/components/Hero';
 import StartHere from '../features/psycho-education/components/StartHere';
 import StrugglesGrid from '../features/psycho-education/components/StrugglesGrid';
 import ToolsSection from '../features/psycho-education/components/ToolsSection';
-import LifeAreas from '../features/psycho-education/components/LifeAreas';
 import LearningFormats from '../features/psycho-education/components/LearningFormats';
 import { motion } from 'framer-motion';
 import { Shield, CheckCircle2, ArrowRight } from 'lucide-react';
@@ -46,7 +45,7 @@ const PsychoEducationHub = () => {
       <StartHere fadeInUp={fadeInUp} staggerContainer={staggerContainer} />
       <StrugglesGrid fadeInUp={fadeInUp} staggerContainer={staggerContainer} />
       <ToolsSection fadeInUp={fadeInUp} staggerContainer={staggerContainer} />
-      <LifeAreas fadeInUp={fadeInUp} />
+      {/* <LifeAreas fadeInUp={fadeInUp} /> */}
       <LearningFormats fadeInUp={fadeInUp} />
 
       {/* Gentle Transition to Support */}
@@ -96,10 +95,6 @@ const PsychoEducationHub = () => {
                 <span className="flex items-center gap-2"><CheckCircle2 size={16} /> Human-First</span>
               </div>
             </div>
-          </div>
-
-          <div className="mt-20 text-center text-gray-400 text-sm">
-            <p>&copy; 2025 MindSettler. All rights reserved. Learning is a journey.</p>
           </div>
         </div>
       </footer>

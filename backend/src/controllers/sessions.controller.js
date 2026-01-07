@@ -6,8 +6,13 @@ export const sessionsController = {
   // Get user's sessions (upcoming, ongoing, past)
   getUserSessions: async (req, res) => {
     try {
-      const userId = req.user?.userId;
-      const { status, page = 1, limit = 10 } = req.query;
+      let userId = req.user?.userId;
+      const { status, page = 1, limit = 10, userId: targetUserId } = req.query;
+
+      // If requester is admin and targetUserId is provided, use it
+      if (req.user?.role === 'admin' && targetUserId) {
+        userId = targetUserId;
+      }
 
       if (!userId) {
         return res.status(401).json({

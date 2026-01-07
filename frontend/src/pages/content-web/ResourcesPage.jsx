@@ -146,21 +146,6 @@ const ResourcesPage = () => {
               </button>
             )}
           </div>
-
-          <div className="flex bg-white border border-gray-100 rounded-2xl p-1 shadow-sm">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2.5 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-primary'}`}
-            >
-              <Grid size={18} />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2.5 rounded-xl transition-all ${viewMode === 'list' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-primary'}`}
-            >
-              <List size={18} />
-            </button>
-          </div>
         </div>
 
         {/* Error State */}

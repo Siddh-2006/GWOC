@@ -6,8 +6,13 @@ export const journeyController = {
   // Get user's journey timeline
   getUserJourney: async (req, res) => {
     try {
-      const userId = req.user?.userId;
-      const { page = 1, limit = 20, type } = req.query;
+      let userId = req.user?.userId;
+      const { page = 1, limit = 20, type, userId: targetUserId } = req.query;
+
+      // If requester is admin and targetUserId is provided, use it
+      if (req.user?.role === 'admin' && targetUserId) {
+        userId = targetUserId;
+      }
 
       if (!userId) {
         return res.status(401).json({

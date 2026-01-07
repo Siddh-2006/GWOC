@@ -6,6 +6,7 @@ import {
   logoutAll,
   refreshToken,
   getProfile,
+  getUserProfile,
   updateProfile,
   forgotPassword,
   resetPassword,
@@ -31,6 +32,7 @@ router.get('/profile', authenticateToken, getProfile);
 router.put('/profile', authenticateToken, updateProfile);
 
 // Admin routes
+router.get('/users/:userId/profile', authenticateToken, requireAdmin, getUserProfile);
 router.post('/users/:userId/mark-confirmed-session', authenticateToken, requireAdmin, markUserConfirmedSession);
 
 export default router;

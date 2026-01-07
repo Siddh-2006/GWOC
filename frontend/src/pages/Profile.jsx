@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   User, Heart,
   Clock, Play,
   Shield, CheckCircle, CalendarDays, MapPin
 } from 'lucide-react';
+import { useParams, Navigate } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
+import { authApi } from '../features/auth/auth.api';
 import { useLikedMedia } from '../hooks/useLikedMedia';
 import { useSessions } from '../hooks/useSessions';
 import { useJourney } from '../hooks/useJourney';
@@ -45,12 +47,44 @@ const SectionHeading = ({ icon: Icon, title, subtitle }) => (
 );
 
 const Profile = () => {
-  const { user, isAuthenticated, isInitialized } = useAuthStore();
+  const { userId } = useParams();
+  const { user: currentUser, isAuthenticated, isInitialized } = useAuthStore();
+  const [viewedUser, setViewedUser] = useState(null);
+  const [isAdminView, setIsAdminView] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
+
   const [activeTab, setActiveTab] = useState('sessions');
-  const { likedMedia, loading: likedLoading, error: likedError, toggleLike } = useLikedMedia();
-  const { categorizedSessions, loading: sessionsLoading, error: sessionsError, fetchSessions } = useSessions();
-  const { journeyData, loading: journeyLoading, error: journeyError } = useJourney();
+  const { likedMedia, loading: likedLoading, error: likedError, toggleLike } = useLikedMedia(userId);
+  const { categorizedSessions, loading: sessionsLoading, error: sessionsError, fetchSessions } = useSessions(userId);
+  const { journeyData, loading: journeyLoading, error: journeyError } = useJourney(userId);
   const { toasts, success, error: showError, removeToast } = useToast();
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      if (userId && currentUser?.role === 'admin') {
+        setProfileLoading(true);
+        setIsAdminView(true);
+        try {
+          const res = await authApi.getUserProfile(userId);
+          setViewedUser(res.data.user);
+        } catch (err) {
+          showError('Failed to fetch user profile');
+        } finally {
+          setProfileLoading(false);
+        }
+      } else {
+        setViewedUser(currentUser);
+        setIsAdminView(false);
+      }
+    };
+
+    if (isInitialized) {
+      fetchUserDetails();
+    }
+  }, [userId, currentUser, isInitialized]);
+
+  // Use viewedUser for rendering
+  const user = viewedUser;
 
   // Handle removing from liked content with feedback
   const handleRemoveFromLiked = async (mediaId) => {
@@ -128,9 +162,9 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 pt-25">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        
+
         {/* Profile Header */}
         <section className="mb-8">
           <ProfileCard>
@@ -138,17 +172,23 @@ const Profile = () => {
               <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold shadow-lg">
                 {user.firstName?.[0]}{user.lastName?.[0]}
               </div>
-              
+
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
                 {user.firstName} {user.lastName}
               </h1>
-              
+
               <p className="text-gray-600 mb-4">{user.email}</p>
-              
+
               <div className="flex justify-center gap-4">
-                <span className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
-                  <Shield size={16} /> Verified Account
+                <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${user.role === 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-purple-100 text-purple-700'
+                  }`}>
+                  <Shield size={16} /> {user.role === 'admin' ? 'Administrator' : 'Verified Account'}
                 </span>
+                {isAdminView && (
+                  <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
+                    Admin View
+                  </span>
+                )}
               </div>
             </div>
           </ProfileCard>
@@ -162,11 +202,10 @@ const Profile = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center justify-center gap-2 px-8 py-3 rounded-xl transition-all whitespace-nowrap font-medium ${
-                    activeTab === tab.id
-                      ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                      : 'text-gray-600 hover:text-primary hover:bg-purple-50'
-                  }`}
+                  className={`flex items-center justify-center gap-2 px-8 py-3 rounded-xl transition-all whitespace-nowrap font-medium ${activeTab === tab.id
+                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                    : 'text-gray-600 hover:text-primary hover:bg-purple-50'
+                    }`}
                 >
                   <tab.icon size={20} />
                   {tab.label}
@@ -209,8 +248,8 @@ const Profile = () => {
                 ) : (
                   /* Check if we have any sessions at all */
                   categorizedSessions.upcoming.length === 0 &&
-                  categorizedSessions.ongoing.length === 0 &&
-                  categorizedSessions.past.length === 0 ? (
+                    categorizedSessions.ongoing.length === 0 &&
+                    categorizedSessions.past.length === 0 ? (
                     /* Complete Empty State */
                     <div className="text-center py-16">
                       <motion.div
@@ -324,7 +363,7 @@ const Profile = () => {
                   <p className="text-sm text-gray-500">{journeyError}</p>
                 </div>
               ) : (
-                <JourneyTimeline 
+                <JourneyTimeline
                   journeyData={journeyData}
                   loading={journeyLoading}
                 />

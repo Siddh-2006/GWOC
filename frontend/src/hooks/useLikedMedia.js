@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { mediaApi } from '../services/media.api';
 import useAuthStore from '../store/useAuthStore';
 
-export const useLikedMedia = () => {
+export const useLikedMedia = (userId = null) => {
   const { isAuthenticated } = useAuthStore();
   const [likedMedia, setLikedMedia] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -17,8 +17,11 @@ export const useLikedMedia = () => {
     setLoading(true);
     setError(null);
     
+    // Merge userId into params if provided
+    const callParams = userId ? { ...params, userId } : params;
+    
     try {
-      const response = await mediaApi.getUserLikedMedia(params);
+      const response = await mediaApi.getUserLikedMedia(callParams);
       if (response.success) {
         setLikedMedia(response.data);
         setPagination(response.pagination);
@@ -73,7 +76,7 @@ export const useLikedMedia = () => {
       setLikedMedia([]);
       setPagination(null);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, userId]);
 
   return {
     likedMedia,

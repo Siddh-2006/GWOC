@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { journeyApi } from '../services/journey.api';
 import useAuthStore from '../store/useAuthStore';
 
-export const useJourney = () => {
+export const useJourney = (userId = null) => {
   const { isAuthenticated } = useAuthStore();
   const [journeyData, setJourneyData] = useState({
     entries: []
@@ -19,8 +19,11 @@ export const useJourney = () => {
     setLoading(true);
     setError(null);
     
+    // Merge userId into params if provided
+    const callParams = userId ? { ...params, userId } : params;
+    
     try {
-      const response = await journeyApi.getUserJourney(params);
+      const response = await journeyApi.getUserJourney(callParams);
       if (response.success) {
         setJourneyData(response.data);
         setPagination(response.pagination);
@@ -48,7 +51,7 @@ export const useJourney = () => {
       });
       setPagination(null);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, userId]);
 
   return {
     journeyData,

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import Logo from '../../../components/Logo';
-import { Search } from 'lucide-react';
+import { Search, User as UserIcon } from 'lucide-react';
+import useAuthStore from '../../../store/useAuthStore';
 
 const RESOURCE_TYPES = [
   { name: 'ALL', value: 'all' },
@@ -26,6 +27,7 @@ const LIBRARY_TYPES = [
 const ContentWebHeader = () => {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { isAuthenticated, user } = useAuthStore();
   const isLibrary = location.pathname.includes('/library');
   const navItems = isLibrary ? LIBRARY_TYPES : RESOURCE_TYPES;
   const basePath = isLibrary ? '/psycho-education/library' : '/resources';
@@ -116,6 +118,22 @@ const ContentWebHeader = () => {
             >
               Library
             </Link>
+
+            {isAuthenticated ? (
+              <Link to="/profile" className="flex items-center gap-2 text-primary font-bold hover:text-secondary transition-colors group">
+                <div className="w-8 h-8 md:w-9 md:h-9 bg-purple-100 rounded-full flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                  <UserIcon size={16} className="md:w-[18px] md:h-[18px]" />
+                </div>
+                <span className="hidden md:block text-[13px]">{user?.firstName}</span>
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                className="text-gray-500 hover:text-primary font-semibold text-xs md:text-sm transition-colors"
+              >
+                Login
+              </Link>
+            )}
           </nav>
         </div>
       </div>

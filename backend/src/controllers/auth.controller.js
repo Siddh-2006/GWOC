@@ -382,6 +382,57 @@ export const getProfile = async (req, res) => {
   }
 };
 
+// Get specific user profile (Admin only)
+export const getUserProfile = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const authUser = await Auth.findById(userId);
+
+    if (!authUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Get user profile from User model
+    const userProfile = await User.findOne({ email: authUser.email });
+
+    res.json({
+      success: true,
+      data: {
+        auth: authUser,
+        profile: userProfile,
+        user: {
+          _id: authUser._id,
+          email: authUser.email,
+          firstName: authUser.firstName,
+          lastName: authUser.lastName,
+          avatar: authUser.avatar,
+          bio: authUser.bio,
+          location: authUser.location,
+          interests: authUser.interests,
+          name: userProfile?.name || `${authUser.firstName} ${authUser.lastName}`,
+          phone: userProfile?.phone,
+          role: authUser.role,
+          isActive: authUser.isActive,
+          isEmailVerified: authUser.isEmailVerified,
+          lastLogin: authUser.lastLogin,
+          createdAt: authUser.createdAt,
+          updatedAt: authUser.updatedAt
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Get user profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
 // Update user profile
 export const updateProfile = async (req, res) => {
   try {
