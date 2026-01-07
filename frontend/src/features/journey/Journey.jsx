@@ -56,31 +56,35 @@ export const PATH_POINTS = [
 ];
 
 // --- SERVICE ---
-const getAffirmation = async (stage) => {
-  const apiKey = import.meta.env.VITE_GAME_API_KEY;
+// const getAffirmation = async (stage) => {
+//   const apiKey = import.meta.env.VITE_GAME_API_KEY;
 
-  if (!apiKey) {
-    console.warn("Gemini API Key missing");
-    return "Remember, you are doing great just by being here.";
-  }
+//   if (!apiKey) {
+//     console.warn("Gemini API Key missing");
+//     return "Remember, you are doing great just by being here.";
+//   }
 
-  try {
-    const ai = new GoogleGenAI({ apiKey });
-    const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
-      contents: `Generate a short, gentle, warm, and comforting 1-sentence affirmation for someone currently in the "${stage}" stage of their mental health journey. Keep it under 20 words. No quotes.`,
-    });
-    return response.response.text()?.trim() || "You are enough exactly as you are.";
-  } catch (error) {
-    console.error("Gemini API Error:", error);
-    return "You are stronger than you know.";
-  }
-};
+//   try {
+//     const ai = new GoogleGenAI({ apiKey });
+//     const response = await ai.models.generateContent({
+//       model: 'gemini-1.5-flash',
+//       contents: `Generate a short, gentle, warm, and comforting 1-sentence affirmation for someone currently in the "${stage}" stage of their mental health journey. Keep it under 20 words. No quotes.`,
+//     });
+//     return response.response.text()?.trim() || "You are enough exactly as you are.";
+//   } catch (error) {
+//     console.error("Gemini API Error:", error);
+//     return "You are stronger than you know.";
+//   }
+// };
 
 // --- COMPONENTS ---
 
 // 1. Character Component
-const Character = ({ x, y, isMoving }) => {
+const Character = ({ x, y, isMoving, progress }) => {
+  // Calculate smile curve based on progress.
+  // 65 is a gentle smile, 80 is a big grin.
+  const smileCurve = 65 + (Math.max(0, Math.min(1, progress)) * 15);
+
   return (
     <motion.div
       className="absolute w-12 h-12 md:w-16 md:h-16 z-20 pointer-events-none"
@@ -113,8 +117,8 @@ const Character = ({ x, y, isMoving }) => {
           {/* Blush - pink-200 */}
           <ellipse cx="40" cy="55" rx="3" ry="2" fill="#fbcfe8" opacity="0.6" />
           <ellipse cx="70" cy="55" rx="3" ry="2" fill="#fbcfe8" opacity="0.6" />
-          {/* Smile */}
-          <path d="M 45 60 Q 55 65 65 60" fill="none" stroke="#4c1d95" strokeWidth="2" strokeLinecap="round" />
+          {/* Smile - Dynamic based on progress */}
+          <path d={`M 45 60 Q 55 ${smileCurve} 65 60`} fill="none" stroke="#4c1d95" strokeWidth="2" strokeLinecap="round" />
         </g>
       </svg>
     </motion.div>
@@ -165,13 +169,15 @@ const Mountain = ({ progress }) => {
         preserveAspectRatio="none"
       >
         <defs>
+          {/* Sky Gradient - Darker pink version */}
           <linearGradient id="skyGradient" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#fdf4ff" />
-            <stop offset="100%" stopColor="#fae8ff" />
+            <stop offset="0%" stopColor="#fce7f3" /> {/* Pink 100 */}
+            <stop offset="100%" stopColor="#f9a8d4" /> {/* Pink 300 */}
           </linearGradient>
           <linearGradient id="mountainGradient" x1="0" x2="1" y1="0" y2="1">
             <stop offset="0%" stopColor="#e9d5ff" />
-            <stop offset="100%" stopColor="#c084fc" />
+            {/* Darker purple at the end for more depth on the right/bottom */}
+            <stop offset="100%" stopColor="#6b21a8" /> 
           </linearGradient>
         </defs>
 
@@ -196,7 +202,7 @@ const Mountain = ({ progress }) => {
         />
         <path
           d="M 60 100 L 85 50 L 110 100 Z"
-          fill="#f5d0fe"
+          fill="#d8b4fe" // Darker than left mountain
           className="opacity-50"
         />
 
@@ -240,14 +246,19 @@ const Mountain = ({ progress }) => {
                 className="transition-all duration-500"
               />
               {isActive && (
-                <circle
+                <motion.circle
                   cx={pt.x}
                   cy={pt.y}
-                  r={4}
                   stroke="white"
                   strokeWidth="0.5"
                   fill="none"
-                  className="animate-ping opacity-50"
+                  initial={{ r: 2.5, opacity: 0.8 }}
+                  animate={{ r: 8, opacity: 0 }}
+                  transition={{ 
+                    duration: 1.5, 
+                    repeat: Infinity, 
+                    ease: "easeOut" 
+                  }}
                 />
               )}
             </g>
@@ -260,18 +271,6 @@ const Mountain = ({ progress }) => {
 
 // 3. StageCard Component
 const StageCard = ({ stage, state }) => {
-  const [affirmation, setAffirmation] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  const handleGetAffirmation = async () => {
-    setLoading(true);
-    const text = await getAffirmation(stage.title);
-    setAffirmation(text);
-    setLoading(false);
-  };
-
-  const closeAffirmation = () => setAffirmation(null);
-
   const cardVariants = {
     hidden: { 
         opacity: 0, 
@@ -346,48 +345,6 @@ const StageCard = ({ stage, state }) => {
       </div>
       
       <p className="text-pink-900/80 leading-relaxed font-sans font-medium">{stage.description}</p>
-      
-      {/* Action Area - Only visible when active */}
-      <motion.div 
-        animate={{ 
-          height: state === 'active' ? 'auto' : 0, 
-          opacity: state === 'active' ? 1 : 0,
-          marginTop: state === 'active' ? 16 : 0
-        }}
-        className="overflow-hidden"
-      >
-        <div className="pt-2 border-t border-pink-900/10">
-            <button
-                onClick={handleGetAffirmation}
-                disabled={loading || !!affirmation}
-                className="flex items-center gap-2 text-sm font-bold text-pink-600 hover:text-pink-800 transition-colors disabled:opacity-50"
-            >
-                <MessageCircleHeart className="w-4 h-4" />
-                {loading ? 'Asking the guide...' : 'Ask for encouragement'}
-            </button>
-        </div>
-      </motion.div>
-
-      <AnimatePresence>
-        {affirmation && (
-            <motion.div
-                initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
-                exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                className="overflow-hidden"
-            >
-                <div className="p-4 bg-white/90 rounded-xl border border-pink-200 relative shadow-sm">
-                     <button 
-                        onClick={closeAffirmation}
-                        className="absolute top-2 right-2 text-pink-300 hover:text-pink-500"
-                    >
-                        <X className="w-3 h-3" />
-                    </button>
-                    <p className="text-pink-800 italic text-sm font-medium">"{affirmation}"</p>
-                </div>
-            </motion.div>
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 };
@@ -433,45 +390,54 @@ export const Journey = () => {
             x={Number(charX.get())} 
             y={Number(charY.get())} 
             isMoving={currentProgress > 0.005 && currentProgress < 0.995}
+            progress={currentProgress}
         />
 
-        {/* Left Side: Cards Container */}
-        <div className="relative z-10 w-full md:w-5/12 h-full flex flex-col justify-center px-6 md:px-12 pointer-events-none">
-            {/* 
-              Cards wrapper
-             */}
-            <div className="pointer-events-auto flex flex-col w-full max-w-sm">
-               {JOURNEY_STAGES.map((stage, idx) => {
-                 // Trigger point: slightly before the character visually hits the dot
-                 const triggerPoint = stage.pathPercentage - 0.15;
-                 
-                 // Determine next stage trigger to know when this one is "completed"
-                 const nextStage = JOURNEY_STAGES[idx + 1];
-                 const endPoint = nextStage ? (nextStage.pathPercentage - 0.15) : 1.1; // 1.1 ensures last one stays active
+        {/* Floating Cards Layer */}
+        <div className="absolute inset-0 z-30 pointer-events-none">
+           {JOURNEY_STAGES.map((stage, idx) => {
+             // Position relative to the checkpoint
+             const pt = PATH_POINTS[idx + 1];
+             
+             // Trigger point: same as before
+             const triggerPoint = stage.pathPercentage - 0.15;
+             const nextStage = JOURNEY_STAGES[idx + 1];
+             const endPoint = nextStage ? (nextStage.pathPercentage - 0.15) : 1.1;
 
-                 let cardState = 'hidden';
-                 
-                 if (currentProgress < triggerPoint) {
-                    cardState = 'hidden';
-                 } else if (currentProgress >= triggerPoint && currentProgress < endPoint) {
-                    cardState = 'active';
-                 } else {
-                    cardState = 'completed';
-                 }
-                 
-                 return (
+             let cardState = 'hidden';
+             
+             if (currentProgress < triggerPoint) {
+                cardState = 'hidden';
+             } else if (currentProgress >= triggerPoint && currentProgress < endPoint) {
+                cardState = 'active';
+             } else {
+                cardState = 'completed';
+             }
+             
+             const isLastTwo = idx >= 2;
+
+             return (
+                <div 
+                   key={stage.id}
+                   className={`absolute flex flex-col items-center pointer-events-auto ${isLastTwo ? 'justify-start' : 'justify-end'}`}
+                   style={{
+                     left: `${pt.x}%`, 
+                     top: `${pt.y}%`,
+                     transform: isLastTwo ? 'translate(-50%, 0)' : 'translate(-50%, -100%)',
+                     paddingTop: isLastTwo ? '40px' : '0',
+                     paddingBottom: isLastTwo ? '0' : '40px',
+                     width: '320px', // Fixed width for consistent bubbles
+                     maxWidth: '85vw' // Prevent overflow on small screens
+                   }}
+                >
                     <StageCard 
-                        key={stage.id}
                         stage={stage} 
                         state={cardState} 
                     />
-                 );
-               })}
-            </div>
+                </div>
+             );
+           })}
         </div>
-
-        {/* Right Side: Spacer */}
-        <div className="hidden md:block w-7/12 h-full" />
       </div>
       
       {/* Scroll indicator at the start */}
