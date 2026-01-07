@@ -14,7 +14,9 @@ class ContactAPI {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to submit contact form');
+        const error = new Error(data.message || 'Failed to submit contact form');
+        error.details = data.errors; // Capture validation errors array
+        throw error;
       }
 
       return data;

@@ -10,21 +10,24 @@ const Contact = () => {
     subject: '',
     message: ''
   });
+  const [error, setError] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError(null);
 
     try {
       await contactAPI.submitContactForm(formData);
       setSubmitted(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
-    } catch (error) {
-      setError(error.message || 'Failed to send message. Please try again.');
+    } catch (err) {
+      setError({
+        message: err.message || 'Failed to send message. Please try again.',
+        details: err.details
+      });
     } finally {
       setLoading(false);
     }
@@ -32,7 +35,7 @@ const Contact = () => {
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    if (error) setError(''); // Clear error when user starts typing
+    if (error) setError(null); // Clear error when user starts typing
   };
 
   return (
@@ -147,9 +150,16 @@ const Contact = () => {
             <div className="glass-card p-8 md:p-12">
               <h3 className="text-2xl font-bold text-primary mb-8">Send a Message</h3>
 
-              {error && (
+              {error && error.message && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
-                  {error}
+                  <p className="font-bold mb-1">{error.message}</p>
+                  {error.details && (
+                    <ul className="text-xs list-disc list-inside opacity-80">
+                      {error.details.map((err, idx) => (
+                        <li key={idx}>{err.message}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
 
@@ -198,9 +208,10 @@ const Contact = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Your Message</label>
                   <textarea
                     required
+                    minLength={10}
                     rows="5"
                     className="w-full px-4 py-3 rounded-xl border border-purple-100 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none"
-                    placeholder="Write your message here..."
+                    placeholder="Write your message here (min. 10 characters)..."
                     value={formData.message}
                     onChange={(e) => handleInputChange('message', e.target.value)}
                     disabled={loading}
