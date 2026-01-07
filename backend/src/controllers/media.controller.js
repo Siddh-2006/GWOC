@@ -74,7 +74,7 @@ export const mediaController = {
       if (isPublished !== undefined) query.isPublished = isPublished === 'true';
 
       if (search) {
-        query.$text = { $search: search };
+        query.title = { $regex: search, $options: 'i' };
       }
 
       const skip = (page - 1) * limit;
@@ -125,7 +125,7 @@ export const mediaController = {
       if (category) query.category = category;
 
       if (search) {
-        query.$text = { $search: search };
+        query.title = { $regex: search, $options: 'i' };
       }
 
       const skip = (page - 1) * limit;

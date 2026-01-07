@@ -2,8 +2,17 @@ import React from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { motion } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 
 const Layout = ({ children }) => {
+  const location = useLocation();
+  const isContentWebRoute = location.pathname.startsWith('/resources') ||
+    location.pathname.startsWith('/psycho-education/library');
+
+  if (isContentWebRoute) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Play, Download, Heart, Eye, Search, Filter, Grid, List, Clock, Tag, Plus, Settings, MessageCircle } from 'lucide-react';
 import { mediaApi } from '../services/media.api';
@@ -16,12 +17,15 @@ const Resources = () => {
   const { toasts, success, error: showError, removeToast } = useToast();
   const isAdmin = user?.role === 'admin';
 
+  const [searchParams] = useSearchParams();
+  const initialCategory = searchParams.get('category') || 'all';
+
   const [media, setMedia] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [viewMode, setViewMode] = useState('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -49,10 +53,24 @@ const Resources = () => {
 
   const categories = [
     { value: 'all', label: 'All Categories' },
-    { value: 'resource', label: 'Resources' },
-    { value: 'psycho-education', label: 'Psycho-Education' },
-    { value: 'general', label: 'General' }
+    { value: 'anxiety', label: 'Anxiety' },
+    { value: 'depression', label: 'Depression' },
+    { value: 'parenting', label: 'Parenting' },
+    { value: 'relationships', label: 'Relationships' },
+    { value: 'self', label: 'Self' },
+    { value: 'sleep', label: 'Sleep' },
+    { value: 'stress', label: 'Stress' },
+    { value: 'teens', label: 'Teens' },
+    { value: 'therapy', label: 'Therapy' },
+    { value: 'userstory', label: 'User Story' },
   ];
+
+  useEffect(() => {
+    const category = searchParams.get('category');
+    if (category) {
+      setSelectedCategory(category);
+    }
+  }, [searchParams]);
 
   const fetchMedia = async (page = 1, resetData = false) => {
     try {
@@ -153,15 +171,15 @@ const Resources = () => {
       const response = await mediaApi.likeMedia(mediaId);
       setMedia(prev => prev.map(item =>
         item._id === mediaId
-          ? { 
-              ...item, 
-              hasLiked: response.data.hasLiked,
-              likes: response.data.likes,
-              likesCount: response.data.likes
-            }
+          ? {
+            ...item,
+            hasLiked: response.data.hasLiked,
+            likes: response.data.likes,
+            likesCount: response.data.likes
+          }
           : item
       ));
-      
+
       // Update selected media if it's the same
       if (selectedMedia && selectedMedia._id === mediaId) {
         setSelectedMedia(prev => ({
@@ -201,7 +219,7 @@ const Resources = () => {
           ? { ...item, comments: [...(item.comments || []), response.data] }
           : item
       ));
-      
+
       // Update selected media if it's the same
       if (selectedMedia && selectedMedia._id === mediaId) {
         setSelectedMedia(prev => ({
@@ -223,14 +241,14 @@ const Resources = () => {
 
   const handleMediaClick = async (mediaItem) => {
     setSelectedMedia(mediaItem);
-    
+
     // Use PostViewer for posts, MediaPlayer for other media types
     if (mediaItem.type === 'post') {
       setShowPostViewer(true);
     } else {
       setShowPlayer(true);
     }
-    
+
     // Track view
     try {
       const response = await mediaApi.getMedia(mediaItem._id);
@@ -241,7 +259,7 @@ const Resources = () => {
             ? { ...item, views: response.data.views }
             : item
         ));
-        
+
         // Update selected media with fresh data
         setSelectedMedia(response.data);
       }
@@ -283,7 +301,7 @@ const Resources = () => {
   };
 
   return (
-    <div className="min-h-screen py-20 pt-24" style={{ backgroundColor: '#FFF5F7' }}>
+    <div className="min-h-screen pb-20 pt-8" style={{ backgroundColor: '#FFF5F7' }}>
       <div className="max-w-6xl mx-auto px-4">
         {/* Instagram-style Header */}
         <motion.div
@@ -384,7 +402,7 @@ const Resources = () => {
           transition={{ delay: 0.2 }}
         >
           {viewMode === 'grid' ? (
-            <motion.div 
+            <motion.div
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -395,13 +413,13 @@ const Resources = () => {
                   key={item._id}
                   initial={{ opacity: 0, scale: 0.8, y: 50 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{ 
+                  transition={{
                     delay: index * 0.1,
                     type: "spring",
                     stiffness: 100,
                     damping: 15
                   }}
-                  whileHover={{ 
+                  whileHover={{
                     y: -8,
                     transition: { type: "spring", stiffness: 300, damping: 20 }
                   }}
@@ -419,7 +437,7 @@ const Resources = () => {
                           className="w-full h-full object-cover"
                           fallbackIcon="📄"
                         />
-                        
+
                         {/* Content Type Badge */}
                         <div className="absolute top-3 left-3 bg-primary/90 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm">
                           Article
@@ -429,14 +447,14 @@ const Resources = () => {
                         {item.assets && item.assets.length > 1 && (
                           <div className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm flex items-center gap-1">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z"/>
+                              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z" />
                             </svg>
                             {item.assets.length}
                           </div>
                         )}
 
                         {/* Hover Overlay */}
-                        <motion.div 
+                        <motion.div
                           className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
                           initial={{ opacity: 0 }}
                           whileHover={{ opacity: 1 }}
@@ -454,7 +472,7 @@ const Resources = () => {
                       {/* Post Content */}
                       <div className="p-5">
                         {/* Title */}
-                        <motion.h3 
+                        <motion.h3
                           className="font-bold text-gray-800 text-lg mb-3 line-clamp-2 group-hover:text-primary transition-colors"
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -464,7 +482,7 @@ const Resources = () => {
                         </motion.h3>
 
                         {/* Description */}
-                        <motion.p 
+                        <motion.p
                           className="text-gray-600 mb-4 line-clamp-3 text-sm leading-relaxed"
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -475,7 +493,7 @@ const Resources = () => {
 
                         {/* Tags */}
                         {item.tags && item.tags.length > 0 && (
-                          <motion.div 
+                          <motion.div
                             className="flex flex-wrap gap-2 mb-4"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -501,7 +519,7 @@ const Resources = () => {
                         )}
 
                         {/* Meta Information */}
-                        <motion.div 
+                        <motion.div
                           className="flex items-center justify-between pt-4 border-t border-gray-100"
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -520,19 +538,18 @@ const Resources = () => {
                                 }}
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
-                                className={`flex items-center gap-1 transition-colors ${
-                                  item.hasLiked 
-                                    ? 'text-red-500' 
+                                className={`flex items-center gap-1 transition-colors ${item.hasLiked
+                                    ? 'text-red-500'
                                     : 'text-gray-500 hover:text-red-500'
-                                }`}
+                                  }`}
                               >
-                                <Heart 
-                                  size={16} 
+                                <Heart
+                                  size={16}
                                   className={
-                                    item.hasLiked 
-                                      ? 'fill-red-500 text-red-500' 
+                                    item.hasLiked
+                                      ? 'fill-red-500 text-red-500'
                                       : 'text-gray-500'
-                                  } 
+                                  }
                                 />
                                 <span>{Array.isArray(item.likes) ? item.likes.length : item.likesCount || item.likes || 0}</span>
                               </motion.button>
@@ -544,10 +561,10 @@ const Resources = () => {
                               </div>
                             )}
                           </div>
-                          
+
                           <div className="text-xs text-gray-400">
-                            {new Date(item.createdAt).toLocaleDateString('en-US', { 
-                              month: 'short', 
+                            {new Date(item.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
                               day: 'numeric',
                               year: 'numeric'
                             })}
@@ -581,13 +598,13 @@ const Resources = () => {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-blue-100">
-                            <motion.div 
+                            <motion.div
                               className="text-primary text-3xl"
-                              animate={{ 
+                              animate={{
                                 rotate: [0, 10, -10, 0],
                                 scale: [1, 1.1, 1]
                               }}
-                              transition={{ 
+                              transition={{
                                 duration: 3,
                                 repeat: Infinity,
                                 repeatType: "reverse"
@@ -600,13 +617,13 @@ const Resources = () => {
 
                         {/* Fallback for failed images */}
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-blue-100" style={{ display: 'none' }}>
-                          <motion.div 
+                          <motion.div
                             className="text-primary text-3xl"
-                            animate={{ 
+                            animate={{
                               rotate: [0, 10, -10, 0],
                               scale: [1, 1.1, 1]
                             }}
-                            transition={{ 
+                            transition={{
                               duration: 3,
                               repeat: Infinity,
                               repeatType: "reverse"
@@ -617,14 +634,14 @@ const Resources = () => {
                         </div>
 
                         {/* Overlay Gradient */}
-                        <motion.div 
+                        <motion.div
                           className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                           initial={{ opacity: 0 }}
                           whileHover={{ opacity: 1 }}
                         />
 
                         {/* Type Badge */}
-                        <motion.div 
+                        <motion.div
                           className="absolute top-3 left-3 bg-primary/90 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm capitalize"
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -635,7 +652,7 @@ const Resources = () => {
 
                         {/* Duration Badge */}
                         {item.duration && (
-                          <motion.div 
+                          <motion.div
                             className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -647,7 +664,7 @@ const Resources = () => {
 
                         {/* Play Button Overlay */}
                         {!(item.type === 'video' || item.type === 'vlog') && (
-                          <motion.div 
+                          <motion.div
                             className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
                             whileHover={{ scale: 1.1 }}
                           >
@@ -664,7 +681,7 @@ const Resources = () => {
 
                       {/* Regular Media Content */}
                       <div className="p-5">
-                        <motion.h3 
+                        <motion.h3
                           className="font-bold text-gray-800 text-lg mb-3 line-clamp-2 group-hover:text-primary transition-colors"
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -673,7 +690,7 @@ const Resources = () => {
                           {item.title}
                         </motion.h3>
 
-                        <motion.p 
+                        <motion.p
                           className="text-gray-600 mb-4 line-clamp-3 text-sm leading-relaxed"
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -684,7 +701,7 @@ const Resources = () => {
 
                         {/* Tags */}
                         {item.tags && item.tags.length > 0 && (
-                          <motion.div 
+                          <motion.div
                             className="flex flex-wrap gap-2 mb-4"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -710,7 +727,7 @@ const Resources = () => {
                         )}
 
                         {/* Actions */}
-                        <motion.div 
+                        <motion.div
                           className="flex items-center justify-between pt-4 border-t border-gray-100"
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -725,19 +742,18 @@ const Resources = () => {
                                 }}
                                 whileHover={{ scale: 1.2 }}
                                 whileTap={{ scale: 0.8 }}
-                                className={`flex items-center gap-2 transition-colors ${
-                                  item.hasLiked 
-                                    ? 'text-red-500' 
+                                className={`flex items-center gap-2 transition-colors ${item.hasLiked
+                                    ? 'text-red-500'
                                     : 'text-gray-500 hover:text-red-500'
-                                }`}
+                                  }`}
                               >
-                                <Heart 
-                                  size={18} 
+                                <Heart
+                                  size={18}
                                   className={
-                                    item.hasLiked 
-                                      ? 'fill-red-500 text-red-500' 
+                                    item.hasLiked
+                                      ? 'fill-red-500 text-red-500'
                                       : 'text-gray-500'
-                                  } 
+                                  }
                                 />
                                 <span className="text-sm font-medium">{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
                               </motion.button>
@@ -775,7 +791,7 @@ const Resources = () => {
                   key={item._id}
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ 
+                  transition={{
                     delay: index * 0.2,
                     type: "spring",
                     stiffness: 100,
@@ -800,8 +816,8 @@ const Resources = () => {
                             </div>
                           </div>
                           <div className="text-xs text-gray-400">
-                            {new Date(item.createdAt).toLocaleDateString('en-US', { 
-                              month: 'short', 
+                            {new Date(item.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
                               day: 'numeric',
                               year: 'numeric'
                             })}
@@ -817,12 +833,12 @@ const Resources = () => {
                           className="w-full h-full object-cover"
                           fallbackIcon="📄"
                         />
-                        
+
                         {/* Multiple Images Indicator */}
                         {item.assets && item.assets.length > 1 && (
                           <div className="absolute top-4 right-4 bg-primary/90 text-white text-sm px-3 py-1 rounded-full backdrop-blur-sm flex items-center gap-2">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z"/>
+                              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z" />
                             </svg>
                             {item.assets.length} Images
                           </div>
@@ -868,25 +884,24 @@ const Resources = () => {
                                 }}
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
-                                className={`flex items-center gap-2 transition-colors ${
-                                  item.hasLiked 
-                                    ? 'text-red-500' 
+                                className={`flex items-center gap-2 transition-colors ${item.hasLiked
+                                    ? 'text-red-500'
                                     : 'text-gray-500 hover:text-red-500'
-                                }`}
+                                  }`}
                               >
-                                <Heart 
-                                  size={18} 
+                                <Heart
+                                  size={18}
                                   className={
-                                    item.hasLiked 
-                                      ? 'fill-red-500 text-red-500' 
+                                    item.hasLiked
+                                      ? 'fill-red-500 text-red-500'
                                       : 'text-gray-500'
-                                  } 
+                                  }
                                 />
                                 <span>{Array.isArray(item.likes) ? item.likes.length : item.likesCount || item.likes || 0} likes</span>
                               </motion.button>
                             )}
                             {item.comments && item.comments.length > 0 && (
-                              <button 
+                              <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedMedia(item);
@@ -899,7 +914,7 @@ const Resources = () => {
                               </button>
                             )}
                           </div>
-                          
+
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -935,7 +950,7 @@ const Resources = () => {
                               {getMediaIcon(item.type)}
                             </div>
                           )}
-                          
+
                           {/* Content Type Badge */}
                           <div className="absolute top-2 left-2 bg-primary/90 text-white text-xs px-2 py-1 rounded-md backdrop-blur-sm capitalize">
                             {item.type === 'vlog' ? 'Video' : item.type}
@@ -949,7 +964,7 @@ const Resources = () => {
                           <p className="text-gray-600 line-clamp-3 mb-4 leading-relaxed">
                             {item.description}
                           </p>
-                          
+
                           {/* Tags */}
                           {item.tags && item.tags.length > 0 && (
                             <div className="flex flex-wrap gap-2 mb-4">
@@ -968,7 +983,7 @@ const Resources = () => {
                               )}
                             </div>
                           )}
-                          
+
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4 text-sm text-gray-500">
                               <div className="flex items-center gap-1">
@@ -981,19 +996,18 @@ const Resources = () => {
                                     e.stopPropagation();
                                     handleLike(item._id);
                                   }}
-                                  className={`flex items-center gap-1 transition-colors ${
-                                    item.hasLiked 
-                                      ? 'text-red-500' 
+                                  className={`flex items-center gap-1 transition-colors ${item.hasLiked
+                                      ? 'text-red-500'
                                       : 'hover:text-red-500'
-                                  }`}
+                                    }`}
                                 >
-                                  <Heart 
-                                    size={16} 
+                                  <Heart
+                                    size={16}
                                     className={
-                                      item.hasLiked 
-                                        ? 'fill-red-500 text-red-500' 
+                                      item.hasLiked
+                                        ? 'fill-red-500 text-red-500'
                                         : 'text-gray-500'
-                                    } 
+                                    }
                                   />
                                   <span>{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
                                 </button>
@@ -1011,8 +1025,8 @@ const Resources = () => {
                               </button>
                             </div>
                             <div className="text-xs text-gray-400">
-                              {new Date(item.createdAt).toLocaleDateString('en-US', { 
-                                month: 'short', 
+                              {new Date(item.createdAt).toLocaleDateString('en-US', {
+                                month: 'short',
                                 day: 'numeric',
                                 year: 'numeric'
                               })}
@@ -1029,7 +1043,7 @@ const Resources = () => {
 
           {/* Empty State */}
           {!loading && media.length === 0 && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="text-center py-16"
@@ -1038,8 +1052,8 @@ const Resources = () => {
                 <Search size={32} className="text-gray-400" />
               </div>
               <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                {searchTerm || selectedType !== 'all' || selectedCategory !== 'all' 
-                  ? 'No results found' 
+                {searchTerm || selectedType !== 'all' || selectedCategory !== 'all'
+                  ? 'No results found'
                   : 'No resources yet'
                 }
               </h3>
@@ -1050,7 +1064,7 @@ const Resources = () => {
                 }
               </p>
               {(searchTerm || selectedType !== 'all' || selectedCategory !== 'all') && (
-                <button 
+                <button
                   onClick={() => {
                     setSearchTerm('');
                     setSelectedType('all');
@@ -1066,7 +1080,7 @@ const Resources = () => {
 
           {/* Pagination Controls */}
           {!loading && media.length > 0 && totalPages > 1 && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex justify-center items-center mt-12 space-x-2"
@@ -1094,7 +1108,7 @@ const Resources = () => {
                   const maxVisiblePages = 5;
                   let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
                   let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-                  
+
                   // Adjust start page if we're near the end
                   if (endPage - startPage + 1 < maxVisiblePages) {
                     startPage = Math.max(1, endPage - maxVisiblePages + 1);
@@ -1132,11 +1146,10 @@ const Resources = () => {
                           setCurrentPage(i);
                           fetchMedia(i);
                         }}
-                        className={`px-3 py-2 rounded-lg transition-colors ${
-                          i === currentPage
+                        className={`px-3 py-2 rounded-lg transition-colors ${i === currentPage
                             ? 'bg-primary text-white'
                             : 'bg-white border border-gray-200 hover:bg-gray-50'
-                        }`}
+                          }`}
                       >
                         {i}
                       </button>
@@ -1190,7 +1203,7 @@ const Resources = () => {
 
           {/* Pagination Info */}
           {!loading && media.length > 0 && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-center mt-6"
@@ -1203,7 +1216,7 @@ const Resources = () => {
 
           {/* Instagram-style Loading */}
           {loading && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-center py-16"

@@ -36,7 +36,7 @@ const PostViewer = ({ post, isOpen, onClose, onLike, onComment }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black bg-opacity-90 z-[200] flex items-center justify-center p-4"
         onClick={onClose}
       >
         <motion.div
@@ -100,9 +100,8 @@ const PostViewer = ({ post, isOpen, onClose, onLike, onComment }) => {
                             <button
                               key={index}
                               onClick={() => setCurrentImageIndex(index)}
-                              className={`w-2 h-2 rounded-full transition-colors ${
-                                index === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                              }`}
+                              className={`w-2 h-2 rounded-full transition-colors ${index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                                }`}
                             />
                           ))}
                         </div>
@@ -117,13 +116,13 @@ const PostViewer = ({ post, isOpen, onClose, onLike, onComment }) => {
                 </>
               ) : (
                 <div className="aspect-square bg-gradient-to-br from-primary/10 to-purple-100 flex items-center justify-center">
-                  <motion.div 
+                  <motion.div
                     className="text-primary text-6xl"
-                    animate={{ 
+                    animate={{
                       rotate: [0, 5, -5, 0],
                       scale: [1, 1.1, 1]
                     }}
-                    transition={{ 
+                    transition={{
                       duration: 2,
                       repeat: Infinity,
                       repeatType: "reverse"
@@ -146,11 +145,10 @@ const PostViewer = ({ post, isOpen, onClose, onLike, onComment }) => {
                         onClick={() => onLike && onLike(post._id)}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        className={`transition-colors ${
-                          post.hasLiked 
-                            ? 'text-red-500' 
+                        className={`transition-colors ${post.hasLiked
+                            ? 'text-red-500'
                             : 'text-gray-700 hover:text-red-500'
-                        }`}
+                          }`}
                       >
                         <Heart size={28} className={post.hasLiked ? "fill-red-500 text-red-500" : "text-gray-700"} />
                       </motion.button>
@@ -224,8 +222,8 @@ const PostViewer = ({ post, isOpen, onClose, onLike, onComment }) => {
 
                 {/* Timestamp */}
                 <div className="text-xs text-gray-400 uppercase tracking-wide">
-                  {new Date(post.createdAt).toLocaleDateString('en-US', { 
-                    month: 'short', 
+                  {new Date(post.createdAt).toLocaleDateString('en-US', {
+                    month: 'short',
                     day: 'numeric',
                     year: 'numeric'
                   })}

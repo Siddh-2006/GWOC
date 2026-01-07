@@ -14,48 +14,71 @@ export const psychoEducationController = {
         category,
         difficulty,
         estimatedReadTime,
-        mediaAttachments
+        mediaAttachments,
+        isPublished,
+        publishedAt
       } = req.body;
 
       // Validate content based on type
-      if (contentType === 'qa' && (!content.question || !content.answer)) {
+      if (contentType === 'qa' && (!content || !content.question || !content.answer)) {
         return res.status(400).json({
           success: false,
           message: 'Question and answer are required for Q&A content'
         });
       }
 
-      if ((contentType === 'theory' || contentType === 'article') && !content.body) {
+      if ((contentType === 'theory' || contentType === 'article') && (!content || !content.body)) {
         return res.status(400).json({
           success: false,
           message: 'Body content is required for theory/article content'
         });
       }
 
-      if (contentType === 'quote' && !content.quote) {
+      if (contentType === 'quote' && (!content || !content.quote)) {
         return res.status(400).json({
           success: false,
           message: 'Quote text is required for quote content'
         });
       }
 
-      if ((contentType === 'tip' || contentType === 'exercise') && (!content.steps || content.steps.length === 0)) {
+      if ((contentType === 'tip' || contentType === 'exercise') && (!content || !content.steps || content.steps.length === 0)) {
         return res.status(400).json({
           success: false,
           message: 'Steps are required for tip/exercise content'
         });
       }
+      
+      // Generate unique slug from title
+      let baseSlug = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+
+      if (!baseSlug) baseSlug = 'content';
+
+      let slug = baseSlug;
+      let counter = 1;
+      let slugExists = await PsychoEducation.findOne({ slug });
+
+      while (slugExists) {
+        slug = `${baseSlug}-${counter}`;
+        slugExists = await PsychoEducation.findOne({ slug });
+        counter++;
+      }
 
       const psychoEducation = new PsychoEducation({
         title,
+        slug,
         description,
         contentType,
         content,
         tags: tags || [],
         category,
-        difficulty,
+        difficulty: difficulty || 'beginner',
         estimatedReadTime,
         mediaAttachments: mediaAttachments || [],
+        isPublished: isPublished !== undefined ? isPublished : true,
+        publishedAt: publishedAt || (isPublished !== false ? new Date() : undefined),
         createdBy: req.user.userId
       });
 
@@ -97,7 +120,7 @@ export const psychoEducationController = {
       if (isPublished !== undefined) query.isPublished = isPublished === 'true';
 
       if (search) {
-        query.$text = { $search: search };
+        query.title = { $regex: search, $options: 'i' };
       }
 
       const skip = (page - 1) * limit;
@@ -154,7 +177,7 @@ export const psychoEducationController = {
       if (difficulty) query.difficulty = difficulty;
 
       if (search) {
-        query.$text = { $search: search };
+        query.title = { $regex: search, $options: 'i' };
       }
 
       const skip = (page - 1) * limit;
@@ -247,15 +270,27 @@ export const psychoEducationController = {
     }
   },
 
-  // Get single content
+    // Get single content
   getContent: async (req, res) => {
     try {
       const { contentId } = req.params;
+      let content;
 
-      const content = await PsychoEducation.findById(contentId)
-        .populate('createdBy', 'firstName lastName')
-        .populate('updatedBy', 'firstName lastName')
-        .populate('mediaAttachments');
+      // Check if contentId is a valid MongoDB ObjectID
+      const isObjectId = contentId.match(/^[0-9a-fA-F]{24}$/);
+
+      if (isObjectId) {
+        content = await PsychoEducation.findById(contentId)
+          .populate('createdBy', 'firstName lastName')
+          .populate('updatedBy', 'firstName lastName')
+          .populate('mediaAttachments');
+      } else {
+        // Search by slug
+        content = await PsychoEducation.findOne({ slug: contentId })
+          .populate('createdBy', 'firstName lastName')
+          .populate('updatedBy', 'firstName lastName')
+          .populate('mediaAttachments');
+      }
 
       if (!content) {
         return res.status(404).json({

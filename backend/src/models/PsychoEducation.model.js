@@ -23,6 +23,13 @@ const psychoEducationSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  slug: {
+    type: String,
+    unique: true,
+    sparse: true,
+    trim: true,
+    index: true
+  },
   description: {
     type: String,
     required: true
@@ -69,6 +76,11 @@ const psychoEducationSchema = new mongoose.Schema({
     type: String,
     enum: ['anxiety', 'depression', 'relationships', 'stress', 'self-care', 'mindfulness', 'general'],
     required: true
+  },
+  difficulty: {
+    type: String,
+    enum: ['beginner', 'intermediate', 'advanced'],
+    default: 'beginner'
   },
   estimatedReadTime: {
     type: Number // in minutes

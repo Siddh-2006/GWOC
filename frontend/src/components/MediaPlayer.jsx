@@ -15,7 +15,7 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
   const [showComments, setShowComments] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  
+
   const videoRef = useRef(null);
   const audioRef = useRef(null);
   const controlsTimeoutRef = useRef(null);
@@ -33,7 +33,7 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (!isOpen) return;
-      
+
       switch (e.code) {
         case 'Space':
           e.preventDefault();
@@ -197,7 +197,7 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black bg-opacity-90 z-[200] flex items-center justify-center p-4"
         onClick={onClose}
       >
         <motion.div
@@ -215,8 +215,8 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
             </div>
             <div className="flex items-center gap-2">
               <div className="hidden md:block text-xs text-gray-500">
-                <span className="bg-gray-100 px-2 py-1 rounded">Space</span> Play/Pause • 
-                <span className="bg-gray-100 px-2 py-1 rounded ml-1">←→</span> Seek • 
+                <span className="bg-gray-100 px-2 py-1 rounded">Space</span> Play/Pause •
+                <span className="bg-gray-100 px-2 py-1 rounded ml-1">←→</span> Seek •
                 <span className="bg-gray-100 px-2 py-1 rounded ml-1">M</span> Mute
               </div>
               <button
@@ -232,7 +232,7 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
             {/* Media Content */}
             <div className="flex-1">
               {isVideo && (
-                <div 
+                <div
                   className="relative bg-black aspect-video"
                   onMouseMove={handleMouseMove}
                 >
@@ -249,7 +249,7 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
                     onPause={() => setIsPlaying(false)}
                     poster={media.thumbnailUrl}
                   />
-                  
+
                   {/* Video Controls */}
                   <AnimatePresence>
                     {showControls && (
@@ -271,7 +271,7 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
                           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
                             <div className="text-center text-white">
                               <p className="text-lg mb-2">Failed to load video</p>
-                              <button 
+                              <button
                                 onClick={() => window.location.reload()}
                                 className="px-4 py-2 bg-white text-black rounded-lg hover:bg-gray-200 transition-colors"
                               >
@@ -296,11 +296,11 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
                         {/* Bottom Controls */}
                         <div className="absolute bottom-0 left-0 right-0 p-4">
                           {/* Progress Bar */}
-                          <div 
+                          <div
                             className="w-full h-2 bg-white bg-opacity-30 rounded-full cursor-pointer mb-4"
                             onClick={handleSeek}
                           >
-                            <div 
+                            <div
                               className="h-full bg-primary rounded-full"
                               style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
                             />
@@ -343,7 +343,7 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
                   />
-                  
+
                   <div className="text-center mb-8">
                     <div className="w-24 h-24 bg-primary bg-opacity-20 rounded-full flex items-center justify-center mb-4 mx-auto">
                       <Volume2 size={32} className="text-primary" />
@@ -353,11 +353,11 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
 
                   {/* Audio Controls */}
                   <div className="w-full max-w-md">
-                    <div 
+                    <div
                       className="w-full h-2 bg-white bg-opacity-50 rounded-full cursor-pointer mb-4"
                       onClick={handleSeek}
                     >
-                      <div 
+                      <div
                         className="h-full bg-primary rounded-full"
                         style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
                       />
@@ -431,15 +431,14 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
                       onClick={() => onLike && onLike(media._id)}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      className={`flex items-center gap-2 transition-colors ${
-                        media.hasLiked 
-                          ? 'text-red-500' 
+                      className={`flex items-center gap-2 transition-colors ${media.hasLiked
+                          ? 'text-red-500'
                           : 'text-gray-600 hover:text-red-500'
-                      }`}
+                        }`}
                     >
-                      <Heart 
-                        size={20} 
-                        className={media.hasLiked ? "fill-red-500 text-red-500" : "text-gray-600"} 
+                      <Heart
+                        size={20}
+                        className={media.hasLiked ? "fill-red-500 text-red-500" : "text-gray-600"}
                       />
                       <span>{Array.isArray(media.likes) ? media.likes.length : media.likesCount || media.likes || 0}</span>
                     </motion.button>
@@ -457,7 +456,7 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
                 {showComments && (
                   <div>
                     <h3 className="font-semibold text-gray-800 mb-4">Comments</h3>
-                    
+
                     {/* Add Comment */}
                     <form onSubmit={handleCommentSubmit} className="mb-4">
                       <textarea

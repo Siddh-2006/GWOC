@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BookOpen, Heart, Search, Filter, MessageCircle, Lightbulb, Quote, FileText, CheckCircle, Clock, Plus, ArrowLeft, ArrowRight, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { psychoEducationApi } from '../services/psychoEducation.api';
 import useAuthStore from '../store/useAuthStore';
 import { useToast } from '../hooks/useToast';
@@ -11,7 +11,7 @@ import AddPsychoEducationModal from '../components/admin/AddPsychoEducationModal
 // Text formatting function to handle markdown-like syntax
 const formatText = (text) => {
   if (!text) return text;
-  
+
   // Handle different types of formatting
   const lines = text.split('\n');
   const formattedLines = lines.map((line, lineIndex) => {
@@ -23,7 +23,7 @@ const formatText = (text) => {
         </h3>
       );
     }
-    
+
     if (line.startsWith('## ')) {
       return (
         <h2 key={lineIndex} className="text-xl font-bold text-gray-800 mt-5 mb-3 border-b-2 border-primary/20 pb-2">
@@ -31,7 +31,7 @@ const formatText = (text) => {
         </h2>
       );
     }
-    
+
     // Handle bullet points (- item or * item)
     if (line.match(/^[\s]*[-*]\s+/)) {
       const content = line.replace(/^[\s]*[-*]\s+/, '');
@@ -42,7 +42,7 @@ const formatText = (text) => {
         </div>
       );
     }
-    
+
     // Handle numbered lists (1. item)
     if (line.match(/^[\s]*\d+\.\s+/)) {
       const match = line.match(/^[\s]*(\d+)\.\s+(.+)/);
@@ -57,12 +57,12 @@ const formatText = (text) => {
         );
       }
     }
-    
+
     // Handle empty lines
     if (line.trim() === '') {
       return <div key={lineIndex} className="h-2"></div>;
     }
-    
+
     // Regular paragraph
     return (
       <p key={lineIndex} className="leading-relaxed my-2">
@@ -70,17 +70,17 @@ const formatText = (text) => {
       </p>
     );
   });
-  
+
   return <div className="space-y-1">{formattedLines}</div>;
 };
 
 // Helper function for inline formatting
 const formatInlineText = (text) => {
   if (!text) return text;
-  
+
   // Split text by formatting patterns
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|~~[^~]+~~)/g);
-  
+
   return parts.map((part, index) => {
     // Bold text **text**
     if (part.startsWith('**') && part.endsWith('**')) {
@@ -91,7 +91,7 @@ const formatInlineText = (text) => {
         </strong>
       );
     }
-    
+
     // Italic text *text*
     if (part.startsWith('*') && part.endsWith('*') && !part.startsWith('**')) {
       const italicText = part.slice(1, -1);
@@ -101,7 +101,7 @@ const formatInlineText = (text) => {
         </em>
       );
     }
-    
+
     // Code text `code`
     if (part.startsWith('`') && part.endsWith('`')) {
       const codeText = part.slice(1, -1);
@@ -111,7 +111,7 @@ const formatInlineText = (text) => {
         </code>
       );
     }
-    
+
     // Strikethrough text ~~text~~
     if (part.startsWith('~~') && part.endsWith('~~')) {
       const strikeText = part.slice(2, -2);
@@ -121,7 +121,7 @@ const formatInlineText = (text) => {
         </span>
       );
     }
-    
+
     // Regular text
     return part;
   });
@@ -263,19 +263,18 @@ const ContentDetailModal = ({ content, isOpen, onClose, onLike, user, showError 
                 }}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className={`flex items-center gap-1 transition-colors ${
-                  content.hasLiked 
-                    ? 'text-red-500' 
-                    : 'text-gray-500 hover:text-red-500'
-                }`}
+                className={`flex items-center gap-1 transition-colors ${content.hasLiked
+                  ? 'text-red-500'
+                  : 'text-gray-500 hover:text-red-500'
+                  }`}
               >
-                <Heart 
-                  size={16} 
+                <Heart
+                  size={16}
                   className={
-                    content.hasLiked 
-                      ? 'fill-red-500 text-red-500' 
+                    content.hasLiked
+                      ? 'fill-red-500 text-red-500'
                       : 'text-gray-500'
-                  } 
+                  }
                 />
                 <span className="font-medium">{Array.isArray(content.likes) ? content.likes.length : content.likesCount || content.likes || 0}</span>
               </motion.button>
@@ -300,6 +299,9 @@ const ContentDetailModal = ({ content, isOpen, onClose, onLike, user, showError 
 };
 
 const PsychoEducation = () => {
+  const [searchParams] = useSearchParams();
+  const initialCategory = searchParams.get('category') || 'all';
+
   const { user, isAuthenticated } = useAuthStore();
   const { toasts, success, error: showError, removeToast } = useToast();
   const isAdmin = user?.role === 'admin';
@@ -309,10 +311,17 @@ const PsychoEducation = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [sortBy, setSortBy] = useState('recent'); // New sorting state
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+
+  useEffect(() => {
+    const category = searchParams.get('category');
+    if (category) {
+      setSelectedCategory(category);
+    }
+  }, [searchParams]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedContent, setSelectedContent] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -332,11 +341,14 @@ const PsychoEducation = () => {
     { value: 'all', label: 'All Categories' },
     { value: 'anxiety', label: 'Anxiety' },
     { value: 'depression', label: 'Depression' },
+    { value: 'parenting', label: 'Parenting' },
     { value: 'relationships', label: 'Relationships' },
-    { value: 'stress', label: 'Stress Management' },
-    { value: 'self-care', label: 'Self-Care' },
-    { value: 'mindfulness', label: 'Mindfulness' },
-    { value: 'general', label: 'General' }
+    { value: 'self', label: 'Self' },
+    { value: 'sleep', label: 'Sleep' },
+    { value: 'stress', label: 'Stress' },
+    { value: 'teens', label: 'Teens' },
+    { value: 'therapy', label: 'Therapy' },
+    { value: 'userstory', label: 'User Story' },
   ];
 
   const sortOptions = [
@@ -348,7 +360,7 @@ const PsychoEducation = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const params = {
         search: searchTerm,
         contentType: selectedType !== 'all' ? selectedType : undefined,
@@ -378,7 +390,7 @@ const PsychoEducation = () => {
     } catch (err) {
       console.error('❌ Fetch content error:', err);
       setError('Failed to load content. Please try refreshing the page.');
-      
+
       if (resetPage) {
         setContent([]);
       }
@@ -392,12 +404,12 @@ const PsychoEducation = () => {
     setContent([]);
     setPage(1);
     setHasMore(true);
-    
+
     // Add a small delay to ensure the component is fully mounted
     const timer = setTimeout(() => {
       fetchContent(true);
     }, 100);
-    
+
     return () => clearTimeout(timer);
   }, [searchTerm, selectedType, selectedCategory, sortBy]);
 
@@ -411,15 +423,15 @@ const PsychoEducation = () => {
       const response = await psychoEducationApi.likeContent(contentId);
       setContent(prev => prev.map(item =>
         item._id === contentId
-          ? { 
-              ...item, 
-              hasLiked: response.data.hasLiked,
-              likes: response.data.likes,
-              likesCount: response.data.likes
-            }
+          ? {
+            ...item,
+            hasLiked: response.data.hasLiked,
+            likes: response.data.likes,
+            likesCount: response.data.likes
+          }
           : item
       ));
-      
+
       // Update selected content if it's the same
       if (selectedContent && selectedContent._id === contentId) {
         setSelectedContent(prev => ({
@@ -449,12 +461,12 @@ const PsychoEducation = () => {
   const loadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    
+
     // Call fetchContent with the next page
     const fetchNextPage = async () => {
       try {
         setLoading(true);
-        
+
         const params = {
           search: searchTerm,
           contentType: selectedType !== 'all' ? selectedType : undefined,
@@ -483,7 +495,7 @@ const PsychoEducation = () => {
         setLoading(false);
       }
     };
-    
+
     fetchNextPage();
   };
 
@@ -562,7 +574,7 @@ const PsychoEducation = () => {
   };
 
   return (
-    <div className="min-h-screen bg-off-white py-20 px-4 md:px-8">
+    <div className="min-h-screen bg-off-white pb-20 pt-8 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
 
         {/* Navigation Back */}
@@ -583,7 +595,7 @@ const PsychoEducation = () => {
           className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6"
         >
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold text-primary mb-2">Content Library</h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-primary mb-2 tracking-tight">Library</h1>
             <p className="text-gray-500 text-lg">Browse our complete collection of resources and insights.</p>
           </div>
           {isAdmin && (
@@ -681,7 +693,7 @@ const PsychoEducation = () => {
               <span className="text-red-500 text-2xl">⚠️</span>
             </div>
             <p className="text-red-500 font-medium mb-4">{error}</p>
-            <button 
+            <button
               onClick={() => fetchContent(true)}
               className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
             >
@@ -728,25 +740,24 @@ const PsychoEducation = () => {
                 <div className="flex gap-4">
                   {isAuthenticated && (
                     <motion.button
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        handleLike(item._id); 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLike(item._id);
                       }}
                       whileHover={{ scale: 1.2 }}
                       whileTap={{ scale: 0.8 }}
-                      className={`flex items-center gap-2 transition-colors ${
-                        item.hasLiked 
-                          ? 'text-red-500' 
-                          : 'text-gray-500 hover:text-red-500'
-                      }`}
+                      className={`flex items-center gap-2 transition-colors ${item.hasLiked
+                        ? 'text-red-500'
+                        : 'text-gray-500 hover:text-red-500'
+                        }`}
                     >
-                      <Heart 
-                        size={18} 
+                      <Heart
+                        size={18}
                         className={
-                          item.hasLiked 
-                            ? 'fill-red-500 text-red-500' 
+                          item.hasLiked
+                            ? 'fill-red-500 text-red-500'
                             : 'text-gray-500'
-                        } 
+                        }
                       />
                       <span className="text-sm font-medium">{Array.isArray(item.likes) ? item.likes.length : item.likesCount || item.likes || 0}</span>
                     </motion.button>

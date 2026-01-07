@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import Layout from './components/Layout';
+
 import ScrollToTop from './components/ScrollToTop';
 import Chatbot from './features/chatbot/Chatbot';
 
@@ -12,18 +13,20 @@ import About from './pages/About';
 import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
 import BlogPage from './pages/BlogPage';
-import Resources from './pages/Resources';
+import ResourcesOld from './pages/Resources';
+import Resources from './pages/content-web/ResourcesPage';
 import Profile from './pages/Profile';
 import ProfileSimple from './pages/ProfileSimple';
 import { Corporate } from './pages/Corporate';
 
 import PsychoEducationHub from './pages/PsychoEducationHub';
-import PsychoEducation from './pages/PsychoEducation';
-import ResourceReader from './features/psycho-education/ResourceReader';
+import PsychoEducationOld from './pages/PsychoEducation';
+import LibraryPage from './pages/content-web/LibraryPage';
 
 import PrivacyPolicy from './pages/policies/PrivacyPolicy';
 import RefundPolicy from './pages/policies/RefundPolicy';
 import ConfidentialityPolicy from './pages/policies/ConfidentialityPolicy';
+
 
 import Signup from './features/auth/Signup';
 import Login from './features/auth/Login';
@@ -33,6 +36,7 @@ import ResetPassword from './features/auth/ResetPassword';
 import PaymentPage from './pages/PaymentPage';
 
 import useAuthStore from './store/useAuthStore';
+import ResourceReader from './features/psycho-education/ResourceReader';
 
 // Loading component for auth initialization
 const AuthLoader = () => (
@@ -106,8 +110,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/psycho-education" element={<PsychoEducationHub />} />
-          <Route path="/psycho-education/library" element={<PsychoEducation />} />
           <Route path="/psycho-education/read/:slug" element={<ResourceReader />} />
+          <Route path="/psycho-education/library" element={<LibraryPage />} />
           <Route path="/how-it-works" element={<Placeholder title="How It Works" />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/blog" element={<BlogPage />} />
@@ -164,7 +168,7 @@ function App() {
             }
           />
 
-          {/* Auth Routes - Redirect if already authenticated */}
+
           <Route path="/signup" element={<AuthRoute><Signup /></AuthRoute>} />
           <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
           <Route path="/verify-email" element={<AuthRoute><VerifyEmail /></AuthRoute>} />
