@@ -13,15 +13,6 @@ const MediaCard = ({
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Debug log
-  console.log('MediaCard rendered with props:', {
-    mediaId: media?._id,
-    showLikeButton,
-    showRemoveButton,
-    hasOnUnlike: !!onUnlike,
-    hasOnLike: !!onLike
-  });
-
   const handleLikeClick = async (e) => {
     e.stopPropagation();
     if (isProcessing || !onLike) return;

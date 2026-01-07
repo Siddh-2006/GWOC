@@ -9,6 +9,8 @@ import AddSlotModal from '../../components/admin/AddSlotModal';
 import ReflectionQuestions from '../../components/admin/ReflectionQuestions';
 import TaskAssignmentModal from '../../components/admin/TaskAssignmentModal';
 import BookingTasks from '../../components/admin/BookingTasks';
+import JourneyEntryButton from '../../components/admin/JourneyEntryButton';
+import UserJourneyEntries from '../../components/admin/UserJourneyEntries';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../../components/ToastContainer';
 
@@ -188,6 +190,13 @@ const AdminDashboard = () => {
   const handleTaskCreated = () => {
     success('Task assigned successfully!');
     // Refresh bookings to update any task counts if needed
+    fetchBookings();
+  };
+
+  // Journey entry handlers
+  const handleJourneyEntryCreated = (entry) => {
+    success('Journey entry created successfully!');
+    // Optionally refresh bookings if needed
     fetchBookings();
   };
 
@@ -533,6 +542,13 @@ const AdminDashboard = () => {
                               >
                                 <Plus size={16} />
                               </button>
+
+                              {/* Journey Entry Button - Available for all bookings */}
+                              <JourneyEntryButton
+                                session={booking}
+                                onEntryCreated={handleJourneyEntryCreated}
+                                compact={true}
+                              />
                             </div>
                           </td>
                         </tr>
@@ -1047,6 +1063,14 @@ const AdminDashboard = () => {
                   onTasksChange={() => {
                     // Optionally refresh booking data if needed
                   }}
+                />
+              </div>
+
+              {/* Journey Entries Section */}
+              <div className="border-t border-gray-200 pt-6">
+                <UserJourneyEntries 
+                  userId={selectedBooking.userId}
+                  userName={selectedBooking.personalInfo?.name}
                 />
               </div>
             </div>

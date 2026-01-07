@@ -3,17 +3,19 @@ import { motion } from 'framer-motion';
 import {
   User, Heart,
   Clock, Play,
-  Shield, CheckCircle, CalendarDays
+  Shield, CheckCircle, CalendarDays, MapPin
 } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 import { useLikedMedia } from '../hooks/useLikedMedia';
 import { useSessions } from '../hooks/useSessions';
+import { useJourney } from '../hooks/useJourney';
 import { useToast } from '../hooks/useToast';
 import EnhancedSessionCard from '../components/user/EnhancedSessionCard';
 import SessionNotesModal from '../components/SessionNotesModal';
 import SessionNotesViewer from '../components/SessionNotesViewer';
 import SessionTasksModal from '../components/user/SessionTasksModal';
 import AdminRemarksModal from '../components/user/AdminRemarksModal';
+import JourneyTimeline from '../components/user/JourneyTimeline';
 import MediaCard from '../components/MediaCard';
 import ToastContainer from '../components/ToastContainer';
 
@@ -47,6 +49,7 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState('sessions');
   const { likedMedia, loading: likedLoading, error: likedError, toggleLike } = useLikedMedia();
   const { categorizedSessions, loading: sessionsLoading, error: sessionsError, fetchSessions } = useSessions();
+  const { journeyData, loading: journeyLoading, error: journeyError } = useJourney();
   const { toasts, success, error: showError, removeToast } = useToast();
 
   // Handle removing from liked content with feedback
@@ -67,9 +70,10 @@ const Profile = () => {
   const [showTasksModal, setShowTasksModal] = useState(false);
   const [showAdminRemarksModal, setShowAdminRemarksModal] = useState(false);
 
-  // Tab configuration - Only My Sessions and Liked Content
+  // Tab configuration - My Sessions, Journey, and Liked Content
   const tabs = [
     { id: 'sessions', label: 'My Sessions', icon: CalendarDays },
+    { id: 'journey', label: 'My Journey', icon: MapPin },
     { id: 'liked', label: 'Liked Content', icon: Heart }
   ];
 
@@ -302,6 +306,30 @@ const Profile = () => {
                 )}
               </ProfileCard>
             </div>
+          )}
+
+          {/* My Journey Tab */}
+          {activeTab === 'journey' && (
+            <ProfileCard>
+              <SectionHeading
+                icon={MapPin}
+                title="My Journey"
+                subtitle="Track your progress and milestones"
+              />
+
+              {journeyError ? (
+                <div className="text-center py-12">
+                  <div className="text-red-500 mb-4">⚠️</div>
+                  <p className="text-red-600 mb-2">Failed to load journey</p>
+                  <p className="text-sm text-gray-500">{journeyError}</p>
+                </div>
+              ) : (
+                <JourneyTimeline 
+                  journeyData={journeyData}
+                  loading={journeyLoading}
+                />
+              )}
+            </ProfileCard>
           )}
 
           {/* Liked Content Tab */}
