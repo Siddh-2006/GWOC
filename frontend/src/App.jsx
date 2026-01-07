@@ -10,7 +10,7 @@ import UserBookings from './features/booking/UserBookings';
 import AdminDashboard from './features/admin/AdminDashboard';
 import Home from './pages/Home';
 import About from './pages/About';
-import FAQ from './pages/Contact'; // Note: check if this should be FAQ
+import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
 import BlogPage from './pages/BlogPage';
 import Resources from './pages/content-web/ResourcesPage';
