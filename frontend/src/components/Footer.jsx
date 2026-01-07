@@ -36,17 +36,16 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Learn Links */}
           <div className="col-span-1">
             <h4 className="text-lg font-bold mb-6 text-white relative inline-block after:absolute after:-bottom-2 after:left-0 after:w-12 after:h-1 after:bg-gradient-to-r after:from-secondary after:to-pink-400 after:rounded-full">
-              Explore
+              Learn
             </h4>
             <ul className="space-y-3.5 text-purple-100">
               {[
-                { name: 'About Us', path: '/about' },
-                { name: 'Your Journey', path: '/journey' },
-                { name: 'Corporate Services', path: '/corporate' },
-                { name: 'Book a Session', path: '/booking' },
+                { name: 'Psycho-Education', path: '/psycho-education' },
+                { name: 'Library', path: '/psycho-education/library' },
+                { name: 'Resources', path: '/resources' },
                 { name: 'FAQs', path: '/faqs' }
               ].map((link) => (
                 <li key={link.path}>
@@ -59,17 +58,16 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Services */}
+          {/* Explore Links */}
           <div className="col-span-1">
             <h4 className="text-lg font-bold mb-6 text-white relative inline-block after:absolute after:-bottom-2 after:left-0 after:w-12 after:h-1 after:bg-gradient-to-r after:from-secondary after:to-pink-400 after:rounded-full">
-              Services
+              Explore
             </h4>
             <ul className="space-y-3.5 text-purple-100">
               {[
-                { name: 'Individual Therapy', path: '/services/individual' },
-                { name: 'Couples Therapy', path: '/services/couples' },
-                { name: 'Teen Therapy', path: '/services/teen' },
-                { name: 'Psychiatric Therapy', path: '/services/psychiatric' }
+                { name: 'About Us', path: '/about' },
+                { name: 'Corporate', path: '/corporate' },
+                { name: 'Contact Us', path: '/contact' }
               ].map((link) => (
                 <li key={link.path}>
                   <Link to={link.path} className="group inline-flex items-center gap-2 font-medium transition-all duration-300 hover:text-white hover:translate-x-1">
