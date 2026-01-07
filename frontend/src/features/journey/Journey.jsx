@@ -382,6 +382,31 @@ export const Journey = () => {
       {/* Sticky Viewport: This stays fixed while we scroll */}
       <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col md:flex-row">
         
+        {/* Heading - Top Left Corner */}
+        <motion.div
+          className="absolute top-24 left-1/2 -translate-x-1/2 z-40 pointer-events-none text-center"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          <motion.h2
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-4xl md:text-6xl font-bold text-primary"
+          >
+            Your Wellness
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-2xl md:text-4xl font-bold text-secondary mt-2"
+          >
+            Journey
+          </motion.p>
+        </motion.div>
+        
         {/* Background Mountain */}
         <Mountain progress={currentProgress} />
 
