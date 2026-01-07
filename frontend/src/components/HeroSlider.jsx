@@ -1,34 +1,34 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const slides = [
   {
     title: "Understand Your Mind",
     subtitle: "A Calm Space to Begin",
     desc: "MindSettler offers confidential psycho-education sessions that help you understand emotions and life patterns—without judgment.",
-    image: "https://plus.unsplash.com/premium_photo-1661963810374-85a874671aa8?q=80&w=1920&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image: "/assets/landing1.jpg",
     gradient: "from-indigo-900/50 via-purple-900/30 to-transparent",
   },
   {
     title: "You Are Not Alone",
     subtitle: "Empathy Comes First",
     desc: "Through structured conversations and compassionate listening, we help you feel heard, understood, and supported.",
-    image: "https://plus.unsplash.com/premium_photo-1663051303500-c85bef3f05f6?q=80&w=1920&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image: "/assets/landing2.jpg",
     gradient: "from-indigo-900/50 via-purple-900/30 to-transparent",
   },
   {
     title: "Your Journey, Your Pace",
     subtitle: "Personalized Sessions",
     desc: "Each 60-minute session is designed around your needs—offering clarity, awareness, and emotional grounding.",
-    image: "https://images.unsplash.com/photo-1507537297725-24a1c029d3ca?q=80&w=1920&auto=format&fit=crop",
+    image: "/assets/landing3.jpg",
    gradient: "from-indigo-900/50 via-purple-900/30 to-transparent",
   },
   {
     title: "Start With a Conversation",
     subtitle: "No Pressure. No Judgment.",
     desc: "You don’t need to have everything figured out. We’re here to listen and guide you gently forward.",
-    image: "https://plus.unsplash.com/premium_photo-1661295652613-b19f33269af4?q=80&w=1920&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image: "/assets/landing4.jpg",
    gradient: "from-indigo-900/50 via-purple-900/30 to-transparent",
   },
 ];
@@ -130,7 +130,7 @@ const HeroSlider = () => {
                 <p className="text-purple-300 uppercase tracking-widest text-sm font-bold mb-4">
                   {slides[current].subtitle}
                 </p>
-                <h1 className="text-pink-300 font-bold text-4xl md:text-7xl leading-tight mb-6">
+                <h1 className="text-pink-400 font-bold text-4xl md:text-7xl leading-tight mb-6">
                   {slides[current].title}
                 </h1>
               </header>
@@ -169,27 +169,10 @@ const HeroSlider = () => {
           ))}
         </div>
 
-        <div className="flex gap-3">
-          <button
-            onClick={() => { prevSlide(); resetTimer(); }}
-            className="p-4 rounded-full border border-white/20 bg-black/20 text-white hover:bg-white hover:text-black transition-all backdrop-blur-sm"
-            aria-label="Previous Slide"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <button
-            onClick={() => { nextSlide(); resetTimer(); }}
-            className="p-4 rounded-full border border-white/20 bg-black/20 text-white hover:bg-white hover:text-black transition-all backdrop-blur-sm"
-            aria-label="Next Slide"
-          >
-            <ChevronRight size={24} />
-          </button>
-        </div>
+
       </div>
     </section>
   );
 };
 
 export default HeroSlider;
-
-// Note: remove the "arrows" afterwards

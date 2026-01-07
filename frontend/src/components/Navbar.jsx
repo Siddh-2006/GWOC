@@ -51,7 +51,7 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 md:top-4 md:left-4 md:right-4">
+    <nav className="fixed top-0 left-0 right-0 z-50 md:left-4 md:right-4">
       <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 md:rounded-2xl transition-all duration-300 ${scrolled ? 'bg-pink-100/90 backdrop-blur-lg shadow-xl py-2' : 'bg-purple-100/90 backdrop-blur-lg shadow-lg py-3'}`}>
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center">
@@ -87,7 +87,7 @@ const Navbar = () => {
                         <div className="grid grid-cols-3 gap-8">
                           {link.dropdown.map((section, idx) => (
                             <div key={idx}>
-                              <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">
+                              <h4 className="text-[10px] font-bold text- gray-400 uppercase tracking-widest mb-3">
                                 {section.title}
                               </h4>
                               <div className="space-y-1">
