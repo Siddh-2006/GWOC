@@ -51,19 +51,19 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="fixed top left-4 right-4 z-50">
-      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 rounded-2xl transition-all duration-300 ${scrolled ? 'bg-pink-100/90 backdrop-blur-lg shadow-xl py-2' : 'bg-purple-100/90 backdrop-blur-lg shadow-lg py-3'}`}>
+    <nav className="fixed top-0 left-0 right-0 z-50 md:top-4 md:left-4 md:right-4">
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 md:rounded-2xl transition-all duration-300 ${scrolled ? 'bg-pink-100/90 backdrop-blur-lg shadow-xl py-2' : 'bg-purple-100/90 backdrop-blur-lg shadow-lg py-3'}`}>
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center">
-            <Logo className="h-14" />
+            <Logo className="h-10" />
           </Link>
 
           {/* Desktop Links */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-8">
             {navLinks.map((link) => (
               <div
                 key={link.name}
-                className="relative py-4"
+                className="relative py-2"
                 onMouseEnter={() => link.dropdown && setShowHubDropdown(true)}
                 onMouseLeave={() => link.dropdown && setShowHubDropdown(false)}
               >
@@ -144,7 +144,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center gap-4">
+          <div className="lg:hidden flex items-center gap-4">
             <Link to="/booking" className="p-2 bg-secondary text-white rounded-xl shadow-lg shadow-secondary/20">
               <Calendar size={22} />
             </Link>
@@ -184,7 +184,7 @@ const Navbar = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="md:hidden bg-white shadow-xl border-t border-gray-100 overflow-y-auto max-h-[90vh] mx-4 rounded-b-2xl mt-2 p-0"
+            className="lg:hidden bg-white shadow-xl border-t border-gray-100 overflow-y-auto max-h-[90vh] mx-4 rounded-b-2xl mt-2 p-0"
           >
             <div className="px-6 pt-4 pb-10 space-y-1">
               {navLinks.map((link) => (
