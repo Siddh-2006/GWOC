@@ -1,116 +1,488 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
-import { CheckCircle2, Circle, Flag, Mountain, Waves, Sun, Compass, Sparkles } from 'lucide-react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import JourneyCanvas from './JourneyScene';
+import React, { useRef, useState } from 'react';
+import { motion, useScroll, useTransform, useMotionValueEvent, AnimatePresence } from 'framer-motion';
+import { Sparkles, MessageCircleHeart, X, Sun, Compass, Mountain as MountainIcon } from 'lucide-react';
+import { GoogleGenAI } from "@google/genai";
 
-gsap.registerPlugin(ScrollTrigger);
+// --- TYPES ---
+export const StageId = {
+  AWARENESS: 'awareness',
+  UNDERSTANDING: 'understanding',
+  HEALING: 'healing',
+  GROWTH: 'growth'
+};
 
-const Journey = () => {
-  const containerRef = useRef(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
+// --- CONSTANTS ---
+export const JOURNEY_STAGES = [
+  {
+    id: StageId.AWARENESS,
+    title: "Self-Awareness",
+    description: "Begin by understanding your emotional landscape and identifying triggers.",
+    color: "bg-pink-50",
+    pathPercentage: 0.15,
+    icon: <Sun className="w-5 h-5 text-pink-500" />
+  },
+  {
+    id: StageId.UNDERSTANDING,
+    title: "Navigating Growth",
+    description: "Identify behavioral patterns and build a structured roadmap for change.",
+    color: "bg-pink-100",
+    pathPercentage: 0.40,
+    icon: <Compass className="w-5 h-5 text-purple-600" />    
+  },
+  {
+    id: StageId.HEALING,
+    title: "Resilient Mindset",
+    description: "Implement evidence-based tools to handle life's challenges with clarity.",
+    color: "bg-pink-200",
+    pathPercentage: 0.65,
+    icon: <MountainIcon className="w-5 h-5 text-purple-400" />
+  },
+  {
+    id: StageId.GROWTH,
+    title: "Sustainable Peace",
+    description: "Establish long-term habits for emotional well-being and consistent growth.",
+    color: "bg-pink-300",
+    pathPercentage: 0.90,
+    icon: <Sparkles className="w-5 h-5 text-pink-400" />
+  }
+];
 
-  const steps = [
-    {
-      title: "Self-Awareness",
-      desc: "Begin by understanding your emotional landscape and identifying triggers.",
-      status: "completed",
-      icon: <Sun className="text-pink-500" />
-    },
-    {
-      title: "Navigating Growth",
-      desc: "Identify behavioral patterns and build a structured roadmap for change.",
-      status: "current",
-      icon: <Compass className="text-purple-600" />
-    },
-    {
-      title: "Resilient Mindset",
-      desc: "Implement evidence-based tools to handle life's challenges with clarity.",
-      status: "upcoming",
-      icon: <Mountain className="text-purple-400" />
-    },
-    {
-      title: "Sustainable Peace",
-      desc: "Establish long-term habits for emotional well-being and consistent growth.",
-      status: "upcoming",
-      icon: <Sparkles className="text-pink-400" />
-    }
-  ];
+export const PATH_POINTS = [
+  { x: 10, y: 90 }, // Start bottom-left
+  { x: 30, y: 75 }, // Awareness
+  { x: 45, y: 60 }, // Understanding
+  { x: 65, y: 40 }, // Healing
+  { x: 85, y: 20 }, // Growth (Top rightish)
+];
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      ScrollTrigger.create({
-        trigger: containerRef.current,
-        start: "top center",
-        end: "bottom center",
-        scrub: true,
-        onUpdate: (self) => setScrollProgress(self.progress)
-      });
+// --- SERVICE ---
+const getAffirmation = async (stage) => {
+  const apiKey = import.meta.env.VITE_GAME_API_KEY;
+
+  if (!apiKey) {
+    console.warn("Gemini API Key missing");
+    return "Remember, you are doing great just by being here.";
+  }
+
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    const response = await ai.models.generateContent({
+      model: 'gemini-1.5-flash',
+      contents: `Generate a short, gentle, warm, and comforting 1-sentence affirmation for someone currently in the "${stage}" stage of their mental health journey. Keep it under 20 words. No quotes.`,
     });
-    return () => ctx.revert();
-  }, []);
+    return response.response.text()?.trim() || "You are enough exactly as you are.";
+  } catch (error) {
+    console.error("Gemini API Error:", error);
+    return "You are stronger than you know.";
+  }
+};
+
+// --- COMPONENTS ---
+
+// 1. Character Component
+const Character = ({ x, y, isMoving }) => {
+  return (
+    <motion.div
+      className="absolute w-12 h-12 md:w-16 md:h-16 z-20 pointer-events-none"
+      style={{
+        left: `${x}%`,
+        top: `${y}%`,
+        x: '-50%', // Center anchor
+        y: '-100%', // Bottom anchor (feet on path)
+      }}
+      animate={{
+        scale: isMoving ? [1, 1.05, 1] : 1,
+        rotate: isMoving ? [0, -2, 2, 0] : 0,
+      }}
+      transition={{
+        duration: 0.8, // Slower bobbing
+        repeat: isMoving ? Infinity : 0,
+        ease: "easeInOut"
+      }}
+    >
+      {/* Character Body */}
+      <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-lg">
+        <g>
+          {/* Backpack - pink-400 */}
+          <circle cx="30" cy="55" r="15" fill="#f472b6" />
+          {/* Body */}
+          <circle cx="50" cy="50" r="30" fill="#fff" stroke="#4c1d95" strokeWidth="3" />
+          {/* Eyes */}
+          <circle cx="45" cy="45" r="3" fill="#4c1d95" />
+          <circle cx="65" cy="45" r="3" fill="#4c1d95" />
+          {/* Blush - pink-200 */}
+          <ellipse cx="40" cy="55" rx="3" ry="2" fill="#fbcfe8" opacity="0.6" />
+          <ellipse cx="70" cy="55" rx="3" ry="2" fill="#fbcfe8" opacity="0.6" />
+          {/* Smile */}
+          <path d="M 45 60 Q 55 65 65 60" fill="none" stroke="#4c1d95" strokeWidth="2" strokeLinecap="round" />
+        </g>
+      </svg>
+    </motion.div>
+  );
+};
+
+// 2. Mountain Component
+const Cloud = ({ x, y, scale, duration, delay }) => (
+  <motion.g
+    initial={{ x: -20, opacity: 0 }}
+    animate={{ 
+      x: [ -20, 120 ], 
+      opacity: [0, 0.8, 0.8, 0] 
+    }}
+    transition={{ 
+      duration: duration, 
+      repeat: Infinity, 
+      delay: delay, 
+      ease: "linear",
+      repeatDelay: 0
+    }}
+    style={{ originX: 0.5, originY: 0.5 }}
+  >
+    <g transform={`translate(${x}, ${y}) scale(${scale})`}>
+       <path d="M 0 0 Q 5 -5 10 0 T 20 0 T 30 0 C 35 0 35 10 30 10 L 0 10 C -5 10 -5 0 0 0" fill="white" opacity="0.6" />
+    </g>
+  </motion.g>
+);
+
+const Mountain = ({ progress }) => {
+  // Convert path points to SVG path string for the walking trail
+  const pathData = PATH_POINTS.reduce((acc, point, index) => {
+    if (index === 0) return `M ${point.x} ${point.y}`;
+    // Simple smooth curve
+    const prev = PATH_POINTS[index - 1];
+    const cpx1 = (prev.x + point.x) / 2;
+    const cpy1 = prev.y;
+    const cpx2 = (prev.x + point.x) / 2;
+    const cpy2 = point.y;
+    return `${acc} C ${cpx1} ${cpy1}, ${cpx2} ${cpy2}, ${point.x} ${point.y}`;
+  }, '');
 
   return (
-    <section ref={containerRef} className="relative py-32 bg-purple-50/30 overflow-hidden">
-      {/* Background Section-Specific Canvas */}
-      <JourneyCanvas scrollProgress={scrollProgress} />
+    <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
+      <svg
+        className="w-full h-full"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <linearGradient id="skyGradient" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#fdf4ff" />
+            <stop offset="100%" stopColor="#fae8ff" />
+          </linearGradient>
+          <linearGradient id="mountainGradient" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor="#e9d5ff" />
+            <stop offset="100%" stopColor="#c084fc" />
+          </linearGradient>
+        </defs>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-24">
-          <motion.span
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="text-secondary font-bold tracking-widest uppercase text-sm mb-4 block"
-          >
-            The Path Forward
-          </motion.span>
-          <h2 className="text-4xl md:text-6xl font-bold text-primary mb-6">Your Wellness Journey</h2>
-          <p className="text-gray-600 text-xl max-w-2xl mx-auto">
-            A step-by-step transition from confusion to clarity, guided by licensed expertise.
-          </p>
-        </div>
+        {/* Sky Background */}
+        <rect width="100" height="100" fill="url(#skyGradient)" />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {steps.map((step, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className="relative group"
-            >
-              <div className={`p-10 h-full rounded-[2rem] border transition-all duration-500 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-xl hover:-translate-y-2 ${step.status === 'current' ? 'border-secondary ring-1 ring-secondary/20' : 'border-purple-100 hover:border-purple-200'
-                }`}>
-                <div className="mb-8 p-4 w-fit rounded-2xl bg-purple-50 group-hover:bg-purple-100 transition-colors">
-                  {step.icon}
-                </div>
-                <h3 className="text-2xl font-bold text-primary mb-4">{step.title}</h3>
-                <p className="text-gray-600 leading-relaxed mb-8">
-                  {step.desc}
-                </p>
+        {/* Sun/Moon Glow */}
+        <circle cx="80" cy="15" r="8" fill="#fef3c7" className="opacity-80 blur-xl" />
+        <circle cx="80" cy="15" r="4" fill="#fff" className="opacity-90" />
 
-                <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${step.status === 'completed' ? 'bg-primary' :
-                      step.status === 'current' ? 'bg-secondary animate-pulse' :
-                        'bg-gray-200'
-                    }`} />
-                  <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                    {step.status}
-                  </span>
-                </div>
-              </div>
+        {/* Clouds - Drifting slowly */}
+        <Cloud x={10} y={15} scale={0.8} duration={45} delay={0} />
+        <Cloud x={40} y={8} scale={1.2} duration={60} delay={5} />
+        <Cloud x={-10} y={25} scale={0.6} duration={50} delay={20} />
+        <Cloud x={60} y={20} scale={0.9} duration={55} delay={10} />
 
-              {/* Linking Line for Desktop */}
-              {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-[25%] -right-4 w-8 h-px bg-purple-200" />
+        {/* Distant Mountains */}
+        <path
+          d="M 0 100 L 20 60 L 40 100 Z"
+          fill="#f5d0fe"
+          className="opacity-50"
+        />
+        <path
+          d="M 60 100 L 85 50 L 110 100 Z"
+          fill="#f5d0fe"
+          className="opacity-50"
+        />
+
+        {/* Main Mountain */}
+        <path
+          d="M -10 100 L 30 50 L 50 65 L 85 20 L 120 100 Z"
+          fill="url(#mountainGradient)"
+          className="drop-shadow-2xl"
+        />
+
+        {/* Snow Cap */}
+        <path
+          d="M 85 20 L 75 35 L 80 40 L 85 35 L 90 40 L 95 35 Z"
+          fill="white"
+          opacity="0.8"
+        />
+
+        {/* The Path Trail (Dashed Line) */}
+        <path
+          d={pathData}
+          fill="none"
+          stroke="white"
+          strokeWidth="0.8"
+          strokeDasharray="2 2"
+          opacity="0.6"
+        />
+
+        {/* Checkpoints */}
+        {JOURNEY_STAGES.map((stage, idx) => {
+          // Find rough position for the stage marker based on pathPercentage
+          const pt = PATH_POINTS[idx + 1]; // +1 because index 0 is start
+          const isActive = progress >= stage.pathPercentage - 0.05;
+
+          return (
+            <g key={stage.id} className="transition-all duration-700 ease-in-out">
+              <circle
+                cx={pt.x}
+                cy={pt.y}
+                r={isActive ? 2.5 : 1.5}
+                fill={isActive ? "#fff" : "rgba(255,255,255,0.4)"}
+                className="transition-all duration-500"
+              />
+              {isActive && (
+                <circle
+                  cx={pt.x}
+                  cy={pt.y}
+                  r={4}
+                  stroke="white"
+                  strokeWidth="0.5"
+                  fill="none"
+                  className="animate-ping opacity-50"
+                />
               )}
-            </motion.div>
-          ))}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+};
+
+// 3. StageCard Component
+const StageCard = ({ stage, state }) => {
+  const [affirmation, setAffirmation] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleGetAffirmation = async () => {
+    setLoading(true);
+    const text = await getAffirmation(stage.title);
+    setAffirmation(text);
+    setLoading(false);
+  };
+
+  const closeAffirmation = () => setAffirmation(null);
+
+  const cardVariants = {
+    hidden: { 
+        opacity: 0, 
+        y: 20, 
+        scale: 0.9,
+        height: 0,
+        marginBottom: 0,
+        pointerEvents: "none"
+    },
+    active: { 
+        opacity: 1, 
+        y: 0, 
+        scale: 1,
+        height: 'auto',
+        marginBottom: 24,
+        pointerEvents: "auto",
+        transition: { 
+            type: "spring", 
+            stiffness: 100, 
+            damping: 20,
+            mass: 0.8,
+            height: { duration: 0.4 }
+        }
+    },
+    completed: { 
+        opacity: 0.5, 
+        y: 0, 
+        scale: 0.96,
+        height: 'auto',
+        marginBottom: 24,
+        pointerEvents: "auto",
+        filter: "grayscale(20%)",
+        transition: { duration: 0.5 }
+    }
+  };
+
+  // Pulse animation for active card
+  const glowVariants = {
+    initial: { boxShadow: "0 0 0 rgba(236, 72, 153, 0)" }, // pink-500
+    animate: { 
+        boxShadow: "0 0 25px rgba(236, 72, 153, 0.3)",
+        transition: { 
+            duration: 2.5, 
+            repeat: Infinity, 
+            repeatType: "reverse"
+        } 
+    }
+  };
+
+  return (
+    <motion.div
+      layout
+      variants={cardVariants}
+      initial="hidden"
+      animate={state}
+      className={`relative p-6 rounded-3xl border border-white/60 backdrop-blur-md overflow-hidden max-w-sm w-full ${stage.color}`}
+    >
+      {state === 'active' && (
+          <motion.div 
+            className="absolute inset-0 rounded-3xl border-2 border-pink-400/30 pointer-events-none"
+            variants={glowVariants}
+            initial="initial"
+            animate="animate"
+          />
+      )}
+      
+      <div className="flex items-center gap-3 mb-3">
+        <div className="p-2 bg-white/70 rounded-full shadow-sm">
+          {stage.icon}
         </div>
+        <h3 className="text-xl font-display font-bold text-pink-950">{stage.title}</h3>
       </div>
-    </section>
+      
+      <p className="text-pink-900/80 leading-relaxed font-sans font-medium">{stage.description}</p>
+      
+      {/* Action Area - Only visible when active */}
+      <motion.div 
+        animate={{ 
+          height: state === 'active' ? 'auto' : 0, 
+          opacity: state === 'active' ? 1 : 0,
+          marginTop: state === 'active' ? 16 : 0
+        }}
+        className="overflow-hidden"
+      >
+        <div className="pt-2 border-t border-pink-900/10">
+            <button
+                onClick={handleGetAffirmation}
+                disabled={loading || !!affirmation}
+                className="flex items-center gap-2 text-sm font-bold text-pink-600 hover:text-pink-800 transition-colors disabled:opacity-50"
+            >
+                <MessageCircleHeart className="w-4 h-4" />
+                {loading ? 'Asking the guide...' : 'Ask for encouragement'}
+            </button>
+        </div>
+      </motion.div>
+
+      <AnimatePresence>
+        {affirmation && (
+            <motion.div
+                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                className="overflow-hidden"
+            >
+                <div className="p-4 bg-white/90 rounded-xl border border-pink-200 relative shadow-sm">
+                     <button 
+                        onClick={closeAffirmation}
+                        className="absolute top-2 right-2 text-pink-300 hover:text-pink-500"
+                    >
+                        <X className="w-3 h-3" />
+                    </button>
+                    <p className="text-pink-800 italic text-sm font-medium">"{affirmation}"</p>
+                </div>
+            </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
+// --- MAIN JOURNEY SECTION COMPONENT ---
+export const Journey = () => {
+  const containerRef = useRef(null);
+  
+  // Track scroll progress within the container
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  });
+
+  // Map scroll progress to character position (x, y)
+  const pointsX = PATH_POINTS.map(p => p.x);
+  const pointsY = PATH_POINTS.map(p => p.y);
+  
+  // Create evenly spaced input ranges for the transform based on number of points
+  const inputRange = PATH_POINTS.map((_, i) => i / (PATH_POINTS.length - 1));
+  
+  const charX = useTransform(scrollYProgress, inputRange, pointsX);
+  const charY = useTransform(scrollYProgress, inputRange, pointsY);
+
+  const [currentProgress, setCurrentProgress] = useState(0);
+
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    setCurrentProgress(latest);
+  });
+
+  return (
+    // The container is very tall to allow scrolling space - 800vh for slower animation
+    <div ref={containerRef} className="relative h-[800vh] bg-gradient-to-b from-purple-50 to-pink-50">
+      
+      {/* Sticky Viewport: This stays fixed while we scroll */}
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col md:flex-row">
+        
+        {/* Background Mountain */}
+        <Mountain progress={currentProgress} />
+
+        {/* Character */}
+        <Character 
+            x={Number(charX.get())} 
+            y={Number(charY.get())} 
+            isMoving={currentProgress > 0.005 && currentProgress < 0.995}
+        />
+
+        {/* Left Side: Cards Container */}
+        <div className="relative z-10 w-full md:w-5/12 h-full flex flex-col justify-center px-6 md:px-12 pointer-events-none">
+            {/* 
+              Cards wrapper
+             */}
+            <div className="pointer-events-auto flex flex-col w-full max-w-sm">
+               {JOURNEY_STAGES.map((stage, idx) => {
+                 // Trigger point: slightly before the character visually hits the dot
+                 const triggerPoint = stage.pathPercentage - 0.15;
+                 
+                 // Determine next stage trigger to know when this one is "completed"
+                 const nextStage = JOURNEY_STAGES[idx + 1];
+                 const endPoint = nextStage ? (nextStage.pathPercentage - 0.15) : 1.1; // 1.1 ensures last one stays active
+
+                 let cardState = 'hidden';
+                 
+                 if (currentProgress < triggerPoint) {
+                    cardState = 'hidden';
+                 } else if (currentProgress >= triggerPoint && currentProgress < endPoint) {
+                    cardState = 'active';
+                 } else {
+                    cardState = 'completed';
+                 }
+                 
+                 return (
+                    <StageCard 
+                        key={stage.id}
+                        stage={stage} 
+                        state={cardState} 
+                    />
+                 );
+               })}
+            </div>
+        </div>
+
+        {/* Right Side: Spacer */}
+        <div className="hidden md:block w-7/12 h-full" />
+      </div>
+      
+      {/* Scroll indicator at the start */}
+      <motion.div 
+        style={{ opacity: useTransform(scrollYProgress, [0, 0.05], [1, 0]) }}
+        className="fixed bottom-8 left-1/2 -translate-x-1/2 text-purple-400 text-sm font-medium animate-bounce pointer-events-none z-50 mix-blend-multiply"
+      >
+        Scroll to Begin Journey ↓
+      </motion.div>
+
+    </div>
   );
 };
 
