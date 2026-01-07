@@ -62,7 +62,7 @@ export const corporateValidation = {
 
   updateInquiry: Joi.object({
     status: Joi.string()
-      .valid('new', 'contacted', 'in-discussion', 'closed')
+      .valid('new', 'confirmed', 'in-discussion', 'closed')
       .messages({
         'any.only': 'Invalid status value'
       }),

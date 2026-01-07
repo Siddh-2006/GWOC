@@ -124,6 +124,7 @@ function App() {
                 <Route path="/forgot-password" element={<AuthRoute><ForgotPassword /></AuthRoute>} />
                 <Route path="/reset-password" element={<AuthRoute><ResetPassword /></AuthRoute>} />
                 <Route path="/pay" element={<PaymentPage />} />
+                <Route path="/oldadmin" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
               </Routes>
               <Chatbot />
             </Layout>

@@ -26,7 +26,7 @@ const JourneyEntryButton = ({ session, onEntryCreated, compact = false }) => {
           onClose={() => setShowModal(false)}
           onSave={handleSave}
           session={session}
-          userId={session.userId}
+          userId={session.userId?._id || session.userId}
         />
       </>
     );
@@ -48,7 +48,7 @@ const JourneyEntryButton = ({ session, onEntryCreated, compact = false }) => {
         onClose={() => setShowModal(false)}
         onSave={handleSave}
         session={session}
-        userId={session.userId}
+        userId={session.userId?._id || session.userId}
       />
     </>
   );

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  X, 
-  Save, 
+import {
+  X,
+  Save,
   BookOpen,
   Trophy,
   Heart,
@@ -22,7 +22,7 @@ const SimpleJourneyEntryModal = ({ isOpen, onClose, onSave, session, userId, exi
     },
     entryDate: new Date().toISOString().split('T')[0]
   });
-  
+
   const [saving, setSaving] = useState(false);
 
   const entryTypes = [
@@ -59,9 +59,10 @@ const SimpleJourneyEntryModal = ({ isOpen, onClose, onSave, session, userId, exi
   const handleSave = async () => {
     setSaving(true);
     try {
+      const finalUserId = userId?._id || userId;
       const entryData = {
         ...formData,
-        userId,
+        userId: finalUserId,
         sessionId: session?._id || null
       };
 
@@ -131,7 +132,7 @@ const SimpleJourneyEntryModal = ({ isOpen, onClose, onSave, session, userId, exi
                     placeholder="Enter entry title"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Type *

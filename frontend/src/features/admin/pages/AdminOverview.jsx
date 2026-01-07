@@ -1,56 +1,143 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Users,
-  Calendar,
-  Clock,
-  TrendingUp,
-  ArrowUpRight,
-  ShieldCheck,
-  Zap,
-  Star
-} from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { bookingApi } from '../../booking/booking.api';
 import { slotApi } from '../../../services/slot.api';
+import contactApi from '../../../services/contact.api';
+import { corporateService } from '../../../services/corporate.api';
+import AddSlotModal from '../../../components/admin/AddSlotModal';
+import { Calendar, Clock, ShieldCheck, Zap, ArrowUpRight, Star, Loader2, TrendingUp } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const AdminOverview = () => {
+  const navigate = useNavigate();
+  const [showAddModal, setShowAddModal] = useState(false);
   const [stats, setStats] = useState({
     pendingBookings: 0,
     totalSlots: 0,
-    activeCorporate: 0,
-    newMessages: 0
+    activeSessions: 0,
+    newMessages: 0,
+    corporateInquiries: 0,
+    recentActivity: []
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const [bookingsRes, slotsRes] = await Promise.all([
-          bookingApi.admin.getAllBookings({ status: 'pending' }),
-          slotApi.getAllSlots()
-        ]);
+  const timeAgo = (date) => {
+    if (!date) return 'Some time ago';
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    if (seconds < 60) return "Just now";
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years ago";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " minutes ago";
+    return Math.floor(seconds) + " seconds ago";
+  };
 
-        setStats({
-          pendingBookings: bookingsRes.data?.length || 0,
-          totalSlots: slotsRes.data?.length || 0,
-          activeCorporate: 4, // Mock for now
-          newMessages: 2 // Mock for now
+  const fetchStats = async () => {
+    setLoading(true);
+    try {
+      const [bookingsRes, slotsRes, contactRes, corpRes, contactItemsRes, corpItemsRes] = await Promise.all([
+        bookingApi.admin.getAllBookings({ status: 'all' }),
+        slotApi.getAllSlots(),
+        contactApi.getContactStats().catch(() => ({ data: { total: 0, unread: 0 } })),
+        corporateService.admin.getStats().catch(() => ({ total: 0, pending: 0 })),
+        contactApi.getContactMessages({ limit: 10 }).catch(() => ({ data: { contacts: [] } })),
+        corporateService.admin.getInquiries({ limit: 10 }).catch(() => ({ data: [] }))
+      ]);
+
+      const allBookings = bookingsRes.data || [];
+      const allSlots = slotsRes.data || [];
+      const allMessages = contactItemsRes.data?.contacts || [];
+      const allInquiries = corpItemsRes.data?.inquiries || [];
+
+      // Build a more comprehensive activity list
+      const activities = [];
+
+      // 1. Booking Activities
+      allBookings.forEach(b => {
+        activities.push({
+          id: `${b._id}_created`,
+          name: b.personalInfo?.name || 'Unknown Client',
+          type: 'Session Request',
+          message: 'requested a new session.',
+          time: b.createdAt
         });
-      } catch (error) {
-        console.error('Error fetching admin stats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
+        if (b.adminResponse?.reviewedAt) {
+          activities.push({
+            id: `${b._id}_reviewed`,
+            name: b.personalInfo?.name || 'Unknown Client',
+            type: 'Status Update',
+            message: 'booking status changed to under review.',
+            time: b.adminResponse.reviewedAt
+          });
+        }
+        if (b.adminResponse?.confirmedAt) {
+          activities.push({
+            id: `${b._id}_confirmed`,
+            name: b.personalInfo?.name || 'Unknown Client',
+            type: 'Status Update',
+            message: 'booking status changed to confirmed.',
+            time: b.adminResponse.confirmedAt
+          });
+        }
+      });
+
+      // 2. Contact Message Activities
+      allMessages.forEach(m => {
+        activities.push({
+          id: `${m._id}_msg`,
+          name: m.name || 'Unknown',
+          type: 'Contact Message',
+          message: 'sent a new message through contact form.',
+          time: m.createdAt
+        });
+      });
+
+      // 3. Corporate Inquiry Activities
+      allInquiries.forEach(i => {
+        activities.push({
+          id: `${i._id}_corp`,
+          name: i.organizationName || i.contactPerson || 'Company',
+          type: 'Corporate Inquiry',
+          message: `requested a ${i.engagementType?.replace(/-/g, ' ')} session.`,
+          time: i.createdAt
+        });
+      });
+
+      const sortedActivities = activities
+        .sort((a, b) => new Date(b.time) - new Date(a.time))
+        .slice(0, 10);
+
+      setStats({
+        pendingBookings: allBookings.filter(b => b.status === 'pending').length,
+        totalSlots: allSlots.length,
+        activeSessions: allBookings.filter(b => b.status === 'confirmed').length,
+        newMessages: contactRes.data?.unread || contactRes.data?.total || 0,
+        corporateInquiries: corpRes.pending || corpRes.total || 0,
+        recentActivity: sortedActivities
+      });
+    } catch (error) {
+      console.error('Error fetching admin stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchStats();
   }, []);
 
   const statCards = [
-    { label: 'Pending Bookings', value: stats.pendingBookings, icon: <Calendar className="text-blue-500" />, trend: '+12%', color: 'bg-blue-50' },
-    { label: 'Total Time Slots', value: stats.totalSlots, icon: <Clock className="text-purple-500" />, trend: 'Stable', color: 'bg-purple-50' },
-    { label: 'Corporate Inquiries', value: stats.activeCorporate, icon: <TrendingUp className="text-secondary" />, trend: '+5%', color: 'bg-pink-50' },
-    { label: 'Active Sessions', value: 8, icon: <ShieldCheck className="text-green-500" />, trend: 'Live', color: 'bg-green-50' },
+    { label: 'Pending Bookings', value: stats.pendingBookings, icon: <Calendar className="text-blue-500" />, trend: 'Action Required', color: 'bg-blue-50' },
+    { label: 'Total Time Slots', value: stats.totalSlots, icon: <Clock className="text-purple-500" />, trend: 'Manage Slots', color: 'bg-purple-50' },
+    { label: 'Corporate Inquiries', value: stats.corporateInquiries, icon: <TrendingUp className="text-secondary" />, trend: 'Inquiries', color: 'bg-pink-50' },
+    { label: 'Unread Messages', value: stats.newMessages, icon: <Zap className="text-orange-500" />, trend: 'Inbox', color: 'bg-orange-50' },
   ];
 
   const container = {
@@ -106,67 +193,72 @@ const AdminOverview = () => {
         ))}
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Quick Actions */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-            <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-              <Zap size={20} className="text-secondary" />
-              Quick Actions
-            </h3>
-            <div className="space-y-3">
-              <button className="w-full text-left p-4 rounded-2xl bg-off-white hover:bg-lavender text-primary font-medium transition-colors flex justify-between items-center group">
-                Add New Time Slot
-                <ArrowUpRight size={18} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-              </button>
-              <button className="w-full text-left p-4 rounded-2xl bg-off-white hover:bg-lavender text-primary font-medium transition-colors flex justify-between items-center group">
-                Review Bookings
-                <ArrowUpRight size={18} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-              </button>
-              <button className="w-full text-left p-4 rounded-2xl bg-off-white hover:bg-lavender text-primary font-medium transition-colors flex justify-between items-center group">
-                Send Notification
-                <ArrowUpRight size={18} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-primary to-purple-800 p-8 rounded-[2.5rem] text-white shadow-xl shadow-purple-900/10">
-            <h4 className="font-bold text-pink-200 mb-2 flex items-center gap-2">
-              <Star size={18} />
-              Admin Tip
-            </h4>
-            <p className="text-white/80 text-sm leading-relaxed">
-              Consistently checking 'Under Review' bookings helps maintain a 100% response rate for new clients.
-            </p>
-          </div>
-        </div>
-
-        {/* Recent Activity Mockup */}
-        <div className="lg:col-span-2">
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm h-full">
-            <div className="flex justify-between items-center mb-6">
+      <div className="grid grid-cols-1 gap-8">
+        {/* Recent Activity */}
+        <div className="w-full">
+          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm min-h-[400px]">
+            <div className="flex justify-between items-center mb-6 px-2">
               <h3 className="text-lg font-bold text-primary">Recent System Activity</h3>
-              <button className="text-sm font-bold text-secondary hover:underline">View All</button>
+              <button
+                onClick={() => navigate('/admin/bookings')}
+                className="text-sm font-bold text-secondary hover:underline"
+              >
+                View Detailed Activity
+              </button>
             </div>
 
             <div className="space-y-6">
-              {[1, 2, 3, 4].map((_, i) => (
-                <div key={i} className="flex gap-4 items-start">
-                  <div className="w-10 h-10 rounded-full bg-lavender flex items-center justify-center text-primary font-bold text-xs">
-                    AB
-                  </div>
-                  <div className="flex-1 border-b border-gray-50 pb-6">
-                    <p className="text-sm font-medium text-primary">
-                      <span className="font-bold">Anu Bansal</span> requested a new session for tomorrow.
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">14 minutes ago • Session Request</p>
-                  </div>
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="animate-spin text-primary" size={24} />
                 </div>
-              ))}
+              ) : stats.recentActivity.length === 0 ? (
+                <p className="text-center text-gray-400 py-12">No recent activity found.</p>
+              ) : (
+                <div className="divide-y divide-gray-50">
+                  {stats.recentActivity.map((activity) => (
+                    <div key={activity.id} className="flex gap-4 items-start py-6 first:pt-0 last:pb-0 group">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${activity.type === 'Session Request' ? 'bg-blue-100 text-blue-600' :
+                        activity.type === 'Corporate Inquiry' ? 'bg-pink-100 text-pink-600' :
+                          activity.type === 'Contact Message' ? 'bg-orange-100 text-orange-600' :
+                            'bg-purple-100 text-primary'
+                        }`}>
+                        {activity.name.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <p className="text-sm font-medium text-primary">
+                            <span className="font-bold">{activity.name}</span> {activity.message}
+                          </p>
+                          <span className="text-xs text-gray-400 shrink-0">{timeAgo(activity.time)}</span>
+                        </div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mt-1">
+                          <span className={`${activity.type === 'Session Request' ? 'text-blue-500' :
+                            activity.type === 'Corporate Inquiry' ? 'text-pink-500' :
+                              activity.type === 'Contact Message' ? 'text-orange-500' :
+                                'text-primary/60'
+                            }`}>{activity.type}</span>
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {showAddModal && (
+        <AddSlotModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          onSlotAdded={() => {
+            setShowAddModal(false);
+            fetchStats();
+          }}
+        />
+      )}
     </div>
   );
 };

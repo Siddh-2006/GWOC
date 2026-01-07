@@ -117,8 +117,8 @@ export class CorporateService {
           updatedAt: new Date(),
           // Track admin action if provided
           ...(adminInfo && {
-            lastActionBy: adminInfo.adminId,
-            lastActionAt: new Date()
+            statusUpdatedBy: adminInfo.adminId,
+            statusUpdatedAt: new Date()
           })
         },
         { 

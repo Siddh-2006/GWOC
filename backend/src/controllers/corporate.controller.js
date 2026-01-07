@@ -135,7 +135,7 @@ export const updateInquiry = async (req, res) => {
 
     // Get admin info from authenticated user
     const adminInfo = req.user ? {
-      adminId: req.user.id,
+      adminId: req.user.userId,
       adminEmail: req.user.email
     } : null;
 
