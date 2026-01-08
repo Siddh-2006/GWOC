@@ -9,7 +9,9 @@ const PostViewer = ({ post, isOpen, onClose, onLike, onComment }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [comment, setComment] = useState('');
 
-  if (!isOpen || !post) return null;
+  if (!isOpen || !post) {
+    return null;
+  }
 
   const images = post.assets || [];
   const hasMultipleImages = images.length > 1;
