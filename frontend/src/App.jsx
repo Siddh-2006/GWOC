@@ -13,7 +13,7 @@ import About from './pages/About';
 import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
 import BlogPage from './pages/BlogPage';
-import Resources from './pages/Resources';
+import Resources from './pages/content-web/ResourcesPage';
 import Profile from './pages/Profile';
 import ProfileSimple from './pages/ProfileSimple';
 import { Corporate } from './pages/Corporate';

@@ -90,18 +90,31 @@ const ResourcesPage = () => {
   };
 
   const handleComment = async (mediaId, content) => {
+    if (!isAuthenticated) {
+      showError('Please log in to comment');
+      return;
+    }
+
     try {
       const response = await mediaApi.addComment(mediaId, content);
       const newComment = response.data;
+      
       setMedia(prev => prev.map(item =>
         item._id === mediaId ? { ...item, comments: [...(item.comments || []), newComment] } : item
       ));
+      
       if (selectedMedia && selectedMedia._id === mediaId) {
         setSelectedMedia(prev => ({ ...prev, comments: [...(prev.comments || []), newComment] }));
       }
-      success('Comment added!');
+      
+      success('Comment added successfully!');
     } catch (err) {
-      showError('Failed to add comment');
+      console.error('Add comment error:', err);
+      if (err.response?.status === 401) {
+        showError('Please log in to comment');
+      } else {
+        showError('Failed to add comment. Please try again.');
+      }
     }
   };
 
@@ -289,6 +302,8 @@ const ResourcesPage = () => {
           post={selectedMedia}
           isOpen={showPostViewer}
           onClose={() => setShowPostViewer(false)}
+          onLike={(mediaId) => handleLike(mediaId)}
+          onComment={handleComment}
         />
       )}
       {showAddModal && (
