@@ -163,62 +163,29 @@ const Mountain = ({ progress }) => {
 
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
+      {/* Background Image */}
+      <img 
+        src="/assets/mt0.png" 
+        alt="Mountain Background" 
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      
+      {/* Pink/Purple Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-900/30 via-pink-800/20 to-purple-900/30" />
+      
+      {/* Soft Dark Overlay for better contrast */}
+      <div className="absolute inset-0 bg-black/20" />
+      
       <svg
-        className="w-full h-full"
+        className="w-full h-full absolute inset-0"
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
       >
-        <defs>
-          {/* Sky Gradient - Darker pink version */}
-          <linearGradient id="skyGradient" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#fce7f3" /> {/* Pink 100 */}
-            <stop offset="100%" stopColor="#f9a8d4" /> {/* Pink 300 */}
-          </linearGradient>
-          <linearGradient id="mountainGradient" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="#e9d5ff" />
-            {/* Darker purple at the end for more depth on the right/bottom */}
-            <stop offset="100%" stopColor="#6b21a8" /> 
-          </linearGradient>
-        </defs>
-
-        {/* Sky Background */}
-        <rect width="100" height="100" fill="url(#skyGradient)" />
-
-        {/* Sun/Moon Glow */}
-        <circle cx="80" cy="15" r="8" fill="#fef3c7" className="opacity-80 blur-xl" />
-        <circle cx="80" cy="15" r="4" fill="#fff" className="opacity-90" />
-
         {/* Clouds - Drifting slowly */}
         <Cloud x={10} y={15} scale={0.8} duration={45} delay={0} />
         <Cloud x={40} y={8} scale={1.2} duration={60} delay={5} />
         <Cloud x={-10} y={25} scale={0.6} duration={50} delay={20} />
         <Cloud x={60} y={20} scale={0.9} duration={55} delay={10} />
-
-        {/* Distant Mountains */}
-        <path
-          d="M 0 100 L 20 60 L 40 100 Z"
-          fill="#f5d0fe"
-          className="opacity-50"
-        />
-        <path
-          d="M 60 100 L 85 50 L 110 100 Z"
-          fill="#d8b4fe" // Darker than left mountain
-          className="opacity-50"
-        />
-
-        {/* Main Mountain */}
-        <path
-          d="M -10 100 L 30 50 L 50 65 L 85 20 L 120 100 Z"
-          fill="url(#mountainGradient)"
-          className="drop-shadow-2xl"
-        />
-
-        {/* Snow Cap */}
-        <path
-          d="M 85 20 L 75 35 L 80 40 L 85 35 L 90 40 L 95 35 Z"
-          fill="white"
-          opacity="0.8"
-        />
 
         {/* The Path Trail (Dashed Line) */}
         <path

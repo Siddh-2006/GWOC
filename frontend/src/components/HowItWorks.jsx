@@ -1,119 +1,214 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Leaf, Heart, Sun, CloudRain } from 'lucide-react';
 
 const stages = [
   {
-    id: '01',
+    id: 1,
     title: 'Introductory Discovery',
+    subtitle: 'Understanding your emotional landscape',
     description: 'A safe 60-minute space to understand your environment, concerns, and emotional patterns—without judgment or pressure. Together, we gently define your personal goals.',
-    image: '/assets/how_it_works_1.png'
+    icon: CloudRain,
+    image: '/assets/how_it_works_1.png',
+    color: 'bg-stone-300'
   },
   {
-    id: '02',
+    id: 2,
     title: 'Guided Structure',
+    subtitle: 'Building your personalized roadmap',
     description: 'Based on your needs, we design weekly or bi-weekly sessions focused on specific emotional themes. Each session has a clear direction while moving at your pace.',
-    image: '/assets/how_it_works_2.png'
+    icon: Leaf,
+    image: '/assets/how_it_works_2.png',
+    color: 'bg-rose-200'
   },
   {
-    id: '03',
+    id: 3,
     title: 'Progress Tracking',
+    subtitle: 'Noticing growth and change',
     description: 'Regular check-ins and reflections help you notice growth, emotional shifts, and areas that need more care. Progress is measured gently—no rushing.',
-    image: '/assets/how_it_works_3.png'
+    icon: Heart,
+    image: '/assets/how_it_works_3.png',
+    color: 'bg-rose-300'
   },
   {
-    id: '04',
+    id: 4,
     title: 'Sustained Well-being',
+    subtitle: 'Evolving into your best self',
     description: 'We focus on equipping you with tools and emotional resilience that stay with you beyond sessions. The goal is long-term balance, not dependency.',
-    image: '/assets/how_it_works_4.png'
+    icon: Sun,
+    image: '/assets/how_it_works_4.png',
+    color: 'bg-rose-400'
   }
 ];
 
+const Particle = ({ delay, left }) => (
+  <div
+    className="absolute bottom-0 w-3 h-3 rounded-full bg-rose-200/40 backdrop-blur-sm pointer-events-none"
+    style={{
+      left: `${left}%`,
+      animation: "drift 8s linear infinite",
+      animationDelay: `${delay}s`,
+    }}
+  />
+);
+
 const HowItWorks = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const scrollRef = useRef([]);
+  const containerRef = useRef(null);
+  const [activeStage, setActiveStage] = useState(0);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const observers = [];
+    const handleScroll = () => {
+      if (!containerRef.current) return;
 
-    stages.forEach((_, index) => {
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setActiveIndex(index);
-          }
-        },
-        {
-          threshold: 0.5,
-          rootMargin: "-20% 0px -20% 0px"
-        }
+      const rect = containerRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const elementHeight = rect.height;
+
+      const scrollableDistance = elementHeight - windowHeight;
+      const scrolled = -rect.top;
+
+      let newProgress = scrolled / scrollableDistance;
+      newProgress = Math.max(0, Math.min(1, newProgress));
+
+      setProgress(newProgress);
+
+      const stageIndex = Math.min(
+        stages.length - 1,
+        Math.floor(newProgress * stages.length)
       );
 
-      if (scrollRef.current[index]) {
-        observer.observe(scrollRef.current[index]);
-      }
-      observers.push(observer);
-    });
+      setActiveStage(stageIndex);
+    };
 
-    return () => observers.forEach(o => o.disconnect());
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <section
-      className="relative py-32 px-6 bg-fixed bg-cover bg-center"
-      style={{ backgroundImage: "url('/assets/background_1_home.jpg')" }}
-    >
-      <div className="absolute inset-0 bg-white/50"></div>
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-24">
-          <motion.span
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="text-secondary font-bold tracking-widest uppercase text-sm mb-4 block"
-          >
-            Our Methodology
-          </motion.span>
-          <h2 className="text-4xl md:text-6xl font-bold text-primary mb-6">How It Works</h2>
-          <p className="text-gray-500 text-xl max-w-2xl">A structured, gentle approach to your mental wellness journey.</p>
+    <div ref={containerRef} className="relative h-[400vh] bg-rose-50">
+      <style>{`
+        @keyframes drift {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
+        }
+      `}</style>
+      
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col md:flex-row">
+
+        {/* Background Particles */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          {[...Array(15)].map((_, i) => (
+            <Particle key={i} delay={i * 1.5} left={Math.random() * 100} />
+          ))}
         </div>
 
-        {/* Sticky Container */}
-        <div className="relative flex flex-col md:flex-row gap-8 lg:gap-24">
+        {/* LEFT CONTENT */}
+        <div className="relative z-10 w-full md:w-1/2 h-full flex flex-col px-6 md:px-16 lg:px-24">
 
-          {/* Left Side: Scrolling Text Boxes */}
-          <div className="w-full md:w-1/2 space-y-[30vh] pb-[5vh]">
-            {stages.map((stage, index) => (
+          {/* Header */}
+          <div className="absolute top-8 md:top-16 left-6 md:left-16 lg:left-24 z-20 max-w-xl pr-4">
+            <h1 className="font-serif text-3xl md:text-5xl text-stone-800 mb-4 leading-tight">
+              How It <br />
+              <span className="italic text-rose-500">Works</span>
+            </h1>
+            <p className="text-base md:text-lg text-stone-600">
+              A structured, gentle approach to your mental wellness journey.
+            </p>
+          </div>
+
+          {/* Progress Line */}
+          <div className="absolute left-6 md:left-12 top-[55%] -translate-y-1/2 h-[45%] w-0.5 bg-rose-100 rounded-full hidden md:block">
+            <div
+              className="absolute top-0 left-0 w-full bg-rose-400 rounded-full transition-all duration-300"
+              style={{ height: `${progress * 100}%` }}
+            />
+            {stages.map((_, idx) => (
               <div
-                key={stage.id}
-                ref={el => scrollRef.current[index] = el}
-                className={`p-10 md:p-14 rounded-[2.5rem] transition-all duration-700 bg-white shadow-sm border border-purple-50
-                  ${activeIndex === index ? 'scale-100 border-secondary/20 shadow-xl' : 'scale-95'}`}
-              >
-                <span className="text-sm font-bold text-secondary mb-6 block tracking-widest">STAGE {stage.id}</span>
-                <h3 className="text-3xl font-bold text-primary mb-6">{stage.title}</h3>
-                <p className="text-gray-600 text-lg leading-relaxed">{stage.description}</p>
-              </div>
+                key={idx}
+                className={`absolute left-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 ${
+                  idx <= activeStage
+                    ? 'bg-rose-500 border-rose-500'
+                    : 'bg-rose-50 border-rose-200'
+                }`}
+                style={{
+                  top: `${(idx / (stages.length - 1)) * 100}%`,
+                }}
+              />
             ))}
           </div>
 
-          {/* Right Side: Sticky Images */}
-          <div className="hidden md:block w-1/2 sticky top-48 h-[350px] lg:h-[350px] self-start overflow-hidden rounded-[3rem] shadow-2xl border-8 border-white">
-            <AnimatePresence>
-              <motion.img
-                key={activeIndex}
-                src={stages[activeIndex].image}
-                alt={stages[activeIndex].title}
-                initial={{ opacity: 0, scale: 1.1, rotate: 2 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                exit={{ opacity: 0, scale: 0.9, rotate: -2 }}
-                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            </AnimatePresence>
-            <div className="absolute inset-0 bg-linear-to-t from-primary/10 via-transparent to-transparent pointer-events-none" />
+          {/* Stage Content */}
+          <div className="relative h-full flex flex-col justify-center md:pl-12">
+            {stages.map((stage, index) => {
+              const isActive = index === activeStage;
+              const Icon = stage.icon;
+
+              return (
+                <div
+                  key={stage.id}
+                  className={`absolute w-full md:w-[90%] top-[55%] -translate-y-1/2 transition-all duration-1200 ${
+                    isActive
+                      ? 'opacity-100 scale-100'
+                      : 'opacity-0 scale-95 blur-sm'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="flex items-center justify-center w-10 h-10 rounded-full bg-rose-100 text-rose-600">
+                      <Icon size={20} />
+                    </span>
+                    <span className="text-sm font-bold tracking-widest text-rose-400 uppercase">
+                      Step 0{stage.id}
+                    </span>
+                  </div>
+
+                  <h2 className="text-3xl md:text-5xl text-stone-800 mb-4">
+                    {stage.title}
+                  </h2>
+
+                  <h3 className="text-xl md:text-2xl text-rose-500 italic mb-6">
+                    {stage.subtitle}
+                  </h3>
+
+                  <p className="text-lg text-stone-600 max-w-md">
+                    {stage.description}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
+
+        {/* RIGHT IMAGES */}
+        <div className="relative z-10 w-full md:w-1/2 h-[40vh] md:h-full bg-rose-50/50">
+          <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-l from-rose-50 via-transparent to-transparent" />
+
+          <div className="relative w-full h-full flex items-center justify-center overflow-hidden p-6 md:p-12">
+            {stages.map((stage, index) => {
+              const isActive = index === activeStage;
+
+              return (
+                <div
+                  key={stage.id}
+                  className={`absolute inset-0 md:inset-12 rounded-[2rem] overflow-hidden shadow-2xl transition-all duration-1500 ${
+                    isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
+                  }`}
+                >
+                  <img
+                    src={stage.image}
+                    alt={stage.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-rose-900/10" />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
       </div>
-    </section>
+    </div>
   );
 };
 

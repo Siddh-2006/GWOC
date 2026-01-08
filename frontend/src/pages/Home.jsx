@@ -11,11 +11,11 @@ const Home = () => {
       {/* 1st CTA: Refined Light Hero Slider */}
       <HeroSlider />
 
-      {/* 2nd CTA: Scoped Mountains & Rivers Journey */}
-      <Journey />
-
-      {/* 3rd CTA: How It Works Sticky Scroll */}
+      {/* 2nd CTA: How It Works Sticky Scroll */}
       <HowItWorks />
+
+      {/* 3rd CTA: Scoped Mountains & Rivers Journey */}
+      <Journey />
 
       {/* 4th: Razorpay-style Team Cards */}
       <TeamSection />
