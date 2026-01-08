@@ -7,10 +7,15 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
+    "build": "echo 'No build step required for Node.js'",
     "lint": "eslint . --ext .js",
     "test": "jest",
     "create-admin": "node scripts/create-admin.js",
-    "make-admin": "node scripts/make-user-admin.js"
+    "make-admin": "node scripts/make-user-admin.js",
+    "seed:all": "node scripts/seed-all-content.js",
+    "seed:questions": "node scripts/seed-reflection-questions.js",
+    "cleanup:slots": "node scripts/cleanup-slots.js",
+    "health": "curl -f http://localhost:3001/health || exit 1"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -36,5 +41,9 @@
     "eslint": "^8.45.0",
     "jest": "^29.0.0",
     "nodemon": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }

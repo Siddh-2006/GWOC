@@ -163,14 +163,39 @@ mindsettler/
 
 ## 🚀 Deployment
 
-See [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) for detailed deployment instructions.
+### Production Deployment
+This project is production-ready with Vercel deployment configuration.
 
-### Quick Deploy
-1. Set production environment variables
-2. Build frontend: `npm run build`
-3. Deploy backend to your server
-4. Deploy frontend build to static hosting
-5. Configure domain and SSL
+**Quick Deploy to Vercel:**
+1. Fork this repository
+2. Connect to Vercel
+3. Deploy frontend and backend separately
+4. Configure environment variables
+5. Follow the [DEPLOYMENT.md](DEPLOYMENT.md) guide
+
+**Files for Production:**
+- `frontend/vercel.json` - Frontend deployment config
+- `backend/vercel.json` - Backend deployment config
+- `DEPLOYMENT.md` - Complete deployment guide
+- `PRODUCTION-CHECKLIST.md` - Pre-deployment checklist
+- `.env.template` - Environment variables template
+
+### Environment Setup
+1. Copy `.env.template` to `.env`
+2. Fill in your production values
+3. Never commit `.env` files to git
+
+### Build Commands
+```bash
+# Frontend production build
+cd frontend && npm run build:prod
+
+# Backend production preparation
+cd backend && npm run lint
+
+# Full production build
+./scripts/build-production.sh
+```
 
 ## 🤝 Contributing
 
