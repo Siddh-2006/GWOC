@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  User, Heart,
-  Clock, Play,
-  Shield, CheckCircle, CalendarDays, MapPin,
-  TrendingUp, BookOpen, Star, FileText, Sparkles, Activity
+  Heart, Clock, Shield, MapPin, TrendingUp, FileText, Sparkles, Calendar, BookOpen
 } from 'lucide-react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import { authApi } from '../features/auth/auth.api';
 import { reflectionApi } from '../services/reflection.api';
@@ -172,7 +169,7 @@ const Profile = () => {
 
   const tabs = [
     { id: 'journey', label: 'My Journey', icon: MapPin },
-    { id: 'sessions', label: 'My Sessions', icon: CalendarDays },
+    { id: 'sessions', label: 'My Sessions', icon: Calendar },
     { id: 'liked', label: 'Liked Content', icon: Heart }
   ];
 
@@ -232,7 +229,7 @@ const Profile = () => {
             <div className="flex gap-6 ml-auto relative z-10">
                <div className="text-center">
                   <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-2 border border-purple-200">
-                    <CalendarDays size={20} className="text-purple-700" />
+                    <Calendar size={20} className="text-purple-700" />
                   </div>
                   <div className="text-2xl font-bold text-purple-700 mb-1">
                     {userStats.totalSessions}
@@ -279,7 +276,7 @@ const Profile = () => {
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-white/20 rounded-md">
-                  <CalendarDays size={24} />
+                  <Calendar size={24} />
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg mb-1">Book Session</h3>

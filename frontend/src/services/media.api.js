@@ -15,6 +15,51 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Add response interceptor to handle token refresh
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (refreshToken) {
+          const refreshResponse = await axios.post(`${API_BASE_URL}/api/auth/refresh`, {
+            refreshToken
+          });
+
+          if (refreshResponse.data.success) {
+            const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data.data;
+            
+            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('refreshToken', newRefreshToken);
+            
+            // Retry the original request with new token
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+            return api(originalRequest);
+          }
+        }
+      } catch (refreshError) {
+        console.error('Token refresh failed:', refreshError);
+        // Clear auth data but don't redirect immediately
+        localStorage.removeItem('user');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        
+        // Let the auth store handle the logout and redirect
+        if (window.useAuthStore) {
+          window.useAuthStore.getState().logout();
+        }
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export const mediaApi = {
   // Public endpoints
   getPublishedMedia: async (params = {}) => {

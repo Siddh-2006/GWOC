@@ -79,14 +79,23 @@ export const reflectionController = {
     try {
       const { userId, email } = req.user;
       
+      console.log('🔍 Getting reflection questions for:', { userId, email });
+      
       // Check eligibility first - User profile is linked to Auth via email
       const user = await User.findOne({ email });
+      console.log('👤 User found:', user ? { email: user.email, reflectionCompleted: user.reflectionCompleted, hasConfirmedSession: user.hasConfirmedSession } : 'No user found');
+      
       const hasConfirmedSession = await Booking.exists({
         userId,
         status: 'confirmed'
       });
+      console.log('📅 Has confirmed session:', hasConfirmedSession);
 
-      if (hasConfirmedSession || user.hasConfirmedSession || user.reflectionCompleted) {
+      if (!user) {
+        console.log('⚠️ No user profile found, allowing reflection');
+        // If no user profile exists, allow reflection (new user)
+      } else if (hasConfirmedSession || user.hasConfirmedSession || user.reflectionCompleted) {
+        console.log('🚫 User not eligible for reflection');
         return res.status(403).json({
           success: false,
           message: 'Reflection quiz is only available for first-time clients'
@@ -97,6 +106,8 @@ export const reflectionController = {
       const questions = await ReflectionQuestion.find({ isActive: true })
         .sort({ questionNumber: 1 })
         .select('questionNumber category questionText options');
+
+      console.log('❓ Questions found:', questions.length);
 
       if (questions.length === 0) {
         return res.status(404).json({

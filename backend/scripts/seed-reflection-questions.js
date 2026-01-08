@@ -14,7 +14,8 @@ const defaultQuestions = [
       { value: 'somewhat-clearly', label: 'Somewhat clearly' },
       { value: 'not-very-clearly', label: 'Not very clearly' },
       { value: 'usually-confused', label: 'I usually feel confused' }
-    ]
+    ],
+    isActive: true
   },
   {
     questionNumber: 2,
@@ -25,7 +26,8 @@ const defaultQuestions = [
       { value: 'somewhat-comfortable', label: 'Somewhat comfortable' },
       { value: 'rarely-comfortable', label: 'Rarely comfortable' },
       { value: 'usually-avoid', label: 'I usually avoid it' }
-    ]
+    ],
+    isActive: true
   },
   {
     questionNumber: 3,
@@ -36,7 +38,8 @@ const defaultQuestions = [
       { value: 'overwhelmed-but-manage', label: 'I feel overwhelmed but try to manage' },
       { value: 'react-quickly', label: 'I react quickly without much thought' },
       { value: 'withdraw-shutdown', label: 'I tend to withdraw or shut down' }
-    ]
+    ],
+    isActive: true
   },
   {
     questionNumber: 4,
@@ -47,7 +50,8 @@ const defaultQuestions = [
       { value: 'occasionally', label: 'Occasionally' },
       { value: 'rarely', label: 'Rarely' },
       { value: 'almost-never', label: 'Almost never' }
-    ]
+    ],
+    isActive: true
   },
   {
     questionNumber: 5,
@@ -58,7 +62,8 @@ const defaultQuestions = [
       { value: 'need-time-adapt', label: 'I need some time but adapt' },
       { value: 'struggle-to-adjust', label: 'I struggle to adjust' },
       { value: 'feel-stuck', label: 'I feel stuck or resistant' }
-    ]
+    ],
+    isActive: true
   },
   {
     questionNumber: 6,
@@ -69,7 +74,8 @@ const defaultQuestions = [
       { value: 'emotional-connection', label: 'Emotional connection' },
       { value: 'stability-clarity', label: 'Stability and clarity' },
       { value: 'independence-space', label: 'Independence and space' }
-    ]
+    ],
+    isActive: true
   },
   {
     questionNumber: 7,
@@ -80,7 +86,8 @@ const defaultQuestions = [
       { value: 'emotional-support', label: 'Emotional support' },
       { value: 'internal-strength', label: 'Internal strength' },
       { value: 'distraction-avoidance', label: 'Distraction or avoidance' }
-    ]
+    ],
+    isActive: true
   },
   {
     questionNumber: 8,
@@ -91,7 +98,8 @@ const defaultQuestions = [
       { value: 'some-control', label: 'Some control' },
       { value: 'very-little-control', label: 'Very little control' },
       { value: 'unsure', label: 'Unsure' }
-    ]
+    ],
+    isActive: true
   },
   {
     questionNumber: 9,
@@ -102,7 +110,8 @@ const defaultQuestions = [
       { value: 'open-with-caution', label: 'Open with caution' },
       { value: 'unsure', label: 'Unsure' },
       { value: 'not-very-open', label: 'Not very open right now' }
-    ]
+    ],
+    isActive: true
   },
   {
     questionNumber: 10,
@@ -113,7 +122,8 @@ const defaultQuestions = [
       { value: 'emotionally-sensitive', label: 'Emotionally sensitive' },
       { value: 'practical-grounded', label: 'Practical and grounded' },
       { value: 'still-understanding', label: 'Still trying to understand myself' }
-    ]
+    ],
+    isActive: true
   }
 ];
 
