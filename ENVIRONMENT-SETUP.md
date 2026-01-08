@@ -51,11 +51,20 @@ Backend now accepts requests from:
 1. Environment variables are automatically set in `vercel.json`
 2. Production build uses deployed backend
 3. CORS is properly configured
+4. **Fixed Vercel configuration** - removed conflicting `routes` and `headers`
 
 #### For Backend (Already Deployed):
 - URL: `https://gwoc-lovat.vercel.app`
 - Accepts requests from both local and production frontends
 - All APIs available at `/api/*` endpoints
+
+### 🔧 Vercel Configuration Fixed:
+
+The `vercel.json` files have been updated to resolve the conflict:
+- **Removed**: `routes` configuration
+- **Added**: `rewrites` for SPA routing
+- **Kept**: Security headers for production
+- **Alternative**: `vercel-simple.json` files for minimal configuration
 
 ### 🧪 Testing:
 
