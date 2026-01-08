@@ -39,6 +39,7 @@ import AdminLayout from './features/admin/layouts/AdminLayout';
 import AdminOverview from './features/admin/pages/AdminOverview';
 import AdminBookings from './features/admin/pages/AdminBookings';
 import AdminSlots from './features/admin/pages/AdminSlots';
+import UserReflections from './features/admin/pages/UserReflections';
 
 import { CorporateInquiries as AdminCorporate } from './components/admin/CorporateInquiries';
 import ContactMessages from './components/admin/ContactMessages';
@@ -143,6 +144,7 @@ function App() {
           <Route path="slots" element={<AdminSlots />} />
           <Route path="corporate" element={<AdminCorporate />} />
           <Route path="messages" element={<ContactMessages />} />
+          <Route path="user-reflections" element={<UserReflections />} />
           <Route path="reflection" element={<ReflectionQuestions />} />
           <Route path="user/:userId" element={<Profile />} />
         </Route>

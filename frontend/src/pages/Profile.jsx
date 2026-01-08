@@ -3,11 +3,13 @@ import { motion } from 'framer-motion';
 import {
   User, Heart,
   Clock, Play,
-  Shield, CheckCircle, CalendarDays, MapPin
+  Shield, CheckCircle, CalendarDays, MapPin,
+  FileText, Sparkles
 } from 'lucide-react';
 import { useParams, Navigate } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import { authApi } from '../features/auth/auth.api';
+import { reflectionApi } from '../services/reflection.api';
 import { useLikedMedia } from '../hooks/useLikedMedia';
 import { useSessions } from '../hooks/useSessions';
 import { useJourney } from '../hooks/useJourney';
@@ -103,6 +105,51 @@ const Profile = () => {
   const [showNotesViewer, setShowNotesViewer] = useState(false);
   const [showTasksModal, setShowTasksModal] = useState(false);
   const [showAdminRemarksModal, setShowAdminRemarksModal] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
+
+  const handleRegenerateSummary = async () => {
+    try {
+      setRegenerating(true);
+      const res = await reflectionApi.admin.regenerateSummary(userId);
+      if (res.success) {
+        success('AI summary re-generated successfully');
+        // Refresh profile data
+        const profileRes = await authApi.getUserProfile(userId);
+        setViewedUser(profileRes.data.user);
+      } else {
+        showError(res.message || 'Failed to re-generate summary');
+      }
+    } catch (err) {
+      showError('An error occurred while re-generating summary');
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
+  const handleResetReflection = async () => {
+    if (!window.confirm('Are you sure you want to reset this user\'s reflection status? This will delete all their current responses and AI summary, allowing them to retake the quiz.')) {
+      return;
+    }
+
+    try {
+      setResetting(true);
+      const res = await reflectionApi.admin.resetUserReflection(userId);
+      if (res.success) {
+        success('User reflection reset successfully');
+        // Refresh profile data
+        const profileRes = await authApi.getUserProfile(userId);
+        setViewedUser(profileRes.data.user);
+        setActiveTab('sessions');
+      } else {
+        showError(res.message || 'Failed to reset reflection');
+      }
+    } catch (err) {
+      showError('An error occurred while resetting reflection');
+    } finally {
+      setResetting(false);
+    }
+  };
 
   // Tab configuration - My Sessions, Journey, and Liked Content
   const tabs = [
@@ -110,6 +157,11 @@ const Profile = () => {
     { id: 'journey', label: 'My Journey', icon: MapPin },
     { id: 'liked', label: 'Liked Content', icon: Heart }
   ];
+
+  // Add Reflection tab if user is admin and viewedUser has reflection data
+  if (currentUser?.role === 'admin' && user?.reflectionCompleted) {
+    tabs.splice(2, 0, { id: 'reflection', label: 'Reflection', icon: FileText });
+  }
 
   // Loading State
   if (!isInitialized) {
@@ -426,6 +478,82 @@ const Profile = () => {
                   ))}
                 </div>
               )}
+            </ProfileCard>
+          )}
+
+          {/* Reflection Tab (Admin Only) */}
+          {activeTab === 'reflection' && user?.reflectionCompleted && (
+            <ProfileCard>
+              <SectionHeading
+                icon={FileText}
+                title="Pre-Session Reflection"
+                subtitle="AI-generated insights from the client's initial reflection"
+              />
+
+              {/* Admin Actions */}
+              <div className="mb-6 flex justify-end gap-3">
+                <button
+                  onClick={handleRegenerateSummary}
+                  disabled={regenerating}
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-primary hover:bg-purple-100 rounded-xl transition-colors text-sm font-medium border border-purple-100 disabled:opacity-50"
+                >
+                  {regenerating ? (
+                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Sparkles size={16} />
+                  )}
+                  Re-generate AI Summary
+                </button>
+                <button
+                  onClick={handleResetReflection}
+                  disabled={resetting}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-colors text-sm font-medium border border-red-100 disabled:opacity-50"
+                >
+                  {resetting ? (
+                    <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Clock size={16} className="rotate-180" />
+                  )}
+                  Reset & Allow Retake
+                </button>
+              </div>
+
+              <div className="space-y-8">
+                {/* AI Summary Section */}
+                <div className="bg-purple-50/50 p-6 rounded-2xl border border-purple-100">
+                  <h3 className="text-lg font-bold text-primary mb-3 flex items-center gap-2">
+                    <Sparkles className="text-secondary" size={20} />
+                    AI Insights Summary
+                  </h3>
+                  <div className="prose prose-purple max-w-none text-gray-700 leading-relaxed">
+                    {user.reflectionSummary ? (
+                      user.reflectionSummary.split('\n').map((line, i) => (
+                        <p key={i} className={line.startsWith('**') ? 'font-bold mt-4' : ''}>
+                          {line}
+                        </p>
+                      ))
+                    ) : (
+                      <p className="italic text-gray-500">No summary available.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Detailed Responses Section */}
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 px-2">Detailed Responses</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {user.reflectionResponses && Object.entries(user.reflectionResponses).map(([key, data]) => (
+                      <div key={key} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <p className="text-xs font-bold text-secondary uppercase tracking-wider mb-1">{data.category}</p>
+                        <p className="text-sm font-semibold text-gray-800 mb-2">{data.questionText}</p>
+                        <p className="text-sm text-gray-600 bg-white p-2 rounded-lg border border-gray-100">
+                          {data.selectedLabel}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </ProfileCard>
           )}
 

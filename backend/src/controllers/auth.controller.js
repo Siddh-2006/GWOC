@@ -366,6 +366,9 @@ export const getProfile = async (req, res) => {
           role: authUser.role,
           isActive: authUser.isActive,
           isEmailVerified: authUser.isEmailVerified,
+          reflectionCompleted: userProfile?.reflectionCompleted || false,
+          reflectionResponses: userProfile?.reflectionResponses || null,
+          reflectionSummary: userProfile?.reflectionSummary || null,
           lastLogin: authUser.lastLogin,
           createdAt: authUser.createdAt,
           updatedAt: authUser.updatedAt
@@ -417,6 +420,9 @@ export const getUserProfile = async (req, res) => {
           role: authUser.role,
           isActive: authUser.isActive,
           isEmailVerified: authUser.isEmailVerified,
+          reflectionCompleted: userProfile?.reflectionCompleted || false,
+          reflectionResponses: userProfile?.reflectionResponses || null,
+          reflectionSummary: userProfile?.reflectionSummary || null,
           lastLogin: authUser.lastLogin,
           createdAt: authUser.createdAt,
           updatedAt: authUser.updatedAt

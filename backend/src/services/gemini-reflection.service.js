@@ -41,6 +41,18 @@ class GeminiReflectionService {
     return key;
   }
 
+  // Helper to wait
+  delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // Helper to get model
+  getModel(modelName) {
+    const apiKey = this.getNextApiKey();
+    const genAI = new GoogleGenerativeAI(apiKey);
+    return genAI.getGenerativeModel({ model: modelName }, { apiVersion: 'v1' });
+  }
+
   // Analyze client's emotional and psychological state from responses
   analyzeClientState(responses) {
     const analysis = {
@@ -99,8 +111,8 @@ class GeminiReflectionService {
     // Questions 3+ are AI-generated based on previous answers
     const fallbackModels = [
       "gemini-2.5-flash",
-      "gemini-2.5-pro", 
-      "gemini-2.0-flash"
+      "gemini-1.5-flash",
+      "gemini-pro"
     ];
 
     let lastError = null;
@@ -173,8 +185,8 @@ class GeminiReflectionService {
   async generateSummary(responses) {
     const fallbackModels = [
       "gemini-2.5-flash",
-      "gemini-2.5-pro",
-      "gemini-2.0-flash"
+      "gemini-1.5-flash",
+      "gemini-pro"
     ];
 
     let lastError = null;
@@ -681,8 +693,10 @@ JSON:
    * Uses the new ethical prompt for first-time clients
    */
   async generateFirstSessionSummary(responses, questions) {
-    const models = ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+    const models = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-pro"];
     let lastError = null;
+    
+    console.log(`🤖 Starting summary generation with models: ${models.join(', ')}`);
 
     for (const modelName of models) {
       for (let attempt = 1; attempt <= 3; attempt++) {
@@ -758,6 +772,11 @@ ${responseContext}`;
           lastError = error;
           console.error(`❌ Summary generation failed with ${modelName} (attempt ${attempt}):`, error.message);
           
+          if (error.message.includes('404')) {
+            console.error(`⚠️ Model ${modelName} is not supported on the current API version/tier. Trying next model...`);
+            break; // Stop retrying this model, move to next in list
+          }
+
           if (attempt < 3) {
             await this.delay(1000 * attempt); // Exponential backoff
           }

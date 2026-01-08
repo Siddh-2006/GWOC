@@ -1,6 +1,39 @@
 import apiClient from '../api/apiClient';
 
 export const reflectionApi = {
+  // Check if user is eligible for reflection
+  checkEligibility: async () => {
+    try {
+      const response = await apiClient.get('/reflection/eligibility');
+      return response.data;
+    } catch (error) {
+      console.error('Check eligibility API error:', error);
+      throw error.response?.data || { success: false, message: 'Network error' };
+    }
+  },
+
+  // Get reflection questions
+  getQuestions: async () => {
+    try {
+      const response = await apiClient.get('/reflection/questions');
+      return response.data;
+    } catch (error) {
+      console.error('Get questions API error:', error);
+      throw error.response?.data || { success: false, message: 'Network error' };
+    }
+  },
+
+  // Submit reflection responses
+  submitReflection: async (responses) => {
+    try {
+      const response = await apiClient.post('/reflection/submit', { responses });
+      return response.data;
+    } catch (error) {
+      console.error('Submit reflection API error:', error);
+      throw error.response?.data || { success: false, message: 'Network error' };
+    }
+  },
+
   // Start new reflection session
   startReflection: async () => {
     try {
@@ -101,6 +134,39 @@ export const reflectionApi = {
         return response.data;
       } catch (error) {
         console.error('Delete reflection session API error:', error);
+        throw error.response?.data || { success: false, message: 'Network error' };
+      }
+    },
+
+    // Get all reflection submissions
+    getSubmissions: async () => {
+      try {
+        const response = await apiClient.get('/reflection/admin/submissions');
+        return response.data;
+      } catch (error) {
+        console.error('Get reflection submissions API error:', error);
+        throw error.response?.data || { success: false, message: 'Network error' };
+      }
+    },
+
+    // Reset user's reflection status
+    resetUserReflection: async (userId) => {
+      try {
+        const response = await apiClient.delete(`/reflection/admin/user/${userId}`);
+        return response.data;
+      } catch (error) {
+        console.error('Reset reflection API error:', error);
+        throw error.response?.data || { success: false, message: 'Network error' };
+      }
+    },
+
+    // Re-generate user's reflection summary
+    regenerateSummary: async (userId) => {
+      try {
+        const response = await apiClient.post(`/reflection/admin/user/${userId}/regenerate-summary`);
+        return response.data;
+      } catch (error) {
+        console.error('Regenerate summary API error:', error);
         throw error.response?.data || { success: false, message: 'Network error' };
       }
     },

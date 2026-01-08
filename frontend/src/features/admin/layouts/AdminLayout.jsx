@@ -29,7 +29,8 @@ const AdminLayout = () => {
     { icon: <Clock size={20} />, label: 'Time Slots', path: '/admin/slots' },
     { icon: <Building2 size={20} />, label: 'Corporate', path: '/admin/corporate' },
     { icon: <MessageSquare size={20} />, label: 'Messages', path: '/admin/messages' },
-    { icon: <Heart size={20} />, label: 'Reflection', path: '/admin/reflection' },
+    { icon: <Heart size={20} />, label: 'UserReflections', path: '/admin/user-reflections' },
+    { icon: <Settings size={20} />, label: 'Quiz Setup', path: '/admin/reflection' },
   ];
 
   const handleLogout = () => {

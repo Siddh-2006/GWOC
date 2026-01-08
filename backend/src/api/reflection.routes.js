@@ -23,6 +23,15 @@ router.get('/user/:userId', authenticateToken, requireAdmin, reflectionControlle
 // GET /api/reflection/admin/questions - Get all questions for admin management
 router.get('/admin/questions', authenticateToken, requireAdmin, reflectionController.admin.getQuestions);
 
+// GET /api/reflection/admin/submissions - Get all reflection submissions for admin
+router.get('/admin/submissions', authenticateToken, requireAdmin, reflectionController.admin.getSubmissions);
+
+// DELETE /api/reflection/admin/user/:userId - Reset user's reflection (Admin)
+router.delete('/admin/user/:userId', authenticateToken, requireAdmin, reflectionController.admin.resetUserReflection);
+
+// POST /api/reflection/admin/user/:userId/regenerate-summary - Re-generate AI summary (Admin)
+router.post('/admin/user/:userId/regenerate-summary', authenticateToken, requireAdmin, reflectionController.admin.regenerateSummary);
+
 // PUT /api/reflection/admin/questions/:questionId - Update question
 router.put('/admin/questions/:questionId', authenticateToken, requireAdmin, reflectionController.admin.updateQuestion);
 

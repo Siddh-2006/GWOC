@@ -1,6 +1,7 @@
 import { ReflectionQuestion } from '../models/ReflectionQuestion.model.js';
 import { User } from '../models/User.model.js';
 import { Booking } from '../models/Booking.model.js';
+import Auth from '../models/Auth.model.js';
 import { geminiService } from '../services/gemini-reflection.service.js';
 
 /**
@@ -20,10 +21,10 @@ export const reflectionController = {
    */
   checkEligibility: async (req, res) => {
     try {
-      const userId = req.user.userId;
+      const { userId, email } = req.user;
       
-      // Get user data
-      const user = await User.findById(userId);
+      // Get user data - User profile is linked to Auth via email
+      const user = await User.findOne({ email });
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -43,6 +44,14 @@ export const reflectionController = {
       }
 
       const isEligible = !hasConfirmedSession && !user.reflectionCompleted;
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('🔍 Reflection Eligibility Check:');
+        console.log(`   - User: ${user.email} (${userId})`);
+        console.log(`   - hasConfirmedSession: ${hasConfirmedSession}`);
+        console.log(`   - user.reflectionCompleted: ${user.reflectionCompleted}`);
+        console.log(`   - Combined isEligible: ${isEligible}`);
+      }
 
       res.json({
         success: true,
@@ -68,10 +77,10 @@ export const reflectionController = {
    */
   getQuestions: async (req, res) => {
     try {
-      const userId = req.user.userId;
+      const { userId, email } = req.user;
       
-      // Check eligibility first
-      const user = await User.findById(userId);
+      // Check eligibility first - User profile is linked to Auth via email
+      const user = await User.findOne({ email });
       const hasConfirmedSession = await Booking.exists({
         userId,
         status: 'confirmed'
@@ -119,7 +128,7 @@ export const reflectionController = {
    */
   submitReflection: async (req, res) => {
     try {
-      const userId = req.user.userId;
+      const { userId, email } = req.user;
       const { responses } = req.body;
 
       if (!responses || typeof responses !== 'object') {
@@ -129,8 +138,8 @@ export const reflectionController = {
         });
       }
 
-      // Check eligibility
-      const user = await User.findById(userId);
+      // Check eligibility - User profile is linked to Auth via email
+      const user = await User.findOne({ email });
       const hasConfirmedSession = await Booking.exists({
         userId,
         status: 'confirmed'
@@ -177,7 +186,7 @@ export const reflectionController = {
       }
 
       // Save to user profile (permanent, one-time)
-      await User.findByIdAndUpdate(userId, {
+      await User.findOneAndUpdate({ email }, {
         reflectionCompleted: true,
         reflectionResponses: validatedResponses,
         reflectionSummary: aiSummary
@@ -208,8 +217,18 @@ export const reflectionController = {
     try {
       const { userId } = req.params;
       
-      const user = await User.findById(userId)
-        .select('reflectionCompleted reflectionResponses reflectionSummary hasConfirmedSession createdAt');
+      // Try to find by User ID first, then fallback to email if it's an Auth ID
+      let user = await User.findById(userId)
+        .select('email reflectionCompleted reflectionResponses reflectionSummary hasConfirmedSession createdAt');
+
+      if (!user) {
+        // If not found by ID, maybe userId is actually an Auth ID
+        const authUser = await Auth.findById(userId);
+        if (authUser) {
+          user = await User.findOne({ email: authUser.email })
+            .select('reflectionCompleted reflectionResponses reflectionSummary hasConfirmedSession createdAt');
+        }
+      }
 
       if (!user) {
         return res.status(404).json({
@@ -344,6 +363,131 @@ export const reflectionController = {
         res.status(500).json({
           success: false,
           message: 'Failed to delete question'
+        });
+      }
+    },
+
+    /**
+     * Admin: Get all reflection submissions
+     */
+    getSubmissions: async (req, res) => {
+      try {
+        // Return all users to allow admin to find and reset status if needed
+        const users = await User.find({})
+          .select('name email reflectionCompleted reflectionSummary createdAt reflectionResponses')
+          .sort({ createdAt: -1 });
+
+        // Link with Auth IDs for correct profile routing
+        const enrichedUsers = await Promise.all(users.map(async (u) => {
+          const authUser = await Auth.findOne({ email: u.email }).select('_id');
+          return {
+            ...u.toObject(),
+            authId: authUser?._id || u._id
+          };
+        }));
+
+        res.json({
+          success: true,
+          data: enrichedUsers
+        });
+      } catch (error) {
+        console.error('❌ Error fetching reflection submissions:', error);
+        res.status(500).json({
+          success: false,
+          message: 'Failed to fetch reflection submissions'
+        });
+      }
+    },
+
+    /**
+     * Admin: Reset a user's reflection status
+     */
+    resetUserReflection: async (req, res) => {
+      try {
+        const { userId } = req.params;
+        
+        // Find user by Auth ID first to get email
+        const authUser = await Auth.findById(userId);
+        if (!authUser) {
+          return res.status(404).json({
+            success: false,
+            message: 'User authentication record not found'
+          });
+        }
+
+        const user = await User.findOneAndUpdate(
+          { email: authUser.email },
+          {
+            reflectionCompleted: false,
+            reflectionResponses: null,
+            reflectionSummary: null
+          },
+          { new: true }
+        );
+
+        if (!user) {
+          return res.status(404).json({
+            success: false,
+            message: 'User profile not found'
+          });
+        }
+
+        res.json({
+          success: true,
+          message: 'User reflection status reset successfully'
+        });
+      } catch (error) {
+        console.error('❌ Error resetting user reflection:', error);
+        res.status(500).json({
+          success: false,
+          message: 'Failed to reset user reflection'
+        });
+      }
+    },
+
+    /**
+     * Admin: Re-generate AI summary for a user
+     */
+    regenerateSummary: async (req, res) => {
+      try {
+        const { userId } = req.params;
+        
+        // Find user by Auth ID first to get email
+        const authUser = await Auth.findById(userId);
+        if (!authUser) {
+          return res.status(404).json({
+            success: false,
+            message: 'User authentication record not found'
+          });
+        }
+
+        const user = await User.findOne({ email: authUser.email });
+        if (!user || !user.reflectionResponses) {
+          return res.status(400).json({
+            success: false,
+            message: 'No reflection responses found to summarize'
+          });
+        }
+
+        console.log(`🤖 Re-generating summary for ${user.email}...`);
+        
+        // Generate AI summary
+        const aiSummary = await geminiService.generateFirstSessionSummary(user.reflectionResponses);
+        
+        // Update user
+        user.reflectionSummary = aiSummary;
+        await user.save();
+
+        res.json({
+          success: true,
+          message: 'AI summary re-generated successfully',
+          data: { summary: aiSummary }
+        });
+      } catch (error) {
+        console.error('❌ Error re-generating summary:', error);
+        res.status(500).json({
+          success: false,
+          message: 'Failed to re-generate summary'
         });
       }
     }
