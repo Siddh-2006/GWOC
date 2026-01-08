@@ -174,7 +174,6 @@ export const sessionsController = {
         userId 
       })
         .populate('slotId', 'date startTime endTime')
-        .populate('reflectionSessionId')
         .lean();
 
       if (!session) {

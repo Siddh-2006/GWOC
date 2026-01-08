@@ -41,7 +41,7 @@ const EnhancedSessionCard = ({ session, onNotesClick, onViewNotes, onTasksClick,
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300"
+      className="glass-premium hover:shadow-md transition-all duration-300"
     >
       <div className="p-6">
         {/* Session Header */}
