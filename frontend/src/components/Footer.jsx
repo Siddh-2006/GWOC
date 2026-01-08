@@ -11,7 +11,7 @@ const Footer = () => {
           {/* Brand section */}
           <div className="col-span-1 lg:col-span-2">
             <div className="mb-6">
-              <Logo variant="invert" className="h-16" />
+              <Logo variant="white" className="h-16" />
             </div>
             <p className="text-purple-50 mb-8 max-w-md leading-relaxed text-base font-light">
               MindSettler is a dedicated space for psycho-education and mental well-being, helping you navigate life's challenges with clarity and support.

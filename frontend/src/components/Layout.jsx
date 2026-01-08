@@ -8,6 +8,7 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const isContentWebRoute = location.pathname.startsWith('/resources') ||
     location.pathname.startsWith('/psycho-education/library');
+  const isHomePage = location.pathname === '/';
 
   if (isContentWebRoute) {
     return <>{children}</>;
@@ -15,7 +16,8 @@ const Layout = ({ children }) => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
+      {/* Don't render Navbar on home page - Home component manages its own navbar */}
+      {!isHomePage && <Navbar />}
       <motion.main
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}

@@ -4,7 +4,7 @@ const Logo = ({ className = "h-16 ", variant = "default" }) => {
       <img
         src="/logo.png"
         alt="MindSettler Logo"
-        className={`h-full w-auto object-contain ${variant === 'invert' ? 'brightness-0 invert' : ''}`}
+        className={`h-full w-auto object-contain ${variant === 'white' ? 'brightness-0 invert' : ''}`}
       />
     </div>
   );

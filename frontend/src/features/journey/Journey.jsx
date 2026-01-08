@@ -431,15 +431,6 @@ export const Journey = () => {
            })}
         </div>
       </div>
-      
-      {/* Scroll indicator at the start */}
-      <motion.div 
-        style={{ opacity: useTransform(scrollYProgress, [0, 0.05], [1, 0]) }}
-        className="fixed bottom-8 left-1/2 -translate-x-1/2 text-purple-400 text-sm font-medium animate-bounce pointer-events-none z-50 mix-blend-multiply"
-      >
-        Scroll to Begin Journey ↓
-      </motion.div>
-
     </div>
   );
 };

@@ -127,7 +127,7 @@ const HeroSlider = () => {
               transition={{ duration: 0.5 }}
             >
               <header>
-                <p className="text-purple-300 uppercase tracking-widest text-sm font-bold mb-4">
+                <p className="text-white uppercase tracking-widest text-sm font-bold mb-4">
                   {slides[current].subtitle}
                 </p>
                 <h1 className="text-pink-400 font-bold text-4xl md:text-7xl leading-tight mb-6">

@@ -119,25 +119,6 @@ const HowItWorks = () => {
           </div>
 
           {/* Progress Line */}
-          <div className="absolute left-6 md:left-12 top-[55%] -translate-y-1/2 h-[45%] w-0.5 bg-rose-100 rounded-full hidden md:block">
-            <div
-              className="absolute top-0 left-0 w-full bg-rose-400 rounded-full transition-all duration-300"
-              style={{ height: `${progress * 100}%` }}
-            />
-            {stages.map((_, idx) => (
-              <div
-                key={idx}
-                className={`absolute left-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 ${
-                  idx <= activeStage
-                    ? 'bg-rose-500 border-rose-500'
-                    : 'bg-rose-50 border-rose-200'
-                }`}
-                style={{
-                  top: `${(idx / (stages.length - 1)) * 100}%`,
-                }}
-              />
-            ))}
-          </div>
 
           {/* Stage Content */}
           <div className="relative h-full flex flex-col justify-center md:pl-12">
@@ -148,32 +129,34 @@ const HowItWorks = () => {
               return (
                 <div
                   key={stage.id}
-                  className={`absolute w-full md:w-[90%] top-[55%] -translate-y-1/2 transition-all duration-1200 ${
+                  className={`absolute w-full md:w-[85%] top-[65%] -translate-y-1/2 -translate-x-4 md:-translate-x-6 transition-all duration-1200 ${
                     isActive
                       ? 'opacity-100 scale-100'
                       : 'opacity-0 scale-95 blur-sm'
                   }`}
                 >
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="flex items-center justify-center w-10 h-10 rounded-full bg-rose-100 text-rose-600">
-                      <Icon size={20} />
-                    </span>
-                    <span className="text-sm font-bold tracking-widest text-rose-400 uppercase">
-                      Step 0{stage.id}
-                    </span>
+                  <div className="bg-rose-300/10 backdrop-blur-md border border-white/30 rounded-3xl p-8 md:p-10">
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className="flex items-center justify-center w-10 h-10 rounded-full bg-rose-100 text-rose-600">
+                        <Icon size={20} />
+                      </span>
+                      <span className="text-sm font-bold tracking-widest text-rose-400 uppercase">
+                        Step 0{stage.id}
+                      </span>
+                    </div>
+
+                    <h2 className="text-3xl md:text-5xl text-stone-800 mb-4">
+                      {stage.title}
+                    </h2>
+
+                    <h3 className="text-xl md:text-2xl text-rose-500 italic mb-6">
+                      {stage.subtitle}
+                    </h3>
+
+                    <p className="text-lg text-stone-600 max-w-md">
+                      {stage.description}
+                    </p>
                   </div>
-
-                  <h2 className="text-3xl md:text-5xl text-stone-800 mb-4">
-                    {stage.title}
-                  </h2>
-
-                  <h3 className="text-xl md:text-2xl text-rose-500 italic mb-6">
-                    {stage.subtitle}
-                  </h3>
-
-                  <p className="text-lg text-stone-600 max-w-md">
-                    {stage.description}
-                  </p>
                 </div>
               );
             })}
