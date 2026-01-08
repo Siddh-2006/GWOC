@@ -1,12 +1,32 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// Environment-aware API base URL
+const getApiBaseUrl = () => {
+  // Check if we have environment variable
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // Fallback logic based on environment
+  if (import.meta.env.PROD) {
+    // Production build - use deployed backend
+    return 'https://gwoc-lovat.vercel.app/api';
+  } else {
+    // Development - use local backend
+    return 'http://localhost:3001/api';
+  }
+};
+
+const API_BASE = getApiBaseUrl();
+
+console.log('🔗 API Base URL:', API_BASE);
 
 const apiClient = axios.create({
-  baseURL: `${API_BASE}/api`,
+  baseURL: API_BASE,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  timeout: 30000 // 30 second timeout
 });
 
 // Request interceptor for adding auth token
@@ -38,7 +58,7 @@ apiClient.interceptors.response.use(
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) throw new Error('No refresh token available');
 
-        const response = await axios.post(`${API_BASE}/api/auth/refresh-token`, { refreshToken });
+        const response = await axios.post(`${API_BASE.replace('/api', '')}/api/auth/refresh-token`, { refreshToken });
         const { accessToken, refreshToken: newRefreshToken } = response.data.data;
 
         localStorage.setItem('accessToken', accessToken);
