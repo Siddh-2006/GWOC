@@ -6,6 +6,11 @@
 
 ## ✅ Solution Applied
 
+### Project Names:
+- ✅ **Frontend**: `mindsettler-frontend` (compliant)
+- ✅ **Backend**: `mindsettler-backend` (compliant)
+- ✅ **Naming Rules**: Lowercase, allowed characters only
+
 ### Frontend (`vercel.json`):
 - ❌ **Removed**: `routes` configuration
 - ✅ **Added**: `rewrites` for SPA routing

@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 
+// Vercel-optimized Vite configuration
 export default defineConfig(({ mode }) => ({
   plugins: [react(), tailwindcss()],
   resolve: {
@@ -21,8 +22,9 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     outDir: 'dist',
-    sourcemap: mode === 'development',
-    minify: mode === 'production' ? 'esbuild' : false,
+    sourcemap: false, // Disable sourcemaps for Vercel
+    minify: 'esbuild', // Use esbuild instead of terser for Vercel
+    target: 'es2015', // Better compatibility
     rollupOptions: {
       output: {
         manualChunks: {
@@ -36,9 +38,12 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 1000
   },
   define: {
-    __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '1.0.0'),
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom']
+  },
+  esbuild: {
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
   }
 }))

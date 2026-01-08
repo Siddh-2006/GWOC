@@ -1,15 +1,10 @@
 {
   "version": 2,
   "name": "mindsettler-frontend",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    }
-  ],
+  "framework": "vite",
+  "buildCommand": "vite build --config vite.config.vercel.js",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
   "rewrites": [
     {
       "source": "/((?!api/).*)",
