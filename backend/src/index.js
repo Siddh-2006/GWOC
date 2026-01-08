@@ -60,14 +60,26 @@ app.use(cors({
     
     const allowedOrigins = [
       'http://localhost:3000',
+      'https://mindsettlerxparnika.vercel.app',
       'https://gwoc-lovat.vercel.app',
       process.env.FRONTEND_URL,
       process.env.CORS_ORIGIN
     ].filter(Boolean);
     
-    if (allowedOrigins.includes(origin)) {
+    // Also handle comma-separated CORS_ORIGIN
+    if (process.env.CORS_ORIGIN) {
+      const corsOrigins = process.env.CORS_ORIGIN.split(',').map(o => o.trim());
+      allowedOrigins.push(...corsOrigins);
+    }
+    
+    // Remove duplicates
+    const uniqueOrigins = [...new Set(allowedOrigins)];
+    
+    if (uniqueOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log(`❌ CORS blocked origin: ${origin}`);
+      console.log(`✅ Allowed origins: ${uniqueOrigins.join(', ')}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
