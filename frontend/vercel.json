@@ -48,7 +48,7 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://gwoc-lovat.vercel.app/api",
+    "VITE_API_URL": "https://gwoc-lovat.vercel.app",
     "VITE_APP_NAME": "MindSettler",
     "VITE_APP_ENV": "production"
   }

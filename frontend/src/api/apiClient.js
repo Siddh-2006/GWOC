@@ -4,7 +4,8 @@ import axios from 'axios';
 const getApiBaseUrl = () => {
   // Check if we have environment variable
   if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+    // Add /api to the base URL since our environment variables now contain just the domain
+    return `${import.meta.env.VITE_API_URL}/api`;
   }
   
   // Fallback logic based on environment
@@ -58,7 +59,7 @@ apiClient.interceptors.response.use(
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) throw new Error('No refresh token available');
 
-        const response = await axios.post(`${API_BASE.replace('/api', '')}/api/auth/refresh-token`, { refreshToken });
+        const response = await axios.post(`${API_BASE}/auth/refresh-token`, { refreshToken });
         const { accessToken, refreshToken: newRefreshToken } = response.data.data;
 
         localStorage.setItem('accessToken', accessToken);
