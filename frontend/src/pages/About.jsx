@@ -59,7 +59,7 @@ const About = () => {
     target: contentRef,
     offset: ["start start", "end end"]
   });
-  
+
   const scaleY = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
@@ -69,10 +69,10 @@ const About = () => {
   // Animation variants for gentle fade-in with upward motion
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { 
+      transition: {
         duration: 1.0,
         ease: "easeOut"
       }
@@ -87,13 +87,13 @@ const About = () => {
     return (
       <div className={`relative pl-0 lg:pl-12 ${className}`}>
         {/* Timeline Dot */}
-        <motion.div 
+        <motion.div
           className="absolute left-0 top-10 w-3 h-3 -ml-1 rounded-full bg-purple-500 z-10 hidden lg:block"
           initial={{ scale: 0 }}
           animate={isInView ? { scale: 1 } : { scale: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
         />
-        
+
         <motion.div
           ref={ref}
           initial="hidden"
@@ -115,11 +115,11 @@ const About = () => {
           <div className="relative w-full flex flex-col items-center justify-center p-6 lg:p-12">
             {/* Soft gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-100/40 via-purple-50/30 to-green-100/40" />
-            
+
             {/* Portrait container with flip animation */}
             <div className="relative z-10 text-center">
-              <div 
-                className="relative mb-8"   
+              <div
+                className="relative mb-8"
                 ref={containerRef}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
@@ -129,41 +129,41 @@ const About = () => {
                     className="w-full h-full relative"
                     style={{ transformStyle: "preserve-3d" }}
                     initial={{ rotateY: 0, rotateZ: 3 }}
-                    animate={{ 
+                    animate={{
                       rotateY: isFlipped ? 180 : 0,
                       rotateZ: isFlipped ? 0 : 3
                     }}
                     transition={{ duration: 0.8, ease: "easeInOut" }}
                   >
                     {/* Front Face - Photo */}
-                    <div 
+                    <div
                       className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden shadow-2xl shadow-blue-200/30"
                       style={{ backfaceVisibility: "hidden" }}
                     >
-                      <img 
-                        src="/assets/pranika.jpg" 
-                        alt="Parnika - Founder of MindSettler" 
+                      <img
+                        src="/assets/pranika.jpg"
+                        alt="Parnika - Founder of MindSettler"
                         className="w-full h-full object-cover"
                       />
                     </div>
 
                     {/* Back Face - Video */}
-                    <div 
+                    <div
                       className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden shadow-2xl shadow-blue-200/30"
-                      style={{ 
-                        backfaceVisibility: "hidden", 
-                        transform: "rotateY(180deg)" 
+                      style={{
+                        backfaceVisibility: "hidden",
+                        transform: "rotateY(180deg)"
                       }}
                     >
-                      <video 
+                      <video
                         ref={videoRef}
-                        src="/assets/pranika1.mp4" 
+                        src="/assets/pranika1.mp4"
                         className="w-full h-full object-cover"
                         muted={isMuted}
                         playsInline
                         onEnded={() => setIsFlipped(false)}
                       />
-                      
+
                       {/* Sound Toggle Button */}
                       <button
                         onClick={toggleMute}
@@ -176,7 +176,7 @@ const About = () => {
                   </motion.div>
                 </div>
               </div>
-              
+
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -198,21 +198,21 @@ const About = () => {
         {/* RIGHT PANEL - Scrollable Content */}
         <div className="flex-1 lg:w-3/5 xl:w-2/3 flex flex-col justify-center min-h-screen" ref={contentRef}>
           <div className="max-w-4xl mx-auto px-6 lg:px-12 py-20 lg:py-24 relative">
-            
+
             {/* Timeline Line Container */}
             <div className="absolute left-6 lg:left-12 top-[8.5rem] bottom-24 w-1 bg-slate-200 hidden lg:block">
-                <motion.div 
-                    className="absolute top-0 left-0 w-full bg-purple-500 origin-top"
-                    style={{ scaleY, height: "100%" }}
-                />
+              <motion.div
+                className="absolute top-0 left-0 w-full bg-purple-500 origin-top"
+                style={{ scaleY, height: "100%" }}
+              />
             </div>
 
             {/* Mobile Portrait - Only shown on smaller screens */}
             <div className="lg:hidden mb-16 text-center">
               <div className="w-56 h-80 mx-auto rounded-2xl overflow-hidden shadow-xl shadow-blue-200/30 mb-6">
-                <img 
-                  src="/assets/pranika.jpg" 
-                  alt="Parnika - Founder of MindSettler" 
+                <img
+                  src="/assets/pranika.jpg"
+                  alt="Parnika - Founder of MindSettler"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -368,7 +368,7 @@ const About = () => {
             <AnimatedSection className="mb-20">
               <div className="text-center py-8">
                 <div className="flex justify-center mb-8">
-                  <motion.div 
+                  <motion.div
                     initial={{ scale: 0 }}
                     whileInView={{ scale: 1 }}
                     transition={{ type: "spring", stiffness: 200, delay: 0.5 }}
@@ -376,15 +376,15 @@ const About = () => {
                     <img src="../../public/logo.png" alt="MindSettler" className="h-24 w-auto object-contain" />
                   </motion.div>
                 </div>
-                
+
                 <div className="space-y-8">
                   <div className="space-y-2">
                     <p className="text-2xl text-slate-700 font-medium">No rush.</p>
                     <p className="text-xl text-slate-600">Use at your own pace.</p>
                   </div>
-                  
+
                   <div className="w-24 h-1 bg-gradient-to-r from-purple-300 to-pink-300 mx-auto rounded-full opacity-50" />
-                  
+
                   <blockquote className="text-3xl md:text-4xl font-serif italic text-purple-900/80 leading-relaxed">
                     "Understanding unfolds differently for everyone."
                   </blockquote>

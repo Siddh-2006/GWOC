@@ -170,7 +170,7 @@ const AdminBookings = () => {
       </div>
 
       {/* Filters Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-wrap items-center gap-4">
+      <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
         <div className="flex-1 min-w-[200px] relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input
@@ -182,28 +182,30 @@ const AdminBookings = () => {
           />
         </div>
 
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-3 rounded-xl bg-off-white border-transparent focus:bg-white focus:border-secondary transition-all outline-none text-sm font-medium"
-        >
-          <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="under_review">Under Review</option>
-          <option value="awaiting_payment">Payment Pending</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="rejected">Rejected</option>
-        </select>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-3 rounded-xl bg-off-white border-transparent focus:bg-white focus:border-secondary transition-all outline-none text-sm font-medium w-full sm:w-auto"
+          >
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="under_review">Under Review</option>
+            <option value="awaiting_payment">Payment Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="rejected">Rejected</option>
+          </select>
 
-        <label className="flex items-center gap-2 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={showUpcomingOnly}
-            onChange={(e) => setShowUpcomingOnly(e.target.checked)}
-            className="w-5 h-5 rounded border-gray-300 text-secondary focus:ring-secondary"
-          />
-          <span className="text-sm font-medium text-gray-600">Upcoming Only</span>
-        </label>
+          <label className="flex items-center gap-2 cursor-pointer select-none bg-off-white px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors sm:w-auto justify-center sm:justify-start">
+            <input
+              type="checkbox"
+              checked={showUpcomingOnly}
+              onChange={(e) => setShowUpcomingOnly(e.target.checked)}
+              className="w-5 h-5 rounded border-gray-300 text-secondary focus:ring-secondary"
+            />
+            <span className="text-sm font-medium text-gray-600">Upcoming Only</span>
+          </label>
+        </div>
       </div>
 
       {/* Table */}
@@ -214,8 +216,8 @@ const AdminBookings = () => {
             <p className="font-medium">Fetching bookings...</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
+          <div className="overflow-x-auto pb-4">
+            <table className="w-full text-left min-w-[800px]">
               <thead>
                 <tr className="bg-off-white/50 border-b border-gray-50">
                   <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Client</th>

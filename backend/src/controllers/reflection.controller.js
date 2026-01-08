@@ -318,9 +318,17 @@ export const reflectionController = {
         });
       } catch (error) {
         console.error('❌ Error updating question:', error);
+        
+        if (error.code === 11000) {
+          return res.status(400).json({
+            success: false,
+            message: 'Question number already exists'
+          });
+        }
+
         res.status(500).json({
           success: false,
-          message: 'Failed to update question'
+          message: 'Failed to update question: ' + error.message
         });
       }
     },
@@ -342,9 +350,17 @@ export const reflectionController = {
         });
       } catch (error) {
         console.error('❌ Error adding question:', error);
+        
+        if (error.code === 11000) {
+          return res.status(400).json({
+            success: false,
+            message: 'Question number already exists'
+          });
+        }
+
         res.status(500).json({
           success: false,
-          message: 'Failed to add question'
+          message: 'Failed to add question: ' + error.message
         });
       }
     },

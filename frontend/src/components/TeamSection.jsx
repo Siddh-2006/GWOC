@@ -173,12 +173,12 @@ const TeamSection = () => {
       </div>
 
       <div className="mt-20 text-center">
-        <motion.button
+        {/* <motion.button
           whileHover={{ x: 5 }}
           className="inline-flex items-center gap-2 text-primary font-bold border-b-2 border-primary pb-1 group"
         >
           Explore all profiles <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
-        </motion.button>
+        </motion.button> */}
       </div>
 
     </section>

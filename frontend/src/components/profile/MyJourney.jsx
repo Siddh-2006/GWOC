@@ -1,10 +1,10 @@
 import React, { useMemo, useRef } from 'react';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
-import { 
-  MapPin, 
-  CheckCircle, 
-  Circle, 
-  ArrowDown, 
+import {
+  MapPin,
+  CheckCircle,
+  Circle,
+  ArrowDown,
   Sprout,
   Shield,
   Calendar,
@@ -29,7 +29,7 @@ const DEFAULT_FOUNDATION = [
     timestamp: new Date().toISOString()
   },
   {
-    id: 'foundation-2', 
+    id: 'foundation-2',
     step: 2,
     title: "Defining Your Path",
     insight: "Awareness is the beginning of healing. This phase is about observing your thoughts without judgment.",
@@ -39,7 +39,7 @@ const DEFAULT_FOUNDATION = [
   },
   {
     id: 'foundation-3',
-    step: 3, 
+    step: 3,
     title: "Our Commitment",
     insight: "Your journey here is private and protected. We move at your pace, in your time.",
     type: 'foundation',
@@ -50,7 +50,7 @@ const DEFAULT_FOUNDATION = [
 
 const FoundationNode = ({ entry, index, isLast, hasAdminEntries }) => {
   const isEven = index % 2 === 0;
-  
+
   return (
     <div className={`relative flex items-center justify-center mb-16 w-full ${isEven ? 'flex-row' : 'flex-row-reverse'}`}>
       {/* Center Line Connection Point */}
@@ -60,19 +60,18 @@ const FoundationNode = ({ entry, index, isLast, hasAdminEntries }) => {
           whileInView={{ scale: 1, opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ type: "spring", stiffness: 260, damping: 20, delay: index * 0.2 }}
-          className={`w-6 h-6 rounded-lg flex items-center justify-center ${
-            isLast && !hasAdminEntries 
-              ? 'bg-[#Dd1764] shadow-lg' 
+          className={`w-6 h-6 rounded-lg flex items-center justify-center ${isLast && !hasAdminEntries
+              ? 'bg-[#Dd1764] shadow-lg'
               : 'bg-[#3F2965]'
-          }`}
+            }`}
         >
           <Sprout className="w-3 h-3 text-white" />
           {isLast && !hasAdminEntries && (
-             <motion.div 
-               animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
-               transition={{ repeat: Infinity, duration: 2 }}
-               className="absolute inset-0 bg-[#Dd1764] rounded-lg -z-10"
-             />
+            <motion.div
+              animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+              className="absolute inset-0 bg-[#Dd1764] rounded-lg -z-10"
+            />
           )}
         </motion.div>
       </div>
@@ -95,7 +94,7 @@ const FoundationNode = ({ entry, index, isLast, hasAdminEntries }) => {
           <p className="text-sm text-gray-600 leading-relaxed">{entry.insight}</p>
         </div>
       </motion.div>
-      
+
       {/* Spacer for the other side */}
       <div className="w-5/12" />
     </div>
@@ -104,7 +103,7 @@ const FoundationNode = ({ entry, index, isLast, hasAdminEntries }) => {
 
 const AdminJourneyNode = ({ entry, sessionNumber, index, isLast }) => {
   const isEven = index % 2 === 0;
-  
+
   const safeEntry = {
     _id: entry._id || '',
     title: entry.title || 'Untitled Entry',
@@ -135,7 +134,7 @@ const AdminJourneyNode = ({ entry, sessionNumber, index, isLast }) => {
       return 'Invalid Date';
     }
   };
-  
+
   return (
     <div className={`relative flex items-center justify-center mb-16 w-full ${isEven ? 'flex-row' : 'flex-row-reverse'}`}>
       {/* Center Line Connection Point */}
@@ -145,19 +144,18 @@ const AdminJourneyNode = ({ entry, sessionNumber, index, isLast }) => {
           whileInView={{ scale: 1, opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          className={`w-6 h-6 rounded-lg flex items-center justify-center ${
-            isLast 
-              ? 'bg-[#Dd1764] shadow-lg' 
+          className={`w-6 h-6 rounded-lg flex items-center justify-center ${isLast
+              ? 'bg-[#Dd1764] shadow-lg'
               : 'bg-[#3F2965]'
-          }`}
+            }`}
         >
           {getTypeIcon(safeEntry.type)}
           {isLast && (
-             <motion.div 
-               animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
-               transition={{ repeat: Infinity, duration: 2 }}
-               className="absolute inset-0 bg-[#Dd1764] rounded-lg -z-10"
-             />
+            <motion.div
+              animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+              className="absolute inset-0 bg-[#Dd1764] rounded-lg -z-10"
+            />
           )}
         </motion.div>
       </div>
@@ -180,17 +178,17 @@ const AdminJourneyNode = ({ entry, sessionNumber, index, isLast }) => {
             </span>
           </div>
           <h3 className="text-lg font-bold text-gray-800 mb-2">{safeEntry.title}</h3>
-          
+
           {safeEntry.description && (
             <p className="text-sm text-gray-600 mb-3 leading-relaxed">{safeEntry.description}</p>
           )}
-          
+
           {safeEntry.content.summary && (
             <p className="text-sm text-gray-600 leading-relaxed">{safeEntry.content.summary}</p>
           )}
         </div>
       </motion.div>
-      
+
       {/* Spacer for the other side */}
       <div className="w-5/12" />
     </div>
@@ -211,12 +209,12 @@ const MyJourney = ({ journeyData, loading }) => {
   });
 
   const safeJourneyData = journeyData || { entries: [] };
-  
+
   // Combine foundation and admin entries with continuous numbering
   const combinedTimeline = useMemo(() => {
     const adminEntries = safeJourneyData.entries || [];
     const hasAdminEntries = adminEntries.length > 0;
-    
+
     return {
       foundation: DEFAULT_FOUNDATION,
       adminEntries: adminEntries.map((entry, index) => ({
@@ -230,42 +228,42 @@ const MyJourney = ({ journeyData, loading }) => {
 
   if (loading) {
     return (
-       <div className="flex justify-center items-center py-20">
-         <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-       </div>
+      <div className="flex justify-center items-center py-20">
+        <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
     );
   }
 
   return (
     <div ref={containerRef} className="relative py-12 px-4 md:px-0 max-w-4xl mx-auto overflow-hidden">
-       {/* The Winding Path SVG */}
-       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none z-0">
-         <svg
-           width="100%"
-           height="100%"
-           viewBox={`0 0 100 ${Math.max(1000, combinedTimeline.totalEntries * 300)}`}
-           fill="none"
-           xmlns="http://www.w3.org/2000/svg"
-           preserveAspectRatio="none"
-           className="opacity-20"
-         >
-           <motion.path
-             d={`M50,0 C50,100 20,150 20,250 C20,350 80,400 80,500 C80,600 20,650 20,750 C20,850 50,900 50,${Math.max(1000, combinedTimeline.totalEntries * 300)}`}
-             stroke="#3F2965"
-             strokeWidth="4"
-             fill="none"
-             style={{ pathLength }}
-           />
-           {/* Static background path for reference */}
-           <path
-             d={`M50,0 C50,100 20,150 20,250 C20,350 80,400 80,500 C80,600 20,650 20,750 C20,850 50,900 50,${Math.max(1000, combinedTimeline.totalEntries * 300)}`}
-             stroke="#E5E7EB"
-             strokeWidth="4"
-             strokeDasharray="10 10"
-             fill="none"
-           />
-         </svg>
-       </div>
+      {/* The Winding Path SVG */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none z-0">
+        <svg
+          width="100%"
+          height="100%"
+          viewBox={`0 0 100 ${Math.max(1000, combinedTimeline.totalEntries * 300)}`}
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="none"
+          className="opacity-20"
+        >
+          <motion.path
+            d={`M50,0 C50,100 20,150 20,250 C20,350 80,400 80,500 C80,600 20,650 20,750 C20,850 50,900 50,${Math.max(1000, combinedTimeline.totalEntries * 300)}`}
+            stroke="#3F2965"
+            strokeWidth="4"
+            fill="none"
+            style={{ pathLength }}
+          />
+          {/* Static background path for reference */}
+          <path
+            d={`M50,0 C50,100 20,150 20,250 C20,350 80,400 80,500 C80,600 20,650 20,750 C20,850 50,900 50,${Math.max(1000, combinedTimeline.totalEntries * 300)}`}
+            stroke="#E5E7EB"
+            strokeWidth="4"
+            strokeDasharray="10 10"
+            fill="none"
+          />
+        </svg>
+      </div>
 
       <div className="relative z-10 pb-20">
         <div className="text-center mb-16">
@@ -312,7 +310,7 @@ const MyJourney = ({ journeyData, loading }) => {
             <div className="flex justify-center mb-4">
               <div className="h-12 w-0.5 bg-gradient-to-b from-[#3F2965]/30 to-transparent border-l-2 border-dashed border-[#3F2965]/30"></div>
             </div>
-            
+
             <div className="bg-gradient-to-br from-[#3F2965]/5 to-[#3F2965]/10 border-2 border-dashed border-[#3F2965]/20 rounded-lg p-8 max-w-md mx-auto">
               <div className="w-16 h-16 bg-gradient-to-br from-[#3F2965]/20 to-[#3F2965]/10 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <MapPin className="w-8 h-8 text-[#3F2965]/60" />
@@ -327,14 +325,14 @@ const MyJourney = ({ journeyData, loading }) => {
 
         {/* Animated continuation indicator */}
         <div className="flex justify-center mt-8">
-           <motion.div 
-             animate={{ y: [0, 10, 0] }}
-             transition={{ repeat: Infinity, duration: 2 }}
-             className="text-purple-300 flex flex-col items-center"
-            >
-              <div className="h-12 w-0.5 bg-gradient-to-b from-purple-200 to-transparent mb-2"></div>
-              <ArrowDown size={20} />
-           </motion.div>
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+            className="text-purple-300 flex flex-col items-center"
+          >
+            <div className="h-12 w-0.5 bg-gradient-to-b from-purple-200 to-transparent mb-2"></div>
+            <ArrowDown size={20} />
+          </motion.div>
         </div>
       </div>
     </div>

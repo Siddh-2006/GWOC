@@ -1,53 +1,70 @@
 import React from 'react';
 import { motion } from "framer-motion";
 
-/**
- * Corporate Intro Section
- * Styled to match the HeroSlider component
- */
 export const CorporateIntro = () => {
   return (
-    <section className="relative h-screen w-full overflow-hidden bg-black select-none">
-      {/* Background Image */}
-      <div className="absolute inset-0 z-0">
-        <motion.img 
-          initial={{ scale: 1.1 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 10, ease: "easeOut" }}
-          src="/assets/Corporate1.png" 
-          alt="Corporate Well-being" 
-          className="w-full h-full object-cover"
-        />
-        {/* Overlay - Purple/Indigo tint */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/60 via-black/50 to-purple-900/60 backdrop-blur-[2px]"></div>
-      </div>
+    <section className="relative bg-bg overflow-hidden py-28">
+      {/* Soft background accents */}
+      <div className="absolute top-0 right-0 w-[420px] h-[420px] bg-pink-100/25 rounded-full blur-[120px] -mr-44 -mt-44" />
+      <div className="absolute bottom-0 left-0 w-[420px] h-[420px] bg-purple-100/25 rounded-full blur-[120px] -ml-44 -mb-44" />
 
-      {/* Content Layer */}
-      <div className="absolute inset-0 flex items-center justify-center px-6 md:px-20 lg:px-32 z-20">
-        <div className="max-w-5xl text-center text-white space-y-8">
-          {/* Main Title */}
+      <div className="container mx-auto px-6 lg:px-20 flex flex-col md:flex-row items-center gap-20 relative z-10">
+
+        {/* LEFT CONTENT */}
+        <div className="w-full md:w-1/2 space-y-10">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7 }}
+            className="flex items-center gap-4"
+          >
+            <div className="w-10 h-[2px] bg-pink-500" />
+            <span className="text-secondary font-semibold tracking-[0.35em] uppercase text-xs">
+              Partner with MindSettler
+            </span>
+          </motion.div>
+
           <motion.h1
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight tracking-tight drop-shadow-lg text-pink-300"
+            transition={{ duration: 0.8 }}
+            className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-primary"
           >
             Nurturing well-being <br />
-            in shared spaces
+            <span className="text-secondary">in shared spaces</span>
           </motion.h1>
 
-          {/* Description */}
           <motion.p
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.8 }}
-            className="text-xl md:text-2xl text-white font-light leading-relaxed max-w-3xl mx-auto drop-shadow-md"
+            transition={{ delay: 0.15, duration: 0.7 }}
+            className="text-lg md:text-xl text-primary/80 leading-relaxed max-w-xl border-l border-primary/20 pl-6"
           >
-            We partner with organizations and communities to foster
-            connection through thoughtful, human-led conversations that create
-            supportive environments for everyone.
+            We partner with organizations and communities to foster meaningful
+            connection through thoughtful, human-led conversations that support
+            healthier environments.
           </motion.p>
         </div>
+
+        {/* RIGHT IMAGE */}
+        <div className="w-full md:w-1/2 relative h-[420px] md:h-[520px]">
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.9 }}
+            className="w-full h-full relative"
+          >
+            <div className="absolute inset-0 [clip-path:polygon(12%_0%,100%_0%,100%_100%,0%_100%)] overflow-hidden rounded-r-[3.5rem] shadow-2xl">
+              <img
+                src="/assets/Corporate1.png"
+                alt="Corporate well-being"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-l from-primary/20 via-transparent to-transparent" />
+            </div>
+          </motion.div>
+        </div>
+
       </div>
     </section>
   );

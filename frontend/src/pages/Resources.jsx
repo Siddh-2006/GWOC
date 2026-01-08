@@ -395,209 +395,249 @@ const Resources = () => {
           </div>
         )}
 
+        {/* Loading State */}
+        {loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
+                <div className="skeleton h-48 rounded-2xl mb-6" />
+                <div className="space-y-3">
+                  <div className="skeleton-line rounded-lg" />
+                  <div className="skeleton-line-md rounded-lg" />
+                  <div className="skeleton-line-sm rounded-lg" />
+                </div>
+                <div className="mt-8 pt-4 border-t border-gray-50 flex justify-between">
+                  <div className="skeleton h-4 w-20 rounded-lg" />
+                  <div className="skeleton h-4 w-12 rounded-lg" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Media Grid/List */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          {viewMode === 'grid' ? (
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ staggerChildren: 0.1 }}
-            >
-              {media.map((item, index) => (
-                <motion.div
-                  key={item._id}
-                  initial={{ opacity: 0, scale: 0.8, y: 50 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{
-                    delay: index * 0.1,
-                    type: "spring",
-                    stiffness: 100,
-                    damping: 15
-                  }}
-                  whileHover={{
-                    y: -8,
-                    transition: { type: "spring", stiffness: 300, damping: 20 }
-                  }}
-                  className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group cursor-pointer"
-                  onClick={() => handleMediaClick(item)}
-                >
-                  {/* Professional Post Card */}
-                  {item.type === 'post' ? (
-                    <>
-                      {/* Post Thumbnail */}
-                      <div className="relative aspect-[4/3] bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden">
-                        <ImageWithFallback
-                          src={item.thumbnailUrl || (item.assets && item.assets[0]?.fileUrl)}
-                          alt={item.title}
-                          className="w-full h-full object-cover"
-                          fallbackIcon="📄"
-                        />
-
-                        {/* Content Type Badge */}
-                        <div className="absolute top-3 left-3 bg-primary/90 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm">
-                          Article
-                        </div>
-
-                        {/* Multiple Images Indicator */}
-                        {item.assets && item.assets.length > 1 && (
-                          <div className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm flex items-center gap-1">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z" />
-                            </svg>
-                            {item.assets.length}
-                          </div>
-                        )}
-
-                        {/* Hover Overlay */}
-                        <motion.div
-                          className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
-                          initial={{ opacity: 0 }}
-                          whileHover={{ opacity: 1 }}
-                        >
-                          <motion.div
-                            className="bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg"
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                          >
-                            <Eye size={20} className="text-primary" />
-                          </motion.div>
-                        </motion.div>
-                      </div>
-
-                      {/* Post Content */}
-                      <div className="p-5">
-                        {/* Title */}
-                        <motion.h3
-                          className="font-bold text-gray-800 text-lg mb-3 line-clamp-2 group-hover:text-primary transition-colors"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2 }}
-                        >
-                          {item.title}
-                        </motion.h3>
-
-                        {/* Description */}
-                        <motion.p
-                          className="text-gray-600 mb-4 line-clamp-3 text-sm leading-relaxed"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.3 }}
-                        >
-                          {item.description}
-                        </motion.p>
-
-                        {/* Tags */}
-                        {item.tags && item.tags.length > 0 && (
-                          <motion.div
-                            className="flex flex-wrap gap-2 mb-4"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.4 }}
-                          >
-                            {item.tags.slice(0, 3).map((tag, tagIndex) => (
-                              <motion.span
-                                key={tag}
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 0.4 + tagIndex * 0.1 }}
-                                className="text-xs px-3 py-1 bg-primary/10 text-primary rounded-full font-medium hover:bg-primary/20 transition-colors cursor-pointer"
-                              >
-                                {tag}
-                              </motion.span>
-                            ))}
-                            {item.tags.length > 3 && (
-                              <span className="text-xs px-3 py-1 bg-gray-100 text-gray-500 rounded-full">
-                                +{item.tags.length - 3}
-                              </span>
-                            )}
-                          </motion.div>
-                        )}
-
-                        {/* Meta Information */}
-                        <motion.div
-                          className="flex items-center justify-between pt-4 border-t border-gray-100"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5 }}
-                        >
-                          <div className="flex items-center gap-4 text-sm text-gray-500">
-                            <div className="flex items-center gap-1">
-                              <Eye size={16} />
-                              <span>{item.views || 0}</span>
-                            </div>
-                            {isAuthenticated && (
-                              <motion.button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleLike(item._id);
-                                }}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                className={`flex items-center gap-1 transition-colors ${item.hasLiked
-                                    ? 'text-red-500'
-                                    : 'text-gray-500 hover:text-red-500'
-                                  }`}
-                              >
-                                <Heart
-                                  size={16}
-                                  className={
-                                    item.hasLiked
-                                      ? 'fill-red-500 text-red-500'
-                                      : 'text-gray-500'
-                                  }
-                                />
-                                <span>{Array.isArray(item.likes) ? item.likes.length : item.likesCount || item.likes || 0}</span>
-                              </motion.button>
-                            )}
-                            {item.comments && item.comments.length > 0 && (
-                              <div className="flex items-center gap-1">
-                                <MessageCircle size={16} />
-                                <span>{item.comments.length}</span>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="text-xs text-gray-400">
-                            {new Date(item.createdAt).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric'
-                            })}
-                          </div>
-                        </motion.div>
-                      </div>
-                    </>
-                  ) : (
-                    /* Other Media Types (Video, Audio, etc.) */
-                    <>
-                      {/* Regular Media Card */}
-                      <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-50 to-blue-50 overflow-hidden">
-                        {(item.type === 'video' || item.type === 'vlog') && item.fileUrl ? (
-                          <InlineVideoPlayer
-                            src={item.fileUrl}
-                            poster={item.thumbnailUrl}
-                            className="w-full h-full"
-                          />
-                        ) : item.thumbnailUrl ? (
-                          <motion.img
-                            src={item.thumbnailUrl}
+        {!loading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            {viewMode === 'grid' ? (
+              <motion.div
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ staggerChildren: 0.1 }}
+              >
+                {media.map((item, index) => (
+                  <motion.div
+                    key={item._id}
+                    initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{
+                      delay: index * 0.1,
+                      type: "spring",
+                      stiffness: 100,
+                      damping: 15
+                    }}
+                    whileHover={{
+                      y: -8,
+                      transition: { type: "spring", stiffness: 300, damping: 20 }
+                    }}
+                    className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group cursor-pointer"
+                    onClick={() => handleMediaClick(item)}
+                  >
+                    {/* Professional Post Card */}
+                    {item.type === 'post' ? (
+                      <>
+                        {/* Post Thumbnail */}
+                        <div className="relative aspect-[4/3] bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden">
+                          <ImageWithFallback
+                            src={item.thumbnailUrl || (item.assets && item.assets[0]?.fileUrl)}
                             alt={item.title}
                             className="w-full h-full object-cover"
-                            whileHover={{ scale: 1.1 }}
-                            transition={{ duration: 0.6, ease: "easeOut" }}
-                            onError={(e) => {
-                              console.log('Image failed to load:', e.target.src);
-                              e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'flex';
-                            }}
+                            fallbackIcon="📄"
                           />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-blue-100">
+
+                          {/* Content Type Badge */}
+                          <div className="absolute top-3 left-3 bg-primary/90 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm">
+                            Article
+                          </div>
+
+                          {/* Multiple Images Indicator */}
+                          {item.assets && item.assets.length > 1 && (
+                            <div className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm flex items-center gap-1">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z" />
+                              </svg>
+                              {item.assets.length}
+                            </div>
+                          )}
+
+                          {/* Hover Overlay */}
+                          <motion.div
+                            className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
+                            initial={{ opacity: 0 }}
+                            whileHover={{ opacity: 1 }}
+                          >
+                            <motion.div
+                              className="bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg"
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              <Eye size={20} className="text-primary" />
+                            </motion.div>
+                          </motion.div>
+                        </div>
+
+                        {/* Post Content */}
+                        <div className="p-5">
+                          {/* Title */}
+                          <motion.h3
+                            className="font-bold text-gray-800 text-lg mb-3 line-clamp-2 group-hover:text-primary transition-colors"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                          >
+                            {item.title}
+                          </motion.h3>
+
+                          {/* Description */}
+                          <motion.p
+                            className="text-gray-600 mb-4 line-clamp-3 text-sm leading-relaxed"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                          >
+                            {item.description}
+                          </motion.p>
+
+                          {/* Tags */}
+                          {item.tags && item.tags.length > 0 && (
+                            <motion.div
+                              className="flex flex-wrap gap-2 mb-4"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: 0.4 }}
+                            >
+                              {item.tags.slice(0, 3).map((tag, tagIndex) => (
+                                <motion.span
+                                  key={tag}
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ delay: 0.4 + tagIndex * 0.1 }}
+                                  className="text-xs px-3 py-1 bg-primary/10 text-primary rounded-full font-medium hover:bg-primary/20 transition-colors cursor-pointer"
+                                >
+                                  {tag}
+                                </motion.span>
+                              ))}
+                              {item.tags.length > 3 && (
+                                <span className="text-xs px-3 py-1 bg-gray-100 text-gray-500 rounded-full">
+                                  +{item.tags.length - 3}
+                                </span>
+                              )}
+                            </motion.div>
+                          )}
+
+                          {/* Meta Information */}
+                          <motion.div
+                            className="flex items-center justify-between pt-4 border-t border-gray-100"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                          >
+                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                              <div className="flex items-center gap-1">
+                                <Eye size={16} />
+                                <span>{item.views || 0}</span>
+                              </div>
+                              {isAuthenticated && (
+                                <motion.button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleLike(item._id);
+                                  }}
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  className={`flex items-center gap-1 transition-colors ${item.hasLiked
+                                    ? 'text-red-500'
+                                    : 'text-gray-500 hover:text-red-500'
+                                    }`}
+                                >
+                                  <Heart
+                                    size={16}
+                                    className={
+                                      item.hasLiked
+                                        ? 'fill-red-500 text-red-500'
+                                        : 'text-gray-500'
+                                    }
+                                  />
+                                  <span>{Array.isArray(item.likes) ? item.likes.length : item.likesCount || item.likes || 0}</span>
+                                </motion.button>
+                              )}
+                              {item.comments && item.comments.length > 0 && (
+                                <div className="flex items-center gap-1">
+                                  <MessageCircle size={16} />
+                                  <span>{item.comments.length}</span>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="text-xs text-gray-400">
+                              {new Date(item.createdAt).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })}
+                            </div>
+                          </motion.div>
+                        </div>
+                      </>
+                    ) : (
+                      /* Other Media Types (Video, Audio, etc.) */
+                      <>
+                        {/* Regular Media Card */}
+                        <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-50 to-blue-50 overflow-hidden">
+                          {(item.type === 'video' || item.type === 'vlog') && item.fileUrl ? (
+                            <InlineVideoPlayer
+                              src={item.fileUrl}
+                              poster={item.thumbnailUrl}
+                              className="w-full h-full"
+                            />
+                          ) : item.thumbnailUrl ? (
+                            <motion.img
+                              src={item.thumbnailUrl}
+                              alt={item.title}
+                              className="w-full h-full object-cover"
+                              whileHover={{ scale: 1.1 }}
+                              transition={{ duration: 0.6, ease: "easeOut" }}
+                              onError={(e) => {
+                                console.log('Image failed to load:', e.target.src);
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-blue-100">
+                              <motion.div
+                                className="text-primary text-3xl"
+                                animate={{
+                                  rotate: [0, 10, -10, 0],
+                                  scale: [1, 1.1, 1]
+                                }}
+                                transition={{
+                                  duration: 3,
+                                  repeat: Infinity,
+                                  repeatType: "reverse"
+                                }}
+                              >
+                                {getMediaIcon(item.type)}
+                              </motion.div>
+                            </div>
+                          )}
+
+                          {/* Fallback for failed images */}
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-blue-100" style={{ display: 'none' }}>
                             <motion.div
                               className="text-primary text-3xl"
                               animate={{
@@ -613,416 +653,188 @@ const Resources = () => {
                               {getMediaIcon(item.type)}
                             </motion.div>
                           </div>
-                        )}
 
-                        {/* Fallback for failed images */}
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-blue-100" style={{ display: 'none' }}>
+                          {/* Overlay Gradient */}
                           <motion.div
-                            className="text-primary text-3xl"
-                            animate={{
-                              rotate: [0, 10, -10, 0],
-                              scale: [1, 1.1, 1]
-                            }}
-                            transition={{
-                              duration: 3,
-                              repeat: Infinity,
-                              repeatType: "reverse"
-                            }}
+                            className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                            initial={{ opacity: 0 }}
+                            whileHover={{ opacity: 1 }}
+                          />
+
+                          {/* Type Badge */}
+                          <motion.div
+                            className="absolute top-3 left-3 bg-primary/90 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm capitalize"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
                           >
-                            {getMediaIcon(item.type)}
+                            {item.type === 'vlog' ? 'Video Blog' : item.type}
                           </motion.div>
+
+                          {/* Duration Badge */}
+                          {item.duration && (
+                            <motion.div
+                              className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm"
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.3 }}
+                            >
+                              {formatDuration(item.duration)}
+                            </motion.div>
+                          )}
+
+                          {/* Play Button Overlay */}
+                          {!(item.type === 'video' || item.type === 'vlog') && (
+                            <motion.div
+                              className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
+                              whileHover={{ scale: 1.1 }}
+                            >
+                              <motion.div
+                                className="w-14 h-14 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg border border-white/20"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <Play size={20} className="text-primary ml-0.5" />
+                              </motion.div>
+                            </motion.div>
+                          )}
                         </div>
 
-                        {/* Overlay Gradient */}
-                        <motion.div
-                          className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                          initial={{ opacity: 0 }}
-                          whileHover={{ opacity: 1 }}
-                        />
+                        {/* Regular Media Content */}
+                        <div className="p-5">
+                          <motion.h3
+                            className="font-bold text-gray-800 text-lg mb-3 line-clamp-2 group-hover:text-primary transition-colors"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                          >
+                            {item.title}
+                          </motion.h3>
 
-                        {/* Type Badge */}
-                        <motion.div
-                          className="absolute top-3 left-3 bg-primary/90 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm capitalize"
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2 }}
-                        >
-                          {item.type === 'vlog' ? 'Video Blog' : item.type}
-                        </motion.div>
-
-                        {/* Duration Badge */}
-                        {item.duration && (
-                          <motion.div
-                            className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm"
-                            initial={{ opacity: 0, y: -10 }}
+                          <motion.p
+                            className="text-gray-600 mb-4 line-clamp-3 text-sm leading-relaxed"
+                            initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3 }}
                           >
-                            {formatDuration(item.duration)}
-                          </motion.div>
-                        )}
-
-                        {/* Play Button Overlay */}
-                        {!(item.type === 'video' || item.type === 'vlog') && (
-                          <motion.div
-                            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
-                            whileHover={{ scale: 1.1 }}
-                          >
-                            <motion.div
-                              className="w-14 h-14 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg border border-white/20"
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              <Play size={20} className="text-primary ml-0.5" />
-                            </motion.div>
-                          </motion.div>
-                        )}
-                      </div>
-
-                      {/* Regular Media Content */}
-                      <div className="p-5">
-                        <motion.h3
-                          className="font-bold text-gray-800 text-lg mb-3 line-clamp-2 group-hover:text-primary transition-colors"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2 }}
-                        >
-                          {item.title}
-                        </motion.h3>
-
-                        <motion.p
-                          className="text-gray-600 mb-4 line-clamp-3 text-sm leading-relaxed"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.3 }}
-                        >
-                          {item.description}
-                        </motion.p>
-
-                        {/* Tags */}
-                        {item.tags && item.tags.length > 0 && (
-                          <motion.div
-                            className="flex flex-wrap gap-2 mb-4"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.4 }}
-                          >
-                            {item.tags.slice(0, 3).map((tag, tagIndex) => (
-                              <motion.span
-                                key={tag}
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 0.4 + tagIndex * 0.1 }}
-                                className="text-xs px-3 py-1 bg-primary/10 text-primary rounded-full font-medium hover:bg-primary/20 transition-colors cursor-pointer"
-                              >
-                                {tag}
-                              </motion.span>
-                            ))}
-                            {item.tags.length > 3 && (
-                              <span className="text-xs px-3 py-1 bg-gray-100 text-gray-500 rounded-full">
-                                +{item.tags.length - 3}
-                              </span>
-                            )}
-                          </motion.div>
-                        )}
-
-                        {/* Actions */}
-                        <motion.div
-                          className="flex items-center justify-between pt-4 border-t border-gray-100"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5 }}
-                        >
-                          <div className="flex items-center gap-4">
-                            {isAuthenticated && (
-                              <motion.button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleLike(item._id);
-                                }}
-                                whileHover={{ scale: 1.2 }}
-                                whileTap={{ scale: 0.8 }}
-                                className={`flex items-center gap-2 transition-colors ${item.hasLiked
-                                    ? 'text-red-500'
-                                    : 'text-gray-500 hover:text-red-500'
-                                  }`}
-                              >
-                                <Heart
-                                  size={18}
-                                  className={
-                                    item.hasLiked
-                                      ? 'fill-red-500 text-red-500'
-                                      : 'text-gray-500'
-                                  }
-                                />
-                                <span className="text-sm font-medium">{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
-                              </motion.button>
-                            )}
-
-                            <motion.button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedMedia(item);
-                                if (item.type === 'post') {
-                                  setShowPostViewer(true);
-                                } else {
-                                  setShowPlayer(true);
-                                }
-                              }}
-                              whileHover={{ scale: 1.2 }}
-                              whileTap={{ scale: 0.8 }}
-                              className="flex items-center gap-2 text-gray-500 hover:text-blue-500 transition-colors"
-                            >
-                              <MessageCircle size={18} />
-                              <span className="text-sm font-medium">{item.comments?.length || 0}</span>
-                            </motion.button>
-                          </div>
-                        </motion.div>
-                      </div>
-                    </>
-                  )}
-                </motion.div>
-              ))}
-            </motion.div>
-          ) : (
-            <div className="max-w-lg mx-auto space-y-8">
-              {media.map((item, index) => (
-                <motion.div
-                  key={item._id}
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    delay: index * 0.2,
-                    type: "spring",
-                    stiffness: 100,
-                    damping: 15
-                  }}
-                  className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 group cursor-pointer"
-                  onClick={() => handleMediaClick(item)}
-                >
-                  {/* Professional Full Post Layout */}
-                  {item.type === 'post' ? (
-                    <>
-                      {/* Professional Post Header */}
-                      <div className="p-5 border-b border-gray-100">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-                              <span className="text-primary font-bold text-lg">📄</span>
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-gray-800">Educational Article</h4>
-                              <p className="text-sm text-gray-500">Mental Health Resource</p>
-                            </div>
-                          </div>
-                          <div className="text-xs text-gray-400">
-                            {new Date(item.createdAt).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric'
-                            })}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Professional Post Image */}
-                      <div className="relative aspect-[16/9] bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden">
-                        <ImageWithFallback
-                          src={item.thumbnailUrl || (item.assets && item.assets[0]?.fileUrl)}
-                          alt={item.title}
-                          className="w-full h-full object-cover"
-                          fallbackIcon="📄"
-                        />
-
-                        {/* Multiple Images Indicator */}
-                        {item.assets && item.assets.length > 1 && (
-                          <div className="absolute top-4 right-4 bg-primary/90 text-white text-sm px-3 py-1 rounded-full backdrop-blur-sm flex items-center gap-2">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z" />
-                            </svg>
-                            {item.assets.length} Images
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Professional Post Content */}
-                      <div className="p-6">
-                        <h3 className="font-bold text-gray-800 text-xl mb-4 leading-tight">
-                          {item.title}
-                        </h3>
-
-                        <p className="text-gray-700 mb-6 leading-relaxed">
-                          {item.description}
-                        </p>
-
-                        {/* Professional Tags */}
-                        {item.tags && item.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mb-6">
-                            {item.tags.map((tag, tagIndex) => (
-                              <span
-                                key={tag}
-                                className="text-sm px-3 py-1 bg-primary/10 text-primary rounded-lg font-medium hover:bg-primary/20 transition-colors cursor-pointer"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Professional Meta */}
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                          <div className="flex items-center gap-6 text-sm text-gray-500">
-                            <div className="flex items-center gap-2">
-                              <Eye size={18} />
-                              <span>{item.views || 0} views</span>
-                            </div>
-                            {isAuthenticated && (
-                              <motion.button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleLike(item._id);
-                                }}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                className={`flex items-center gap-2 transition-colors ${item.hasLiked
-                                    ? 'text-red-500'
-                                    : 'text-gray-500 hover:text-red-500'
-                                  }`}
-                              >
-                                <Heart
-                                  size={18}
-                                  className={
-                                    item.hasLiked
-                                      ? 'fill-red-500 text-red-500'
-                                      : 'text-gray-500'
-                                  }
-                                />
-                                <span>{Array.isArray(item.likes) ? item.likes.length : item.likesCount || item.likes || 0} likes</span>
-                              </motion.button>
-                            )}
-                            {item.comments && item.comments.length > 0 && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedMedia(item);
-                                  setShowPostViewer(true);
-                                }}
-                                className="flex items-center gap-2 hover:text-primary transition-colors"
-                              >
-                                <MessageCircle size={18} />
-                                <span>{item.comments.length} comments</span>
-                              </button>
-                            )}
-                          </div>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedMedia(item);
-                              setShowPostViewer(true);
-                            }}
-                            className="text-primary hover:text-primary/80 font-medium text-sm"
-                          >
-                            Read More →
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    /* Professional Media in List View */
-                    <div className="p-6">
-                      <div className="flex gap-6">
-                        <div className="w-32 h-24 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden relative">
-                          {(item.type === 'video' || item.type === 'vlog') && item.fileUrl ? (
-                            <InlineVideoPlayer
-                              src={item.fileUrl}
-                              poster={item.thumbnailUrl}
-                              className="w-full h-full rounded-xl"
-                            />
-                          ) : item.thumbnailUrl ? (
-                            <img
-                              src={item.thumbnailUrl}
-                              alt={item.title}
-                              className="w-full h-full object-cover rounded-xl"
-                            />
-                          ) : (
-                            <div className="text-primary text-2xl">
-                              {getMediaIcon(item.type)}
-                            </div>
-                          )}
-
-                          {/* Content Type Badge */}
-                          <div className="absolute top-2 left-2 bg-primary/90 text-white text-xs px-2 py-1 rounded-md backdrop-blur-sm capitalize">
-                            {item.type === 'vlog' ? 'Video' : item.type}
-                          </div>
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-gray-800 text-lg mb-2 line-clamp-2">
-                            {item.title}
-                          </h3>
-                          <p className="text-gray-600 line-clamp-3 mb-4 leading-relaxed">
                             {item.description}
-                          </p>
+                          </motion.p>
 
                           {/* Tags */}
                           {item.tags && item.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-4">
-                              {item.tags.slice(0, 4).map((tag) => (
-                                <span
+                            <motion.div
+                              className="flex flex-wrap gap-2 mb-4"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: 0.4 }}
+                            >
+                              {item.tags.slice(0, 3).map((tag, tagIndex) => (
+                                <motion.span
                                   key={tag}
-                                  className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-md font-medium"
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ delay: 0.4 + tagIndex * 0.1 }}
+                                  className="text-xs px-3 py-1 bg-primary/10 text-primary rounded-full font-medium hover:bg-primary/20 transition-colors cursor-pointer"
                                 >
                                   {tag}
-                                </span>
+                                </motion.span>
                               ))}
-                              {item.tags.length > 4 && (
-                                <span className="text-xs px-2 py-1 bg-gray-100 text-gray-500 rounded-md">
-                                  +{item.tags.length - 4}
+                              {item.tags.length > 3 && (
+                                <span className="text-xs px-3 py-1 bg-gray-100 text-gray-500 rounded-full">
+                                  +{item.tags.length - 3}
                                 </span>
                               )}
-                            </div>
+                            </motion.div>
                           )}
 
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4 text-sm text-gray-500">
-                              <div className="flex items-center gap-1">
-                                <Eye size={16} />
-                                <span>{item.views || 0}</span>
-                              </div>
+                          {/* Actions */}
+                          <motion.div
+                            className="flex items-center justify-between pt-4 border-t border-gray-100"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                          >
+                            <div className="flex items-center gap-4">
                               {isAuthenticated && (
-                                <button
+                                <motion.button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleLike(item._id);
                                   }}
-                                  className={`flex items-center gap-1 transition-colors ${item.hasLiked
-                                      ? 'text-red-500'
-                                      : 'hover:text-red-500'
+                                  whileHover={{ scale: 1.2 }}
+                                  whileTap={{ scale: 0.8 }}
+                                  className={`flex items-center gap-2 transition-colors ${item.hasLiked
+                                    ? 'text-red-500'
+                                    : 'text-gray-500 hover:text-red-500'
                                     }`}
                                 >
                                   <Heart
-                                    size={16}
+                                    size={18}
                                     className={
                                       item.hasLiked
                                         ? 'fill-red-500 text-red-500'
                                         : 'text-gray-500'
                                     }
                                   />
-                                  <span>{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
-                                </button>
+                                  <span className="text-sm font-medium">{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
+                                </motion.button>
                               )}
-                              <button
+
+                              <motion.button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedMedia(item);
-                                  setShowPlayer(true);
+                                  if (item.type === 'post') {
+                                    setShowPostViewer(true);
+                                  } else {
+                                    setShowPlayer(true);
+                                  }
                                 }}
-                                className="flex items-center gap-1 hover:text-blue-500 transition-colors"
+                                whileHover={{ scale: 1.2 }}
+                                whileTap={{ scale: 0.8 }}
+                                className="flex items-center gap-2 text-gray-500 hover:text-blue-500 transition-colors"
                               >
-                                <MessageCircle size={16} />
-                                <span>{item.comments?.length || 0}</span>
-                              </button>
+                                <MessageCircle size={18} />
+                                <span className="text-sm font-medium">{item.comments?.length || 0}</span>
+                              </motion.button>
+                            </div>
+                          </motion.div>
+                        </div>
+                      </>
+                    )}
+                  </motion.div>
+                ))}
+              </motion.div>
+            ) : (
+              <div className="max-w-lg mx-auto space-y-8">
+                {media.map((item, index) => (
+                  <motion.div
+                    key={item._id}
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      delay: index * 0.2,
+                      type: "spring",
+                      stiffness: 100,
+                      damping: 15
+                    }}
+                    className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 group cursor-pointer"
+                    onClick={() => handleMediaClick(item)}
+                  >
+                    {/* Professional Full Post Layout */}
+                    {item.type === 'post' ? (
+                      <>
+                        {/* Professional Post Header */}
+                        <div className="p-5 border-b border-gray-100">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                                <span className="text-primary font-bold text-lg">📄</span>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-gray-800">Educational Article</h4>
+                                <p className="text-sm text-gray-500">Mental Health Resource</p>
+                              </div>
                             </div>
                             <div className="text-xs text-gray-400">
                               {new Date(item.createdAt).toLocaleDateString('en-US', {
@@ -1033,199 +845,397 @@ const Resources = () => {
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </div>
-          )}
 
-          {/* Empty State */}
-          {!loading && media.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-16"
-            >
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search size={32} className="text-gray-400" />
+                        {/* Professional Post Image */}
+                        <div className="relative aspect-[16/9] bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden">
+                          <ImageWithFallback
+                            src={item.thumbnailUrl || (item.assets && item.assets[0]?.fileUrl)}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                            fallbackIcon="📄"
+                          />
+
+                          {/* Multiple Images Indicator */}
+                          {item.assets && item.assets.length > 1 && (
+                            <div className="absolute top-4 right-4 bg-primary/90 text-white text-sm px-3 py-1 rounded-full backdrop-blur-sm flex items-center gap-2">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z" />
+                              </svg>
+                              {item.assets.length} Images
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Professional Post Content */}
+                        <div className="p-6">
+                          <h3 className="font-bold text-gray-800 text-xl mb-4 leading-tight">
+                            {item.title}
+                          </h3>
+
+                          <p className="text-gray-700 mb-6 leading-relaxed">
+                            {item.description}
+                          </p>
+
+                          {/* Professional Tags */}
+                          {item.tags && item.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-6">
+                              {item.tags.map((tag, tagIndex) => (
+                                <span
+                                  key={tag}
+                                  className="text-sm px-3 py-1 bg-primary/10 text-primary rounded-lg font-medium hover:bg-primary/20 transition-colors cursor-pointer"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Professional Meta */}
+                          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <div className="flex items-center gap-6 text-sm text-gray-500">
+                              <div className="flex items-center gap-2">
+                                <Eye size={18} />
+                                <span>{item.views || 0} views</span>
+                              </div>
+                              {isAuthenticated && (
+                                <motion.button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleLike(item._id);
+                                  }}
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  className={`flex items-center gap-2 transition-colors ${item.hasLiked
+                                    ? 'text-red-500'
+                                    : 'text-gray-500 hover:text-red-500'
+                                    }`}
+                                >
+                                  <Heart
+                                    size={18}
+                                    className={
+                                      item.hasLiked
+                                        ? 'fill-red-500 text-red-500'
+                                        : 'text-gray-500'
+                                    }
+                                  />
+                                  <span>{Array.isArray(item.likes) ? item.likes.length : item.likesCount || item.likes || 0} likes</span>
+                                </motion.button>
+                              )}
+                              {item.comments && item.comments.length > 0 && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedMedia(item);
+                                    setShowPostViewer(true);
+                                  }}
+                                  className="flex items-center gap-2 hover:text-primary transition-colors"
+                                >
+                                  <MessageCircle size={18} />
+                                  <span>{item.comments.length} comments</span>
+                                </button>
+                              )}
+                            </div>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedMedia(item);
+                                setShowPostViewer(true);
+                              }}
+                              className="text-primary hover:text-primary/80 font-medium text-sm"
+                            >
+                              Read More →
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      /* Professional Media in List View */
+                      <div className="p-6">
+                        <div className="flex gap-6">
+                          <div className="w-32 h-24 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+                            {(item.type === 'video' || item.type === 'vlog') && item.fileUrl ? (
+                              <InlineVideoPlayer
+                                src={item.fileUrl}
+                                poster={item.thumbnailUrl}
+                                className="w-full h-full rounded-xl"
+                              />
+                            ) : item.thumbnailUrl ? (
+                              <img
+                                src={item.thumbnailUrl}
+                                alt={item.title}
+                                className="w-full h-full object-cover rounded-xl"
+                              />
+                            ) : (
+                              <div className="text-primary text-2xl">
+                                {getMediaIcon(item.type)}
+                              </div>
+                            )}
+
+                            {/* Content Type Badge */}
+                            <div className="absolute top-2 left-2 bg-primary/90 text-white text-xs px-2 py-1 rounded-md backdrop-blur-sm capitalize">
+                              {item.type === 'vlog' ? 'Video' : item.type}
+                            </div>
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-gray-800 text-lg mb-2 line-clamp-2">
+                              {item.title}
+                            </h3>
+                            <p className="text-gray-600 line-clamp-3 mb-4 leading-relaxed">
+                              {item.description}
+                            </p>
+
+                            {/* Tags */}
+                            {item.tags && item.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mb-4">
+                                {item.tags.slice(0, 4).map((tag) => (
+                                  <span
+                                    key={tag}
+                                    className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-md font-medium"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                                {item.tags.length > 4 && (
+                                  <span className="text-xs px-2 py-1 bg-gray-100 text-gray-500 rounded-md">
+                                    +{item.tags.length - 4}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4 text-sm text-gray-500">
+                                <div className="flex items-center gap-1">
+                                  <Eye size={16} />
+                                  <span>{item.views || 0}</span>
+                                </div>
+                                {isAuthenticated && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleLike(item._id);
+                                    }}
+                                    className={`flex items-center gap-1 transition-colors ${item.hasLiked
+                                      ? 'text-red-500'
+                                      : 'hover:text-red-500'
+                                      }`}
+                                  >
+                                    <Heart
+                                      size={16}
+                                      className={
+                                        item.hasLiked
+                                          ? 'fill-red-500 text-red-500'
+                                          : 'text-gray-500'
+                                      }
+                                    />
+                                    <span>{Array.isArray(item.likes) ? item.likes.length : item.likes || 0}</span>
+                                  </button>
+                                )}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedMedia(item);
+                                    setShowPlayer(true);
+                                  }}
+                                  className="flex items-center gap-1 hover:text-blue-500 transition-colors"
+                                >
+                                  <MessageCircle size={16} />
+                                  <span>{item.comments?.length || 0}</span>
+                                </button>
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                {new Date(item.createdAt).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
               </div>
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                {searchTerm || selectedType !== 'all' || selectedCategory !== 'all'
-                  ? 'No results found'
-                  : 'No resources yet'
-                }
-              </h3>
-              <p className="text-gray-500 max-w-sm mx-auto mb-4">
-                {searchTerm || selectedType !== 'all' || selectedCategory !== 'all'
-                  ? 'Try adjusting your search or filters to find what you\'re looking for.'
-                  : 'Check back later for new content.'
-                }
-              </p>
-              {(searchTerm || selectedType !== 'all' || selectedCategory !== 'all') && (
+            )}
+
+            {/* Empty State */}
+            {!loading && media.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-16"
+              >
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search size={32} className="text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  {searchTerm || selectedType !== 'all' || selectedCategory !== 'all'
+                    ? 'No results found'
+                    : 'No resources yet'
+                  }
+                </h3>
+                <p className="text-gray-500 max-w-sm mx-auto mb-4">
+                  {searchTerm || selectedType !== 'all' || selectedCategory !== 'all'
+                    ? 'Try adjusting your search or filters to find what you\'re looking for.'
+                    : 'Check back later for new content.'
+                  }
+                </p>
+                {(searchTerm || selectedType !== 'all' || selectedCategory !== 'all') && (
+                  <button
+                    onClick={() => {
+                      setSearchTerm('');
+                      setSelectedType('all');
+                      setSelectedCategory('all');
+                    }}
+                    className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                  >
+                    Clear all filters
+                  </button>
+                )}
+              </motion.div>
+            )}
+
+            {/* Pagination Controls */}
+            {!loading && media.length > 0 && totalPages > 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex justify-center items-center mt-12 space-x-2"
+              >
+                {/* Previous Button */}
                 <button
                   onClick={() => {
-                    setSearchTerm('');
-                    setSelectedType('all');
-                    setSelectedCategory('all');
+                    const newPage = currentPage - 1;
+                    setCurrentPage(newPage);
+                    fetchMedia(newPage);
                   }}
-                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                 >
-                  Clear all filters
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Previous
                 </button>
-              )}
-            </motion.div>
-          )}
 
-          {/* Pagination Controls */}
-          {!loading && media.length > 0 && totalPages > 1 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex justify-center items-center mt-12 space-x-2"
-            >
-              {/* Previous Button */}
-              <button
-                onClick={() => {
-                  const newPage = currentPage - 1;
-                  setCurrentPage(newPage);
-                  fetchMedia(newPage);
-                }}
-                disabled={currentPage === 1}
-                className="px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                Previous
-              </button>
+                {/* Page Numbers */}
+                <div className="flex space-x-1">
+                  {(() => {
+                    const pages = [];
+                    const maxVisiblePages = 5;
+                    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-              {/* Page Numbers */}
-              <div className="flex space-x-1">
-                {(() => {
-                  const pages = [];
-                  const maxVisiblePages = 5;
-                  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-                  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-                  // Adjust start page if we're near the end
-                  if (endPage - startPage + 1 < maxVisiblePages) {
-                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
-                  }
-
-                  // First page + ellipsis
-                  if (startPage > 1) {
-                    pages.push(
-                      <button
-                        key={1}
-                        onClick={() => {
-                          setCurrentPage(1);
-                          fetchMedia(1);
-                        }}
-                        className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        1
-                      </button>
-                    );
-                    if (startPage > 2) {
-                      pages.push(
-                        <span key="ellipsis1" className="px-3 py-2 text-gray-500">
-                          ...
-                        </span>
-                      );
+                    // Adjust start page if we're near the end
+                    if (endPage - startPage + 1 < maxVisiblePages) {
+                      startPage = Math.max(1, endPage - maxVisiblePages + 1);
                     }
-                  }
 
-                  // Visible page numbers
-                  for (let i = startPage; i <= endPage; i++) {
-                    pages.push(
-                      <button
-                        key={i}
-                        onClick={() => {
-                          setCurrentPage(i);
-                          fetchMedia(i);
-                        }}
-                        className={`px-3 py-2 rounded-lg transition-colors ${i === currentPage
+                    // First page + ellipsis
+                    if (startPage > 1) {
+                      pages.push(
+                        <button
+                          key={1}
+                          onClick={() => {
+                            setCurrentPage(1);
+                            fetchMedia(1);
+                          }}
+                          className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          1
+                        </button>
+                      );
+                      if (startPage > 2) {
+                        pages.push(
+                          <span key="ellipsis1" className="px-3 py-2 text-gray-500">
+                            ...
+                          </span>
+                        );
+                      }
+                    }
+
+                    // Visible page numbers
+                    for (let i = startPage; i <= endPage; i++) {
+                      pages.push(
+                        <button
+                          key={i}
+                          onClick={() => {
+                            setCurrentPage(i);
+                            fetchMedia(i);
+                          }}
+                          className={`px-3 py-2 rounded-lg transition-colors ${i === currentPage
                             ? 'bg-primary text-white'
                             : 'bg-white border border-gray-200 hover:bg-gray-50'
-                          }`}
-                      >
-                        {i}
-                      </button>
-                    );
-                  }
-
-                  // Last page + ellipsis
-                  if (endPage < totalPages) {
-                    if (endPage < totalPages - 1) {
-                      pages.push(
-                        <span key="ellipsis2" className="px-3 py-2 text-gray-500">
-                          ...
-                        </span>
+                            }`}
+                        >
+                          {i}
+                        </button>
                       );
                     }
-                    pages.push(
-                      <button
-                        key={totalPages}
-                        onClick={() => {
-                          setCurrentPage(totalPages);
-                          fetchMedia(totalPages);
-                        }}
-                        className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        {totalPages}
-                      </button>
-                    );
-                  }
 
-                  return pages;
-                })()}
-              </div>
+                    // Last page + ellipsis
+                    if (endPage < totalPages) {
+                      if (endPage < totalPages - 1) {
+                        pages.push(
+                          <span key="ellipsis2" className="px-3 py-2 text-gray-500">
+                            ...
+                          </span>
+                        );
+                      }
+                      pages.push(
+                        <button
+                          key={totalPages}
+                          onClick={() => {
+                            setCurrentPage(totalPages);
+                            fetchMedia(totalPages);
+                          }}
+                          className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          {totalPages}
+                        </button>
+                      );
+                    }
 
-              {/* Next Button */}
-              <button
-                onClick={() => {
-                  const newPage = currentPage + 1;
-                  setCurrentPage(newPage);
-                  fetchMedia(newPage);
-                }}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                    return pages;
+                  })()}
+                </div>
+
+                {/* Next Button */}
+                <button
+                  onClick={() => {
+                    const newPage = currentPage + 1;
+                    setCurrentPage(newPage);
+                    fetchMedia(newPage);
+                  }}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                >
+                  Next
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </motion.div>
+            )}
+
+            {/* Pagination Info */}
+            {media.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center mt-6"
               >
-                Next
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </motion.div>
-          )}
-
-          {/* Pagination Info */}
-          {!loading && media.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center mt-6"
-            >
-              <p className="text-sm text-gray-500">
-                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} resources
-              </p>
-            </motion.div>
-          )}
-
-          {/* Instagram-style Loading */}
-          {loading && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-16"
-            >
-              <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-primary rounded-full mx-auto mb-4"></div>
-              <p className="text-gray-500">Loading...</p>
-            </motion.div>
-          )}
-        </motion.div>
+                <p className="text-sm text-gray-500">
+                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} resources
+                </p>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
 
         {/* Add Media Modal */}
         <AddMediaModal

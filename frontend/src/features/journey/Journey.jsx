@@ -27,7 +27,7 @@ export const JOURNEY_STAGES = [
     description: "Identify behavioral patterns and build a structured roadmap for change.",
     color: "bg-pink-100",
     pathPercentage: 0.40,
-    icon: <Compass className="w-5 h-5 text-purple-600" />    
+    icon: <Compass className="w-5 h-5 text-purple-600" />
   },
   {
     id: StageId.HEALING,
@@ -129,21 +129,21 @@ const Character = ({ x, y, isMoving, progress }) => {
 const Cloud = ({ x, y, scale, duration, delay }) => (
   <motion.g
     initial={{ x: -20, opacity: 0 }}
-    animate={{ 
-      x: [ -20, 120 ], 
-      opacity: [0, 0.8, 0.8, 0] 
+    animate={{
+      x: [-20, 120],
+      opacity: [0, 0.8, 0.8, 0]
     }}
-    transition={{ 
-      duration: duration, 
-      repeat: Infinity, 
-      delay: delay, 
+    transition={{
+      duration: duration,
+      repeat: Infinity,
+      delay: delay,
       ease: "linear",
       repeatDelay: 0
     }}
     style={{ originX: 0.5, originY: 0.5 }}
   >
     <g transform={`translate(${x}, ${y}) scale(${scale})`}>
-       <path d="M 0 0 Q 5 -5 10 0 T 20 0 T 30 0 C 35 0 35 10 30 10 L 0 10 C -5 10 -5 0 0 0" fill="white" opacity="0.6" />
+      <path d="M 0 0 Q 5 -5 10 0 T 20 0 T 30 0 C 35 0 35 10 30 10 L 0 10 C -5 10 -5 0 0 0" fill="white" opacity="0.6" />
     </g>
   </motion.g>
 );
@@ -164,18 +164,18 @@ const Mountain = ({ progress }) => {
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
       {/* Background Image */}
-      <img 
-        src="/assets/mt0.png" 
-        alt="Mountain Background" 
+      <img
+        src="/assets/mt0.png"
+        alt="Mountain Background"
         className="absolute inset-0 w-full h-full object-cover"
       />
-      
+
       {/* Pink/Purple Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-purple-900/30 via-pink-800/20 to-purple-900/30" />
-      
+
       {/* Soft Dark Overlay for better contrast */}
       <div className="absolute inset-0 bg-black/20" />
-      
+
       <svg
         className="w-full h-full absolute inset-0"
         viewBox="0 0 100 100"
@@ -221,10 +221,10 @@ const Mountain = ({ progress }) => {
                   fill="none"
                   initial={{ r: 2.5, opacity: 0.8 }}
                   animate={{ r: 8, opacity: 0 }}
-                  transition={{ 
-                    duration: 1.5, 
-                    repeat: Infinity, 
-                    ease: "easeOut" 
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: "easeOut"
                   }}
                 />
               )}
@@ -239,51 +239,51 @@ const Mountain = ({ progress }) => {
 // 3. StageCard Component
 const StageCard = ({ stage, state }) => {
   const cardVariants = {
-    hidden: { 
-        opacity: 0, 
-        y: 20, 
-        scale: 0.9,
-        height: 0,
-        marginBottom: 0,
-        pointerEvents: "none"
+    hidden: {
+      opacity: 0,
+      y: 20,
+      scale: 0.9,
+      height: 0,
+      marginBottom: 0,
+      pointerEvents: "none"
     },
-    active: { 
-        opacity: 1, 
-        y: 0, 
-        scale: 1,
-        height: 'auto',
-        marginBottom: 24,
-        pointerEvents: "auto",
-        transition: { 
-            type: "spring", 
-            stiffness: 100, 
-            damping: 20,
-            mass: 0.8,
-            height: { duration: 0.4 }
-        }
+    active: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      height: 'auto',
+      marginBottom: 24,
+      pointerEvents: "auto",
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 20,
+        mass: 0.8,
+        height: { duration: 0.4 }
+      }
     },
-    completed: { 
-        opacity: 0.5, 
-        y: 0, 
-        scale: 0.96,
-        height: 'auto',
-        marginBottom: 24,
-        pointerEvents: "auto",
-        filter: "grayscale(20%)",
-        transition: { duration: 0.5 }
+    completed: {
+      opacity: 0.5,
+      y: 0,
+      scale: 0.96,
+      height: 'auto',
+      marginBottom: 24,
+      pointerEvents: "auto",
+      filter: "grayscale(20%)",
+      transition: { duration: 0.5 }
     }
   };
 
   // Pulse animation for active card
   const glowVariants = {
     initial: { boxShadow: "0 0 0 rgba(236, 72, 153, 0)" }, // pink-500
-    animate: { 
-        boxShadow: "0 0 25px rgba(236, 72, 153, 0.3)",
-        transition: { 
-            duration: 2.5, 
-            repeat: Infinity, 
-            repeatType: "reverse"
-        } 
+    animate: {
+      boxShadow: "0 0 25px rgba(236, 72, 153, 0.3)",
+      transition: {
+        duration: 2.5,
+        repeat: Infinity,
+        repeatType: "reverse"
+      }
     }
   };
 
@@ -296,21 +296,21 @@ const StageCard = ({ stage, state }) => {
       className={`relative p-6 rounded-3xl border border-white/60 backdrop-blur-md overflow-hidden max-w-sm w-full ${stage.color}`}
     >
       {state === 'active' && (
-          <motion.div 
-            className="absolute inset-0 rounded-3xl border-2 border-pink-400/30 pointer-events-none"
-            variants={glowVariants}
-            initial="initial"
-            animate="animate"
-          />
+        <motion.div
+          className="absolute inset-0 rounded-3xl border-2 border-pink-400/30 pointer-events-none"
+          variants={glowVariants}
+          initial="initial"
+          animate="animate"
+        />
       )}
-      
+
       <div className="flex items-center gap-3 mb-3">
         <div className="p-2 bg-white/70 rounded-full shadow-sm">
           {stage.icon}
         </div>
         <h3 className="text-xl font-display font-bold text-pink-950">{stage.title}</h3>
       </div>
-      
+
       <p className="text-pink-900/80 leading-relaxed font-sans font-medium">{stage.description}</p>
     </motion.div>
   );
@@ -319,7 +319,7 @@ const StageCard = ({ stage, state }) => {
 // --- MAIN JOURNEY SECTION COMPONENT ---
 export const Journey = () => {
   const containerRef = useRef(null);
-  
+
   // Track scroll progress within the container
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -329,10 +329,10 @@ export const Journey = () => {
   // Map scroll progress to character position (x, y)
   const pointsX = PATH_POINTS.map(p => p.x);
   const pointsY = PATH_POINTS.map(p => p.y);
-  
+
   // Create evenly spaced input ranges for the transform based on number of points
   const inputRange = PATH_POINTS.map((_, i) => i / (PATH_POINTS.length - 1));
-  
+
   const charX = useTransform(scrollYProgress, inputRange, pointsX);
   const charY = useTransform(scrollYProgress, inputRange, pointsY);
 
@@ -345,10 +345,10 @@ export const Journey = () => {
   return (
     // The container is very tall to allow scrolling space - 800vh for slower animation
     <div ref={containerRef} className="relative h-[800vh] bg-gradient-to-b from-purple-50 to-pink-50">
-      
+
       {/* Sticky Viewport: This stays fixed while we scroll */}
       <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col md:flex-row">
-        
+
         {/* Heading - Top Left Corner */}
         <motion.div
           className="absolute top-24 left-1/2 -translate-x-1/2 z-40 pointer-events-none text-center"
@@ -373,62 +373,62 @@ export const Journey = () => {
             Journey
           </motion.p>
         </motion.div>
-        
+
         {/* Background Mountain */}
         <Mountain progress={currentProgress} />
 
         {/* Character */}
-        <Character 
-            x={Number(charX.get())} 
-            y={Number(charY.get())} 
-            isMoving={currentProgress > 0.005 && currentProgress < 0.995}
-            progress={currentProgress}
+        <Character
+          x={Number(charX.get())}
+          y={Number(charY.get())}
+          isMoving={currentProgress > 0.005 && currentProgress < 0.995}
+          progress={currentProgress}
         />
 
         {/* Floating Cards Layer */}
         <div className="absolute inset-0 z-30 pointer-events-none">
-           {JOURNEY_STAGES.map((stage, idx) => {
-             // Position relative to the checkpoint
-             const pt = PATH_POINTS[idx + 1];
-             
-             // Trigger point: same as before
-             const triggerPoint = stage.pathPercentage - 0.15;
-             const nextStage = JOURNEY_STAGES[idx + 1];
-             const endPoint = nextStage ? (nextStage.pathPercentage - 0.15) : 1.1;
+          {JOURNEY_STAGES.map((stage, idx) => {
+            // Position relative to the checkpoint
+            const pt = PATH_POINTS[idx + 1];
 
-             let cardState = 'hidden';
-             
-             if (currentProgress < triggerPoint) {
-                cardState = 'hidden';
-             } else if (currentProgress >= triggerPoint && currentProgress < endPoint) {
-                cardState = 'active';
-             } else {
-                cardState = 'completed';
-             }
-             
-             const isLastTwo = idx >= 2;
+            // Trigger point: same as before
+            const triggerPoint = stage.pathPercentage - 0.15;
+            const nextStage = JOURNEY_STAGES[idx + 1];
+            const endPoint = nextStage ? (nextStage.pathPercentage - 0.15) : 1.1;
 
-             return (
-                <div 
-                   key={stage.id}
-                   className={`absolute flex flex-col items-center pointer-events-auto ${isLastTwo ? 'justify-start' : 'justify-end'}`}
-                   style={{
-                     left: `${pt.x}%`, 
-                     top: `${pt.y}%`,
-                     transform: isLastTwo ? 'translate(-50%, 0)' : 'translate(-50%, -100%)',
-                     paddingTop: isLastTwo ? '40px' : '0',
-                     paddingBottom: isLastTwo ? '0' : '40px',
-                     width: '320px', // Fixed width for consistent bubbles
-                     maxWidth: '85vw' // Prevent overflow on small screens
-                   }}
-                >
-                    <StageCard 
-                        stage={stage} 
-                        state={cardState} 
-                    />
-                </div>
-             );
-           })}
+            let cardState = 'hidden';
+
+            if (currentProgress < triggerPoint) {
+              cardState = 'hidden';
+            } else if (currentProgress >= triggerPoint && currentProgress < endPoint) {
+              cardState = 'active';
+            } else {
+              cardState = 'completed';
+            }
+
+            const isLastTwo = idx >= 2;
+
+            return (
+              <div
+                key={stage.id}
+                className={`absolute flex flex-col items-center pointer-events-auto ${isLastTwo ? 'justify-start' : 'justify-end'}`}
+                style={{
+                  left: `${pt.x}%`,
+                  top: `${pt.y}%`,
+                  transform: isLastTwo ? 'translate(-50%, 0)' : 'translate(-50%, -100%)',
+                  paddingTop: isLastTwo ? '40px' : '0',
+                  paddingBottom: isLastTwo ? '0' : '40px',
+                  width: '320px', // Fixed width for consistent bubbles
+                  maxWidth: '85vw' // Prevent overflow on small screens
+                }}
+              >
+                <StageCard
+                  stage={stage}
+                  state={cardState}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

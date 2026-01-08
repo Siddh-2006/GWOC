@@ -3,15 +3,15 @@ import { motion } from 'framer-motion';
 import { CalendarDays, Play, CheckCircle, Clock } from 'lucide-react';
 import EnhancedSessionCard from '../user/EnhancedSessionCard';
 
-const SessionsTab = ({ 
-  categorizedSessions, 
-  loading, 
-  error, 
+const SessionsTab = ({
+  categorizedSessions,
+  loading,
+  error,
   onRetry,
   onNotesClick,
   onViewNotes,
   onTasksClick,
-  onAdminRemarksClick 
+  onAdminRemarksClick
 }) => {
   const container = {
     hidden: { opacity: 0 },
@@ -53,9 +53,9 @@ const SessionsTab = ({
     );
   }
 
-  const hasSessions = 
-    categorizedSessions.upcoming.length > 0 || 
-    categorizedSessions.ongoing.length > 0 || 
+  const hasSessions =
+    categorizedSessions.upcoming.length > 0 ||
+    categorizedSessions.ongoing.length > 0 ||
     categorizedSessions.past.length > 0;
 
   if (!hasSessions) {
@@ -89,7 +89,7 @@ const SessionsTab = ({
   }
 
   return (
-    <motion.div 
+    <motion.div
       variants={container}
       initial="hidden"
       animate="show"
@@ -139,11 +139,11 @@ const SessionsTab = ({
             {categorizedSessions.ongoing.map((session) => (
               <motion.div key={session._id} variants={item}>
                 <EnhancedSessionCard
-                    session={session}
-                    onNotesClick={onNotesClick}
-                    onViewNotes={onViewNotes}
-                    onTasksClick={onTasksClick}
-                    onAdminRemarksClick={onAdminRemarksClick}
+                  session={session}
+                  onNotesClick={onNotesClick}
+                  onViewNotes={onViewNotes}
+                  onTasksClick={onTasksClick}
+                  onAdminRemarksClick={onAdminRemarksClick}
                 />
               </motion.div>
             ))}
@@ -167,11 +167,11 @@ const SessionsTab = ({
             {categorizedSessions.past.map((session) => (
               <motion.div key={session._id} variants={item}>
                 <EnhancedSessionCard
-                    session={session}
-                    onNotesClick={onNotesClick}
-                    onViewNotes={onViewNotes}
-                    onTasksClick={onTasksClick}
-                    onAdminRemarksClick={onAdminRemarksClick}
+                  session={session}
+                  onNotesClick={onNotesClick}
+                  onViewNotes={onViewNotes}
+                  onTasksClick={onTasksClick}
+                  onAdminRemarksClick={onAdminRemarksClick}
                 />
               </motion.div>
             ))}
