@@ -375,7 +375,7 @@ const BookingPage = () => {
 
             {/* Reflection Flow Modal */}
             {showReflection && (
-              <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+              <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                 <div className="bg-linear-to-br from-slate-50 via-blue-50/30 to-green-50/20 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                   <div className="relative">
                     {/* Close button */}

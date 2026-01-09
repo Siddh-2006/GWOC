@@ -533,7 +533,7 @@ const AdminDashboard = () => {
                                   </button>
                                 </>
                               )}
-                              
+
                               {/* Assign Task Button - Available for all bookings */}
                               <button
                                 onClick={() => handleAssignTask(booking)}
@@ -1055,11 +1055,11 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               )}
-              
+
               {/* Tasks Section */}
               <div className="border-t border-gray-200 pt-6">
-                <BookingTasks 
-                  bookingId={selectedBooking._id} 
+                <BookingTasks
+                  bookingId={selectedBooking._id}
                   onTasksChange={() => {
                     // Optionally refresh booking data if needed
                   }}
@@ -1068,7 +1068,7 @@ const AdminDashboard = () => {
 
               {/* Journey Entries Section */}
               <div className="border-t border-gray-200 pt-6">
-                <UserJourneyEntries 
+                <UserJourneyEntries
                   userId={selectedBooking.userId}
                   userName={selectedBooking.personalInfo?.name}
                 />
@@ -1158,7 +1158,7 @@ const AdminDashboard = () => {
 
       {/* Toast Notifications */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
-      
+
       {/* Task Assignment Modal */}
       <TaskAssignmentModal
         booking={taskBooking}

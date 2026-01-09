@@ -41,8 +41,7 @@ const Profile = () => {
   const [isAdminView, setIsAdminView] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
 
-  // Default to 'journey' as requested ("My Journey" (Default Active Tab))
-  // But logic in original file was 'sessions'. I will follow the user request: "My Journey" (Default Active Tab)
+  // Default to 'journey' as requested ("Journey" (Default Active Tab))
   const [activeTab, setActiveTab] = useState('journey');
 
   const { likedMedia, loading: likedLoading, error: likedError, toggleLike } = useLikedMedia(userId);
@@ -168,9 +167,21 @@ const Profile = () => {
   }
 
   const tabs = [
-    { id: 'journey', label: 'My Journey', icon: MapPin },
-    { id: 'sessions', label: 'My Sessions', icon: Calendar },
-    { id: 'liked', label: 'Liked Content', icon: Heart }
+    {
+      id: 'journey',
+      label: isAdminView ? `${user.firstName}'s Journey` : 'My Journey',
+      icon: MapPin
+    },
+    {
+      id: 'sessions',
+      label: isAdminView ? `${user.firstName}'s Sessions` : 'My Sessions',
+      icon: Calendar
+    },
+    {
+      id: 'liked',
+      label: isAdminView ? `${user.firstName}'s Liked Content` : 'Liked Content',
+      icon: Heart
+    }
   ];
 
   if (currentUser?.role === 'admin' && user?.reflectionCompleted) {
@@ -210,8 +221,8 @@ const Profile = () => {
                 <p className="text-sm text-gray-600 mb-2">{user.email}</p>
                 <div className="flex gap-2">
                   <span className={`px-3 py-1 rounded-md text-xs font-semibold ${user.role === 'admin'
-                      ? 'bg-amber-100 text-amber-700 border border-amber-200'
-                      : 'bg-purple-100 text-purple-700 border border-purple-200'
+                    ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                    : 'bg-purple-100 text-purple-700 border border-purple-200'
                     }`}>
                     {user.role === 'admin' ? 'Admin' : 'Member'}
                   </span>
@@ -327,8 +338,8 @@ const Profile = () => {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`relative px-6 py-3 rounded-md flex items-center gap-2 font-medium text-sm transition-all duration-300 ${isActive
-                      ? 'text-white bg-[#3F2965] shadow-md'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+                    ? 'text-white bg-[#3F2965] shadow-md'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
                     }`}
                 >
                   <tab.icon size={16} />
@@ -336,24 +347,24 @@ const Profile = () => {
                   {/* Simple count badges */}
                   {tab.id === 'sessions' && userStats.totalSessions > 0 && (
                     <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${isActive
-                        ? 'bg-white/20 text-white'
-                        : 'bg-purple-100 text-purple-700'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-purple-100 text-purple-700'
                       }`}>
                       {userStats.totalSessions}
                     </span>
                   )}
                   {tab.id === 'liked' && userStats.likedContent > 0 && (
                     <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${isActive
-                        ? 'bg-white/20 text-white'
-                        : 'bg-pink-100 text-pink-700'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-pink-100 text-pink-700'
                       }`}>
                       {userStats.likedContent}
                     </span>
                   )}
                   {tab.id === 'journey' && userStats.journeyEntries > 0 && (
                     <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${isActive
-                        ? 'bg-white/20 text-white'
-                        : 'bg-indigo-100 text-indigo-700'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-indigo-100 text-indigo-700'
                       }`}>
                       {userStats.journeyEntries}
                     </span>
@@ -374,7 +385,12 @@ const Profile = () => {
             transition={{ duration: 0.4 }}
           >
             {activeTab === 'journey' && (
-              <MyJourney journeyData={journeyData} loading={journeyLoading} />
+              <MyJourney
+                journeyData={journeyData}
+                loading={journeyLoading}
+                isAdminView={isAdminView}
+                userName={user.firstName}
+              />
             )}
 
             {activeTab === 'sessions' && (
@@ -387,6 +403,8 @@ const Profile = () => {
                 onViewNotes={handleViewNotes}
                 onTasksClick={handleTasksClick}
                 onAdminRemarksClick={handleAdminRemarksClick}
+                isAdminView={isAdminView}
+                userName={user.firstName}
               />
             )}
 
@@ -396,6 +414,8 @@ const Profile = () => {
                 loading={likedLoading}
                 error={likedError}
                 onUnlike={handleRemoveFromLiked}
+                isAdminView={isAdminView}
+                userName={user.firstName}
               />
             )}
 
@@ -437,9 +457,42 @@ const Profile = () => {
                   </h3>
                   <div className="prose prose-purple max-w-none text-gray-700 leading-relaxed">
                     {user.reflectionSummary ? (
-                      user.reflectionSummary.split('\n').map((line, i) => (
-                        <p key={i} className={line.startsWith('**') ? 'font-bold mt-4' : ''}>{line}</p>
-                      ))
+                      user.reflectionSummary.split('\n').map((line, i) => {
+                        // Check if line is a header (all caps, ends with colon)
+                        const isHeader = line.trim().endsWith(':') && line === line.toUpperCase() && line.length > 3;
+                        // Check if line is a labeled list item (starts with - and has colon)
+                        const isLabelLine = line.trim().startsWith('- ') && line.includes(':');
+
+                        if (isHeader) {
+                          return <p key={i} className="font-black text-gray-900 mt-6 mb-2 tracking-tight uppercase text-sm border-b border-purple-100 pb-1">{line}</p>;
+                        }
+
+                        if (isLabelLine) {
+                          const [label, ...rest] = line.split(':');
+                          return (
+                            <p key={i} className="mb-2">
+                              <span className="font-bold text-gray-900">{label}:</span>
+                              {rest.join(':')}
+                            </p>
+                          );
+                        }
+
+                        // Handle standard markdown bolding **text**
+                        if (line.includes('**')) {
+                          const parts = line.split(/(\*\*.*?\*\*)/g);
+                          return (
+                            <p key={i} className="mb-2">
+                              {parts.map((part, j) =>
+                                part.startsWith('**') && part.endsWith('**')
+                                  ? <strong key={j} className="font-bold text-gray-900">{part.slice(2, -2)}</strong>
+                                  : part
+                              )}
+                            </p>
+                          );
+                        }
+
+                        return <p key={i} className="mb-2">{line}</p>;
+                      })
                     ) : <p className="italic text-gray-500">No summary available.</p>}
                   </div>
                 </div>

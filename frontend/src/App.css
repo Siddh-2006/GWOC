@@ -2,7 +2,7 @@
 
 /* Keep only essential styles that can't be replaced with Tailwind */
 .modal-overlay {
-  @apply fixed inset-0 bg-black/50 flex justify-center items-center z-50;
+  @apply fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50;
 }
 
 .modal {

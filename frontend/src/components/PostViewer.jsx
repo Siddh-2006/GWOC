@@ -38,7 +38,7 @@ const PostViewer = ({ post, isOpen, onClose, onLike, onComment }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-90 z-[200] flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4"
         onClick={onClose}
       >
         <motion.div
@@ -148,8 +148,8 @@ const PostViewer = ({ post, isOpen, onClose, onLike, onComment }) => {
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         className={`transition-colors ${post.hasLiked
-                            ? 'text-red-500'
-                            : 'text-gray-700 hover:text-red-500'
+                          ? 'text-red-500'
+                          : 'text-gray-700 hover:text-red-500'
                           }`}
                       >
                         <Heart size={28} className={post.hasLiked ? "fill-red-500 text-red-500" : "text-gray-700"} />

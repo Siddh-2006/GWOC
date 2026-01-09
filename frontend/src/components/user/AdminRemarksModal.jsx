@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  X, User, Calendar, Clock, ExternalLink, 
-  MessageSquare, CheckCircle 
+import {
+  X, User, Calendar, Clock, ExternalLink,
+  MessageSquare, CheckCircle
 } from 'lucide-react';
 
 const AdminRemarksModal = ({ session, isOpen, onClose }) => {
@@ -27,7 +27,7 @@ const AdminRemarksModal = ({ session, isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -72,7 +72,7 @@ const AdminRemarksModal = ({ session, isOpen, onClose }) => {
             {/* Confirmed Session Details */}
             <div className="bg-white rounded-2xl p-6 border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Confirmed Session Details</h3>
-              
+
               <div className="space-y-4">
                 {session.adminResponse.confirmedDate && (
                   <div className="flex items-center gap-3">

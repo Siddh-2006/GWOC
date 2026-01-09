@@ -88,7 +88,7 @@ const SimpleJourneyEntryModal = ({ isOpen, onClose, onSave, session, userId, exi
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

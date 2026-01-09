@@ -31,6 +31,7 @@ const AdminBookings = () => {
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [isRejecting, setIsRejecting] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
   const [confirmationData, setConfirmationData] = useState({
     confirmedDate: '',
     confirmedTime: '',
@@ -296,7 +297,10 @@ const AdminBookings = () => {
                       <td className="px-6 py-5 text-right">
                         <div className="flex justify-end gap-1.5 shrink-0">
                           <button
-                            onClick={() => setSelectedBooking(booking)}
+                            onClick={() => {
+                              setSelectedBooking(booking);
+                              setIsConfirming(false);
+                            }}
                             className="p-2 rounded-lg bg-off-white text-gray-400 hover:text-primary transition-colors hover:shadow-sm"
                             title="View Details"
                           >
@@ -336,6 +340,7 @@ const AdminBookings = () => {
                             <button
                               onClick={() => {
                                 setSelectedBooking(booking);
+                                setIsConfirming(true);
                                 setConfirmationData({
                                   confirmedDate: booking.slotId?.date ? new Date(booking.slotId.date).toISOString().split('T')[0] : '',
                                   confirmedTime: booking.slotId?.startTime || '',
@@ -392,7 +397,7 @@ const AdminBookings = () => {
       </div>
 
       {/* Booking Details Modal */}
-      {selectedBooking && !showTaskModal && !isRejecting && selectedBooking.status !== 'awaiting_payment' && (
+      {selectedBooking && !showTaskModal && !isRejecting && (!isConfirming || selectedBooking.status !== 'awaiting_payment') && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl max-w-4xl w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-off-white/50">
@@ -476,7 +481,7 @@ const AdminBookings = () => {
       )}
 
       {/* Confirmation Modal (Awaiting Payment Status) */}
-      {selectedBooking && selectedBooking.status === 'awaiting_payment' && !isRejecting && (
+      {selectedBooking && selectedBooking.status === 'awaiting_payment' && isConfirming && !isRejecting && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-off-white/50">

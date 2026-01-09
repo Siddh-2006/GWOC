@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  X, CheckCircle, Clock, AlertCircle, Calendar, 
-  User, Target, MessageSquare 
+import {
+  X, CheckCircle, Clock, AlertCircle, Calendar,
+  User, Target, MessageSquare
 } from 'lucide-react';
 import { taskApi } from '../../services/task.api';
 
@@ -23,7 +23,7 @@ const SessionTasksModal = ({ session, isOpen, onClose }) => {
       setError('');
       // Get all user tasks and filter for this session
       const response = await taskApi.getMyTasks();
-      const sessionTasks = response.data?.filter(task => 
+      const sessionTasks = response.data?.filter(task =>
         task.bookingId && task.bookingId._id === session._id
       ) || [];
       setTasks(sessionTasks);
@@ -89,7 +89,7 @@ const SessionTasksModal = ({ session, isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -161,7 +161,7 @@ const SessionTasksModal = ({ session, isOpen, onClose }) => {
                         <p className="text-gray-600">{task.description}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                       <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getPriorityColor(task.priority)}`}>
                         {task.priority}
@@ -183,7 +183,7 @@ const SessionTasksModal = ({ session, isOpen, onClose }) => {
                         )}
                       </span>
                     )}
-                    
+
                     <span className="flex items-center gap-1">
                       <User size={14} />
                       Assigned by: {task.assignedBy?.firstName} {task.assignedBy?.lastName}
@@ -222,7 +222,7 @@ const SessionTasksModal = ({ session, isOpen, onClose }) => {
                           Start Task
                         </button>
                       )}
-                      
+
                       {task.status === 'in_progress' && (
                         <>
                           <button

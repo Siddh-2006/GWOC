@@ -61,8 +61,8 @@ const FoundationNode = ({ entry, index, isLast, hasAdminEntries }) => {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ type: "spring", stiffness: 260, damping: 20, delay: index * 0.2 }}
           className={`w-6 h-6 rounded-lg flex items-center justify-center ${isLast && !hasAdminEntries
-              ? 'bg-[#Dd1764] shadow-lg'
-              : 'bg-[#3F2965]'
+            ? 'bg-[#Dd1764] shadow-lg'
+            : 'bg-[#3F2965]'
             }`}
         >
           <Sprout className="w-3 h-3 text-white" />
@@ -145,8 +145,8 @@ const AdminJourneyNode = ({ entry, sessionNumber, index, isLast }) => {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
           className={`w-6 h-6 rounded-lg flex items-center justify-center ${isLast
-              ? 'bg-[#Dd1764] shadow-lg'
-              : 'bg-[#3F2965]'
+            ? 'bg-[#Dd1764] shadow-lg'
+            : 'bg-[#3F2965]'
             }`}
         >
           {getTypeIcon(safeEntry.type)}
@@ -195,7 +195,7 @@ const AdminJourneyNode = ({ entry, sessionNumber, index, isLast }) => {
   );
 };
 
-const MyJourney = ({ journeyData, loading }) => {
+const MyJourney = ({ journeyData, loading, isAdminView = false, userName = 'Client' }) => {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -267,8 +267,14 @@ const MyJourney = ({ journeyData, loading }) => {
 
       <div className="relative z-10 pb-20">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-serif font-bold text-gray-800">Your Growth Journey</h2>
-          <p className="text-gray-500 mt-2 max-w-lg mx-auto">Every step forward is a victory. Here is your visualized path of progress.</p>
+          <h2 className="text-3xl font-serif font-bold text-gray-800">
+            {isAdminView ? `${userName}'s Growth Journey` : 'Your Growth Journey'}
+          </h2>
+          <p className="text-gray-500 mt-2 max-w-lg mx-auto">
+            {isAdminView
+              ? `${userName}'s visualized path of progress through wellness.`
+              : 'Every step forward is a victory. Here is your visualized path of progress.'}
+          </p>
         </div>
 
         {/* Phase 1: Foundation Milestones */}
@@ -317,7 +323,9 @@ const MyJourney = ({ journeyData, loading }) => {
               </div>
               <h3 className="font-bold text-gray-700 text-lg mb-2">Future Growth</h3>
               <p className="text-[#3F2965]/70 leading-relaxed text-sm">
-                Your personalized journey entries will appear here as you progress through sessions with your therapist.
+                {isAdminView
+                  ? `${userName}'s personalized journey entries will appear here as they progress through sessions.`
+                  : 'Your personalized journey entries will appear here as you progress through sessions with your therapist.'}
               </p>
             </div>
           </motion.div>
@@ -335,7 +343,7 @@ const MyJourney = ({ journeyData, loading }) => {
           </motion.div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

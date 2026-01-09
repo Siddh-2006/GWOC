@@ -37,12 +37,12 @@ const AddSlotModal = ({ isOpen, onClose, onSlotAdded }) => {
       console.log('Creating slot with data:', formData);
       const response = await slotApi.createSlot(formData);
       console.log('Slot creation response:', response);
-      
+
       if (response.success) {
         console.log('Slot created successfully, calling onSlotAdded');
         setSuccess(true);
         onSlotAdded(response.data);
-        
+
         // Show success message briefly before closing
         setTimeout(() => {
           onClose();
@@ -75,14 +75,14 @@ const AddSlotModal = ({ isOpen, onClose, onSlotAdded }) => {
     const newModes = formData.availableModes.includes(mode)
       ? formData.availableModes.filter(m => m !== mode)
       : [...formData.availableModes, mode];
-    
+
     setFormData({ ...formData, availableModes: newModes });
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

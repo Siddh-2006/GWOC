@@ -140,7 +140,7 @@ const AdminLayout = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMobileOpen(false)}
-              className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
             />
             <motion.aside
               initial={{ x: -280 }}

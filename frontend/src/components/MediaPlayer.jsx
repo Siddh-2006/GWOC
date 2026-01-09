@@ -197,7 +197,7 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-90 z-[200] flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center p-4"
         onClick={onClose}
       >
         <motion.div
@@ -432,8 +432,8 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       className={`flex items-center gap-2 transition-colors ${media.hasLiked
-                          ? 'text-red-500'
-                          : 'text-gray-600 hover:text-red-500'
+                        ? 'text-red-500'
+                        : 'text-gray-600 hover:text-red-500'
                         }`}
                     >
                       <Heart

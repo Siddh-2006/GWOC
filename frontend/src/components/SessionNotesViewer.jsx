@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  X, 
-  Edit3, 
-  CheckCircle, 
+import {
+  X,
+  Edit3,
+  CheckCircle,
   Circle,
   Smile,
   Meh,
@@ -58,7 +58,7 @@ const SessionNotesViewer = ({ session, isOpen, onClose, onEdit }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -137,10 +137,9 @@ const SessionNotesViewer = ({ session, isOpen, onClose, onEdit }) => {
                         <div className="mt-4 text-center">
                           <div className="flex items-center justify-center gap-2 text-sm">
                             <span className="text-gray-600">Mood Change:</span>
-                            <span className={`font-semibold ${
-                              notes.mood.after > notes.mood.before ? 'text-green-600' : 
-                              notes.mood.after < notes.mood.before ? 'text-red-600' : 'text-gray-600'
-                            }`}>
+                            <span className={`font-semibold ${notes.mood.after > notes.mood.before ? 'text-green-600' :
+                                notes.mood.after < notes.mood.before ? 'text-red-600' : 'text-gray-600'
+                              }`}>
                               {notes.mood.after > notes.mood.before ? '+' : ''}
                               {notes.mood.after - notes.mood.before}
                             </span>
@@ -244,22 +243,22 @@ const SessionNotesViewer = ({ session, isOpen, onClose, onEdit }) => {
                   )}
 
                   {/* Empty State */}
-                  {!notes.preSessionNotes && !notes.postSessionNotes && 
-                   (!notes.keyTakeaways || notes.keyTakeaways.length === 0) &&
-                   (!notes.goals || notes.goals.length === 0) &&
-                   (!notes.nextSessionTopics || notes.nextSessionTopics.length === 0) &&
-                   !notes.mood?.before && !notes.mood?.after && (
-                    <div className="text-center py-12">
-                      <div className="text-gray-400 mb-4">📝</div>
-                      <p className="text-gray-500">No notes available for this session</p>
-                      <button
-                        onClick={() => onEdit(session)}
-                        className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                      >
-                        Add Notes
-                      </button>
-                    </div>
-                  )}
+                  {!notes.preSessionNotes && !notes.postSessionNotes &&
+                    (!notes.keyTakeaways || notes.keyTakeaways.length === 0) &&
+                    (!notes.goals || notes.goals.length === 0) &&
+                    (!notes.nextSessionTopics || notes.nextSessionTopics.length === 0) &&
+                    !notes.mood?.before && !notes.mood?.after && (
+                      <div className="text-center py-12">
+                        <div className="text-gray-400 mb-4">📝</div>
+                        <p className="text-gray-500">No notes available for this session</p>
+                        <button
+                          onClick={() => onEdit(session)}
+                          className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                        >
+                          Add Notes
+                        </button>
+                      </div>
+                    )}
                 </div>
               ) : (
                 <div className="text-center py-12">

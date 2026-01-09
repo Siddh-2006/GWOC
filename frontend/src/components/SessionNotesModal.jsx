@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  X, 
-  Save, 
-  Plus, 
-  Target, 
-  CheckCircle, 
+import {
+  X,
+  Save,
+  Plus,
+  Target,
+  CheckCircle,
   Circle,
   Trash2,
   Smile,
@@ -76,7 +76,7 @@ const SessionNotesModal = ({ session, isOpen, onClose, onSave }) => {
   const toggleGoal = (index) => {
     setNotes(prev => ({
       ...prev,
-      goals: prev.goals.map((goal, i) => 
+      goals: prev.goals.map((goal, i) =>
         i === index ? { ...goal, completed: !goal.completed } : goal
       )
     }));
@@ -132,11 +132,10 @@ const SessionNotesModal = ({ session, isOpen, onClose, onSave }) => {
             key={mood}
             type="button"
             onClick={() => onChange(mood)}
-            className={`w-8 h-8 rounded-full border-2 text-xs font-medium transition-colors ${
-              value === mood
+            className={`w-8 h-8 rounded-full border-2 text-xs font-medium transition-colors ${value === mood
                 ? 'bg-purple-600 text-white border-purple-600'
                 : 'bg-white text-gray-600 border-gray-300 hover:border-purple-300'
-            }`}
+              }`}
           >
             {mood}
           </button>
@@ -161,7 +160,7 @@ const SessionNotesModal = ({ session, isOpen, onClose, onSave }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}

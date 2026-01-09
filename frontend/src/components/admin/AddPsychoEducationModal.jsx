@@ -77,7 +77,7 @@ const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
       };
 
       const response = await psychoEducationApi.createContent(contentData);
-      
+
       if (response.success) {
         onContentAdded(response.data);
         onClose();
@@ -283,7 +283,7 @@ const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

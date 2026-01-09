@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Heart, BookOpen, Play, Target } from 'lucide-react';
 import MediaCard from '../MediaCard';
 
-const LikedContentTab = ({ likedMedia, loading, error, onUnlike }) => {
+const LikedContentTab = ({ likedMedia, loading, error, onUnlike, isAdminView = false, userName = 'User' }) => {
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -24,7 +24,9 @@ const LikedContentTab = ({ likedMedia, loading, error, onUnlike }) => {
       <div className="flex justify-center items-center py-24">
         <div className="flex flex-col items-center">
           <div className="w-10 h-10 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-500 font-medium">Gathering your favorites...</p>
+          <p className="text-gray-500 font-medium">
+            {isAdminView ? `Gathering ${userName}'s favorites...` : 'Gathering your favorites...'}
+          </p>
         </div>
       </div>
     );
@@ -51,9 +53,13 @@ const LikedContentTab = ({ likedMedia, loading, error, onUnlike }) => {
           <div className="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-8">
             <Heart size={40} className="text-pink-400" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-3">Your library is empty</h3>
+          <h3 className="text-2xl font-bold text-gray-800 mb-3">
+            {isAdminView ? `${userName}'s library is empty` : 'Your library is empty'}
+          </h3>
           <p className="text-gray-500 mb-10 leading-relaxed text-lg">
-            Save the resources that resonate with you. When you find an article, video, or exercise that helps, click the heart to keep it here.
+            {isAdminView
+              ? `${userName} hasn't saved any resources yet.`
+              : 'Save the resources that resonate with you. When you find an article, video, or exercise that helps, click the heart to keep it here.'}
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">

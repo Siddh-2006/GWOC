@@ -4,13 +4,16 @@ import { bookingApi } from '../../booking/booking.api';
 import { slotApi } from '../../../services/slot.api';
 import contactApi from '../../../services/contact.api';
 import { corporateService } from '../../../services/corporate.api';
-import AddSlotModal from '../../../components/admin/AddSlotModal';
-import { Calendar, Clock, ShieldCheck, Zap, ArrowUpRight, Star, Loader2, TrendingUp } from 'lucide-react';
+import { Calendar, Clock, ShieldCheck, Zap, ArrowUpRight, Star, Loader2, TrendingUp, Plus, BookOpen, Library } from 'lucide-react';
 import { motion } from 'framer-motion';
+import AddMediaModal from '../../../components/admin/AddMediaModal';
+import AddPsychoEducationModal from '../../../components/admin/AddPsychoEducationModal';
 
 const AdminOverview = () => {
   const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showMediaModal, setShowMediaModal] = useState(false);
+  const [showResourceModal, setShowResourceModal] = useState(false);
   const [stats, setStats] = useState({
     pendingBookings: 0,
     totalSlots: 0,
@@ -118,8 +121,8 @@ const AdminOverview = () => {
         pendingBookings: allBookings.filter(b => b.status === 'pending').length,
         totalSlots: allSlots.length,
         activeSessions: allBookings.filter(b => b.status === 'confirmed').length,
-        newMessages: contactRes.data?.unread || contactRes.data?.total || 0,
-        corporateInquiries: corpRes.pending || corpRes.total || 0,
+        newMessages: contactRes.data?.unread || 0,
+        corporateInquiries: corpRes.data?.totalInquiries || 0,
         recentActivity: sortedActivities
       });
     } catch (error) {
@@ -157,9 +160,33 @@ const AdminOverview = () => {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-primary mb-2">Welcome Back, Admin</h1>
-        <p className="text-gray-500">Here's what's happening with MindSettler today.</p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-primary mb-2">Welcome Back, Admin</h1>
+          <p className="text-gray-500 text-sm">Here's what's happening with MindSettler</p>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => setShowResourceModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-purple-100 text-primary rounded-2xl hover:bg-purple-50 transition-all shadow-sm hover:shadow group"
+          >
+            <div className="p-1.5 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
+              <BookOpen size={16} className="text-primary" />
+            </div>
+            <span className="font-semibold text-sm">Add Resources</span>
+          </button>
+
+          <button
+            onClick={() => setShowMediaModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-linear-to-r from-primary to-secondary text-white rounded-2xl hover:opacity-90 transition-all shadow-sm hover:shadow-lg group"
+          >
+            <div className="p-1.5 bg-white/20 rounded-lg group-hover:bg-white/30 transition-colors">
+              <Plus size={16} className="text-white" />
+            </div>
+            <span className="font-semibold text-sm">Add Library Content</span>
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -255,6 +282,28 @@ const AdminOverview = () => {
           onClose={() => setShowAddModal(false)}
           onSlotAdded={() => {
             setShowAddModal(false);
+            fetchStats();
+          }}
+        />
+      )}
+
+      {showMediaModal && (
+        <AddMediaModal
+          isOpen={showMediaModal}
+          onClose={() => setShowMediaModal(false)}
+          onMediaAdded={() => {
+            setShowMediaModal(false);
+            fetchStats();
+          }}
+        />
+      )}
+
+      {showResourceModal && (
+        <AddPsychoEducationModal
+          isOpen={showResourceModal}
+          onClose={() => setShowResourceModal(false)}
+          onContentAdded={() => {
+            setShowResourceModal(false);
             fetchStats();
           }}
         />

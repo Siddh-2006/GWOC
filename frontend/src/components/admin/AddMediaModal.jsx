@@ -101,7 +101,7 @@ const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
         mediaData.fileUrl = formData.fileUrl;
         mediaData.thumbnailUrl = formData.thumbnailUrl;
         mediaData.mimeType = formData.mimeType;
-        
+
         if (formData.duration) {
           mediaData.duration = parseInt(formData.duration);
         }
@@ -111,7 +111,7 @@ const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
       }
 
       const response = await mediaApi.createMedia(mediaData);
-      
+
       if (response.success) {
         onMediaAdded(response.data);
         onClose();
@@ -154,7 +154,7 @@ const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
               Add Image
             </button>
           </div>
-          
+
           {formData.assets.length === 0 && (
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
               <Image size={32} className="mx-auto text-gray-400 mb-2" />
@@ -205,7 +205,7 @@ const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
               </div>
             </div>
           ))}
-          
+
           <p className="text-xs text-gray-500 mt-2">
             Upload images to Cloudinary and paste the URLs here. First image will be used as thumbnail.
           </p>
@@ -217,8 +217,8 @@ const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
           {/* File URL */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {formData.type === 'video' || formData.type === 'vlog' ? 'Video URL *' : 
-               formData.type === 'audio' ? 'Audio URL *' : 'File URL *'}
+              {formData.type === 'video' || formData.type === 'vlog' ? 'Video URL *' :
+                formData.type === 'audio' ? 'Audio URL *' : 'File URL *'}
             </label>
             <input
               type="url"
@@ -227,11 +227,11 @@ const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
               onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder={
-                formData.type === 'video' || formData.type === 'vlog' 
+                formData.type === 'video' || formData.type === 'vlog'
                   ? "https://res.cloudinary.com/your-video.mp4"
                   : formData.type === 'audio'
-                  ? "https://res.cloudinary.com/your-audio.mp3"
-                  : "https://example.com/file"
+                    ? "https://res.cloudinary.com/your-audio.mp3"
+                    : "https://example.com/file"
               }
             />
           </div>
@@ -330,7 +330,7 @@ const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -396,8 +396,8 @@ const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
               </label>
               <select
                 value={formData.type}
-                onChange={(e) => setFormData({ 
-                  ...formData, 
+                onChange={(e) => setFormData({
+                  ...formData,
                   type: e.target.value,
                   // Reset type-specific fields when changing type
                   assets: [],
