@@ -367,7 +367,7 @@ const BookingPage = () => {
                   </div>
 
                   <p className="text-xs text-gray-500 mt-4">
-                    You can always come back to this later
+                    This reflection is completed only once. Your privacy is our priority. Responses help us tailor your first session to your needs.
                   </p>
                 </div>
               </motion.div>
@@ -375,8 +375,8 @@ const BookingPage = () => {
 
             {/* Reflection Flow Modal */}
             {showReflection && (
-              <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                <div className="bg-linear-to-br from-slate-50 via-blue-50/30 to-green-50/20 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-[2.5rem] max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-purple-50">
                   <div className="relative">
                     {/* Close button */}
                     <button

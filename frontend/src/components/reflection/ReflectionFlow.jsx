@@ -154,129 +154,126 @@ const ReflectionFlow = ({ onComplete, onSkip }) => {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <Heart className="text-primary" size={24} />
-          <h2 className="text-2xl font-bold text-primary">Pre-Session Reflection</h2>
-        </div>
-        <p className="text-gray-600 text-sm max-w-lg mx-auto">
-          This short reflection helps us understand you better before your first conversation.
-          It's optional and there are no right or wrong answers.
-        </p>
-      </div>
+      {/* Header Area - Removed for ultra-minimalist look */}
+      <div className="mb-4" />
 
-      {/* Progress Bar */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm text-gray-600">
-            Question {currentQuestionIndex + 1} of {questions.length}
+      {/* Question Card Area */}
+      <div className="relative">
+        <div className="flex justify-between items-center mb-4 px-1">
+          <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
+            Step {currentQuestionIndex + 1} of {questions.length}
           </span>
-          <span className="text-sm text-gray-600">{Math.round(progress)}% complete</span>
+          <span className="text-sm font-bold text-primary">{Math.round(progress)}%</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
+
+        <div className="w-full bg-gray-100 h-1 rounded-full mb-6 overflow-hidden">
           <motion.div
-            className="bg-primary h-2 rounded-full"
+            className="bg-primary h-full rounded-full"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           />
         </div>
-      </div>
 
-      {/* Question */}
-      <AnimatePresence mode="wait">
-        {currentQuestion && (
-          <motion.div
-            key={currentQuestion.questionNumber}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="mb-8"
-          >
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-              <h3 className="text-lg font-medium text-gray-800 mb-6 leading-relaxed">
-                {currentQuestion.questionText}
-              </h3>
+        {/* Question */}
+        <AnimatePresence mode="wait">
+          {currentQuestion && (
+            <motion.div
+              key={currentQuestion.questionNumber}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="mb-8"
+            >
+              <div className="bg-white rounded-[2rem] p-2 sm:p-4">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-6 leading-snug">
+                  {currentQuestion.questionText}
+                </h3>
 
-              <div className="space-y-3">
-                {currentQuestion.options.map((option, index) => (
-                  <motion.button
-                    key={option.value}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    onClick={() => handleAnswerSelect(currentQuestion.questionNumber, option.value)}
-                    className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${currentResponse === option.value
-                        ? 'border-primary bg-primary/5 text-primary'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${currentResponse === option.value
-                          ? 'border-primary bg-primary'
-                          : 'border-gray-300'
-                        }`}>
-                        {currentResponse === option.value && (
-                          <div className="w-2 h-2 bg-white rounded-full" />
-                        )}
+                <div className="space-y-4">
+                  {currentQuestion.options.map((option, index) => (
+                    <motion.button
+                      key={option.value}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      onClick={() => handleAnswerSelect(currentQuestion.questionNumber, option.value)}
+                      className={`w-full text-left p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 relative overflow-hidden group ${currentResponse === option.value
+                        ? 'border-primary bg-primary shadow-md shadow-primary/10'
+                        : 'border-gray-50 bg-gray-50/30 hover:bg-white hover:border-primary/20'
+                        }`}
+                    >
+                      <div className="flex items-center gap-4 relative z-10">
+                        <div className={`w-5 sm:w-6 h-5 sm:h-6 rounded-full border-2 flex items-center justify-center transition-all ${currentResponse === option.value
+                          ? 'border-white bg-white shadow-sm'
+                          : 'border-gray-300 bg-white'
+                          }`}>
+                          {currentResponse === option.value && (
+                            <div className="w-2.5 h-2.5 bg-primary rounded-full" />
+                          )}
+                        </div>
+                        <span className={`text-[13px] sm:text-sm font-semibold transition-colors ${currentResponse === option.value ? 'text-white' : 'text-gray-700'}`}>
+                          {option.label}
+                        </span>
                       </div>
-                      <span className="text-sm font-medium">{option.label}</span>
-                    </div>
-                  </motion.button>
-                ))}
+
+                      {/* Selected state pulse effect */}
+                      {currentResponse === option.value && (
+                        <motion.div
+                          layoutId="activeGlow"
+                          className="absolute inset-0 bg-primary/5 blur-xl"
+                        />
+                      )}
+                    </motion.button>
+                  ))}
+                </div>
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Navigation */}
-      <div className="flex justify-between items-center">
-        <button
-          onClick={handlePrevious}
-          disabled={currentQuestionIndex === 0}
-          className="px-6 py-2 text-gray-600 font-medium border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Previous
-        </button>
-
-        <div className="flex gap-3">
+        {/* Navigation */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-12 pb-6">
           <button
-            onClick={onSkip}
-            className="px-6 py-2 text-gray-600 font-medium border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2"
+            onClick={handlePrevious}
+            disabled={currentQuestionIndex === 0}
+            className="w-full sm:w-auto px-8 py-3 text-gray-400 font-bold text-sm hover:text-primary transition-colors disabled:opacity-0 disabled:cursor-not-allowed"
           >
-            <SkipForward size={16} />
-            Skip Reflection
+            Previous
           </button>
 
-          <button
-            onClick={handleNext}
-            disabled={!currentResponse || submitting}
-            className="px-6 py-2 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {submitting ? (
-              <>
-                <Loader2 className="animate-spin" size={16} />
-                {currentQuestionIndex === questions.length - 1 ? 'Submitting...' : 'Next'}
-              </>
-            ) : (
-              <>
-                {currentQuestionIndex === questions.length - 1 ? 'Complete' : 'Next'}
-                <ArrowRight size={16} />
-              </>
-            )}
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <button
+              onClick={onSkip}
+              className="px-8 py-3 text-gray-400 font-bold text-sm hover:text-gray-600 transition-all flex items-center justify-center gap-2"
+            >
+              Skip for Now
+            </button>
+
+            <button
+              onClick={handleNext}
+              disabled={!currentResponse || submitting}
+              className="px-10 py-3 bg-linear-to-r from-primary to-secondary text-white font-bold rounded-2xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="animate-spin" size={18} />
+                  {currentQuestionIndex === questions.length - 1 ? 'Submitting...' : 'Next'}
+                </>
+              ) : (
+                <>
+                  <span>{currentQuestionIndex === questions.length - 1 ? 'Finish Reflection' : 'Next Question'}</span>
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Footer Note */}
-      <div className="text-center mt-8">
-        <p className="text-xs text-gray-500">
-          This reflection is only completed once for first-time clients.
-          Your responses help us prepare for a more meaningful first conversation.
-        </p>
+        {/* Footer note removed as per request */}
       </div>
     </div>
   );
