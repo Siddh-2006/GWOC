@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { Building2, GraduationCap, Users } from 'lucide-react';
 
 /**
@@ -60,37 +61,56 @@ export const CorporateAudience = () => {
   ];
 
   return (
-    <section className="py-24 px-8 max-w-7xl mx-auto" ref={sectionRef}>
-      <h2
-        className="text-3xl md:text-5xl font-bold text-primary text-center mb-16 opacity-0 translate-y-5 transition-all duration-800 ease-out relative"
-        ref={titleRef}
-      >
-        Who We Work With
-        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-24 h-1.5 bg-gradient-to-r from-pink-200 to-pink-400 rounded-full"></div>
-      </h2>
+    <section className="py-24 px-8 max-w-7xl mx-auto bg-bg relative overflow-hidden" ref={sectionRef}>
+      {/* Premium Background Asset */}
+      <div
+        className="absolute inset-0 z-0 opacity-40 pointer-events-none"
+        style={{
+          backgroundImage: "url('/assets/corporate-audience-bg.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      ></div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20">
-        {audiences.map((audience, index) => (
-          <div
-            key={index}
-            className="group relative p-10 bg-white rounded-[2.5rem] shadow-xl hover:shadow-2xl transition-all duration-500 ease-out hover:-translate-y-2 border border-slate-100 overflow-hidden"
-            ref={(el) => cardsRef.current[index] = el}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      <div className="relative z-10 max-w-6xl mx-auto px-4">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-4xl md:text-6xl font-black text-center mb-16 relative"
+          ref={titleRef}
+        >
+          <span className="bg-gradient-to-r from-primary via-purple-light to-primary bg-clip-text text-transparent">
+            Who We Work With
+          </span>
+          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-24 h-1.5 bg-gradient-to-r from-secondary to-pink-400 rounded-full"></div>
+        </motion.h2>
 
-            <div className="relative z-10">
-              <div className="w-20 h-20 bg-purple-50 rounded-2xl flex items-center justify-center mb-8 text-purple-600 group-hover:scale-110 group-hover:bg-purple-100 transition-all duration-300 shadow-sm">
-                {audience.icon}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20">
+          {audiences.map((audience, index) => (
+            <div
+              key={index}
+              className="group relative p-10 bg-white rounded-[2.5rem] shadow-xl hover:shadow-2xl transition-all duration-500 ease-out hover:-translate-y-2 border border-slate-100 overflow-hidden"
+              ref={(el) => cardsRef.current[index] = el}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-purple via-purple-light to-purple-soft opacity-0 group-hover:opacity-5 transition-opacity duration-500"></div>
+
+              <div className="relative z-10">
+                <div className="w-20 h-20 bg-gradient-to-br from-purple via-purple-light to-purple-soft rounded-2xl flex items-center justify-center mb-8 text-white group-hover:scale-110 transition-all duration-300 shadow-lg relative overflow-hidden border border-purple-200/20">
+                  <div className="absolute inset-0 bg-white/10 "></div>
+                  <div className="relative z-10">{audience.icon}</div>
+                </div>
+                <h3 className="text-2xl font-black text-slate-800 mb-4 tracking-tight">
+                  {audience.title}
+                </h3>
+                <p className="text-slate-500 leading-relaxed text-lg font-medium italic">
+                  {audience.description}
+                </p>
               </div>
-              <h3 className="text-2xl font-bold text-[#1a2b4b] mb-4 tracking-tight">
-                {audience.title}
-              </h3>
-              <p className="text-slate-500 leading-relaxed text-lg">
-                {audience.description}
-              </p>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );

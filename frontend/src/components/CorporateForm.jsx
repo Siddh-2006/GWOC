@@ -11,7 +11,7 @@ import useAuthStore from '../store/useAuthStore';
  */
 export const CorporateForm = () => {
   const { isAuthenticated, user } = useAuthStore();
-  
+
   const [formData, setFormData] = useState({
     organizationName: '',
     contactPerson: '',
@@ -140,7 +140,7 @@ export const CorporateForm = () => {
   // Show login prompt if user is not authenticated
   if (!isAuthenticated) {
     return (
-      <section className="py-24 px-8 max-w-6xl mx-auto">
+      <section className="px-8 max-w-6xl mx-auto">
         <div className="glass-card rounded-3xl p-16 shadow-xl my-16">
           <div className="text-center">
             <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -150,7 +150,7 @@ export const CorporateForm = () => {
               Login Required
             </h3>
             <p className="text-lg leading-relaxed text-gray-700 max-w-2xl mx-auto mb-8">
-              To ensure we can properly follow up on your corporate inquiry and provide personalized service, 
+              To ensure we can properly follow up on your corporate inquiry and provide personalized service,
               please log in to your account before submitting the form.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
