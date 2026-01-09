@@ -11,6 +11,8 @@ export const contactFormLimiter = rateLimit({
   },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  // Trust proxy for serverless environments
+  trustProxy: true,
   handler: (req, res) => {
     res.status(429).json({
       success: false,
@@ -29,5 +31,7 @@ export const generalLimiter = rateLimit({
     message: 'Too many requests from this IP. Please try again later.'
   },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  // Trust proxy for serverless environments
+  trustProxy: true
 });

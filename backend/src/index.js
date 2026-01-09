@@ -29,6 +29,9 @@ import { sessionReminderService } from './services/session-reminder.service.js';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust proxy for Vercel/serverless environments
+app.set('trust proxy', 1);
+
 // Database connection with serverless-optimized settings
 const mongoOptions = {
   serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
