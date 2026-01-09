@@ -32,17 +32,21 @@ const PORT = process.env.PORT || 3001;
 // Trust proxy for Vercel/serverless environments
 app.set('trust proxy', 1);
 
-// Database connection with serverless-optimized settings
+// Database connection with environment-aware settings
 const mongoOptions = {
-  serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-  socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
-  bufferMaxEntries: 0, // Disable mongoose buffering
-  bufferCommands: false, // Disable mongoose buffering
-  maxPoolSize: 10, // Maintain up to 10 socket connections
-  minPoolSize: 1, // Maintain at least 1 socket connection
-  maxIdleTimeMS: 30000, // Close connections after 30s of inactivity
-  connectTimeoutMS: 10000, // Give up initial connection after 10s
+  serverSelectionTimeoutMS: process.env.NODE_ENV === 'production' ? 5000 : 30000,
+  socketTimeoutMS: 45000,
+  connectTimeoutMS: 10000,
+  maxPoolSize: process.env.NODE_ENV === 'production' ? 10 : 5,
+  minPoolSize: 1,
+  maxIdleTimeMS: 30000,
 };
+
+// Only add serverless-specific options in production
+if (process.env.NODE_ENV === 'production') {
+  mongoOptions.bufferMaxEntries = 0; // Correct camelCase
+  mongoOptions.bufferCommands = false;
+}
 
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mindsettler', mongoOptions)
   .then(() => {
