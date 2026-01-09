@@ -29,14 +29,57 @@ import { sessionReminderService } from './services/session-reminder.service.js';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Database connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mindsettler')
+// Database connection with serverless-optimized settings
+const mongoOptions = {
+  serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+  socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+  bufferMaxEntries: 0, // Disable mongoose buffering
+  bufferCommands: false, // Disable mongoose buffering
+  maxPoolSize: 10, // Maintain up to 10 socket connections
+  minPoolSize: 1, // Maintain at least 1 socket connection
+  maxIdleTimeMS: 30000, // Close connections after 30s of inactivity
+  connectTimeoutMS: 10000, // Give up initial connection after 10s
+};
+
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mindsettler', mongoOptions)
   .then(() => {
     if (process.env.NODE_ENV !== 'production') {
       console.log('✅ Connected to MongoDB');
     }
   })
-  .catch(err => console.error('❌ MongoDB connection error:', err));
+  .catch(err => {
+    console.error('❌ MongoDB connection error:', err);
+    // In serverless, we don't want to exit the process
+    if (process.env.NODE_ENV !== 'production') {
+      process.exit(1);
+    }
+  });
+
+// Handle connection events for better serverless performance
+mongoose.connection.on('connected', () => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('🔗 Mongoose connected to MongoDB');
+  }
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('❌ Mongoose connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('🔌 Mongoose disconnected from MongoDB');
+  }
+});
+
+// Graceful shutdown for serverless
+process.on('SIGINT', async () => {
+  await mongoose.connection.close();
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('🛑 MongoDB connection closed through app termination');
+  }
+  process.exit(0);
+});
 
 // Middleware
 app.use(helmet({
@@ -108,8 +151,44 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/journey', journeyRoutes);
 
 // Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+app.get('/health', async (req, res) => {
+  try {
+    // Test database connection
+    const dbStatus = mongoose.connection.readyState;
+    const dbStatusText = {
+      0: 'disconnected',
+      1: 'connected',
+      2: 'connecting',
+      3: 'disconnecting'
+    }[dbStatus] || 'unknown';
+
+    // Quick database test
+    let dbTest = 'untested';
+    if (dbStatus === 1) {
+      try {
+        await mongoose.connection.db.admin().ping();
+        dbTest = 'success';
+      } catch (dbError) {
+        dbTest = 'failed';
+      }
+    }
+
+    res.json({ 
+      status: 'OK', 
+      timestamp: new Date().toISOString(),
+      database: {
+        status: dbStatusText,
+        test: dbTest
+      },
+      environment: process.env.NODE_ENV || 'development'
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      timestamp: new Date().toISOString(),
+      error: error.message
+    });
+  }
 });
 
 app.listen(PORT, () => {

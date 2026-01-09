@@ -130,13 +130,20 @@ export const mediaController = {
 
       const skip = (page - 1) * limit;
 
-      const media = await Media.find(query)
+      // Add timeout handling for serverless
+      const queryTimeout = 8000; // 8 seconds timeout
+      
+      const mediaPromise = Media.find(query)
         .select('-createdBy -updatedBy')
         .sort({ publishedAt: -1 })
         .skip(skip)
-        .limit(parseInt(limit));
+        .limit(parseInt(limit))
+        .maxTimeMS(queryTimeout);
 
-      const total = await Media.countDocuments(query);
+      const countPromise = Media.countDocuments(query).maxTimeMS(queryTimeout);
+
+      // Execute both queries with timeout
+      const [media, total] = await Promise.all([mediaPromise, countPromise]);
 
       // Add hasLiked status if user is authenticated
       const userId = req.user?.userId;
@@ -161,6 +168,24 @@ export const mediaController = {
       });
     } catch (error) {
       console.error('Get published media error:', error);
+      
+      // Handle specific timeout errors
+      if (error.name === 'MongooseError' && error.message.includes('buffering timed out')) {
+        return res.status(503).json({
+          success: false,
+          message: 'Database connection timeout. Please try again.',
+          error: 'Service temporarily unavailable'
+        });
+      }
+      
+      if (error.name === 'MongoServerSelectionError') {
+        return res.status(503).json({
+          success: false,
+          message: 'Database connection failed. Please try again.',
+          error: 'Service temporarily unavailable'
+        });
+      }
+      
       res.status(500).json({
         success: false,
         message: 'Failed to fetch media',
