@@ -116,8 +116,8 @@ const HeroSlider = () => {
       </AnimatePresence>
 
       {/* Content Container */}
-      <div className="relative z-10 flex h-full items-center px-6 md:px-16 pointer-events-none">
-        <div className="max-w-6xl pointer-events-auto">
+      <div className="relative z-10 flex h-full items-center px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 pointer-events-none">
+        <div className="w-full max-w-xl sm:max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl pointer-events-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
@@ -127,7 +127,7 @@ const HeroSlider = () => {
               transition={{ duration: 0.5 }}
             >
               <header>
-                <p className="text-white uppercase tracking-widest text-sm font-bold mb-4">
+                <p className="text-white uppercase tracking-widest text-[0.625rem] sm:text-xs md:text-sm lg:text-base font-bold mb-2 sm:mb-3 md:mb-4">
                   {slides[current].subtitle}
                 </p>
                 <h1 className="text-pink-400 font-bold text-4xl md:text-7xl leading-tight mb-6">
@@ -135,20 +135,20 @@ const HeroSlider = () => {
                 </h1>
               </header>
 
-              <p className="text-gray-200 text-lg md:text-xl max-w-2xl mb-8 leading-relaxed">
+              <p className="text-gray-200 text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl mb-6 sm:mb-7 md:mb-8 leading-relaxed">
                 {slides[current].desc}
               </p>
             </motion.div>
           </AnimatePresence>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <button className="group bg-white text-gray-900 px-8 py-4 rounded-full font-bold flex items-center justify-center gap-2 hover:bg-blue-50 transition-all active:scale-95 shadow-lg">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <button className="group bg-white text-gray-900 px-6 py-3 sm:px-8 sm:py-4 rounded-full font-bold text-sm sm:text-base md:text-lg flex items-center justify-center gap-2 hover:bg-blue-50 transition-all active:scale-95 shadow-lg">
               Book Your First Session
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition" />
             </button>
 
-            <button className="border-2 border-white/80 text-white px-8 py-4 rounded-full font-bold hover:bg-white hover:text-gray-900 transition-all active:scale-95">
+            <button className="border-2 border-white/80 text-white px-6 py-3 sm:px-8 sm:py-4 rounded-full font-bold text-sm sm:text-base md:text-lg hover:bg-white hover:text-gray-900 transition-all active:scale-95">
               Learn How It Works
             </button>
           </div>
@@ -156,13 +156,14 @@ const HeroSlider = () => {
       </div>
 
       {/* Manual Navigation Controls */}
-      <div className="absolute bottom-10 left-0 right-0 px-6 md:px-16 flex justify-between items-end z-20">
-        <div className="flex gap-2">
+      <div className="absolute bottom-6 sm:bottom-8 md:bottom-10 left-0 right-0 px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 flex justify-between items-end z-20">
+        <div className="flex gap-1.5 sm:gap-2">
           {slides.map((_, idx) => (
             <button
               key={idx}
               onClick={() => { setCurrent(idx); resetTimer(); }}
-              className={`h-1.5 transition-all duration-500 rounded-full ${idx === current ? "w-12 bg-white" : "w-4 bg-white/30 hover:bg-white/50"
+              className={`h-1 sm:h-1.5 transition-all duration-500 rounded-full ${
+                idx === current ? "w-8 sm:w-10 md:w-12 bg-white" : "w-3 sm:w-4 bg-white/30 hover:bg-white/50"
                 }`}
               aria-label={`Go to slide ${idx + 1}`}
             />

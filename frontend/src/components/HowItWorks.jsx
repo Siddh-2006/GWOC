@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Leaf, Heart, Sun, CloudRain } from 'lucide-react';
 
 const stages = [
@@ -6,46 +6,46 @@ const stages = [
     id: 1,
     title: 'Introductory Discovery',
     subtitle: 'Understanding your emotional landscape',
-    description: 'A safe 60-minute space to understand your environment, concerns, and emotional patterns—without judgment or pressure. Together, we gently define your personal goals.',
+    description:
+      'A safe 60-minute space to understand your environment, concerns, and emotional patterns—without judgment or pressure.',
     icon: CloudRain,
     image: '/assets/how_it_works_1.png',
-    color: 'bg-stone-300'
   },
   {
     id: 2,
     title: 'Guided Structure',
     subtitle: 'Building your personalized roadmap',
-    description: 'Based on your needs, we design weekly or bi-weekly sessions focused on specific emotional themes. Each session has a clear direction while moving at your pace.',
+    description:
+      'Based on your needs, we design weekly or bi-weekly sessions focused on specific emotional themes.',
     icon: Leaf,
     image: '/assets/how_it_works_2.png',
-    color: 'bg-rose-200'
   },
   {
     id: 3,
     title: 'Progress Tracking',
     subtitle: 'Noticing growth and change',
-    description: 'Regular check-ins and reflections help you notice growth, emotional shifts, and areas that need more care. Progress is measured gently—no rushing.',
+    description:
+      'Regular check-ins and reflections help you notice growth and emotional shifts.',
     icon: Heart,
     image: '/assets/how_it_works_3.png',
-    color: 'bg-rose-300'
   },
   {
     id: 4,
     title: 'Sustained Well-being',
     subtitle: 'Evolving into your best self',
-    description: 'We focus on equipping you with tools and emotional resilience that stay with you beyond sessions. The goal is long-term balance, not dependency.',
+    description:
+      'We focus on tools and emotional resilience that stay with you beyond sessions.',
     icon: Sun,
     image: '/assets/how_it_works_4.png',
-    color: 'bg-rose-400'
-  }
+  },
 ];
 
 const Particle = ({ delay, left }) => (
   <div
-    className="absolute bottom-0 w-3 h-3 rounded-full bg-rose-200/40 backdrop-blur-sm pointer-events-none"
+    className="absolute bottom-0 w-2 h-2 rounded-full bg-rose-200/40 pointer-events-none"
     style={{
       left: `${left}%`,
-      animation: "drift 8s linear infinite",
+      animation: `drift 10s linear infinite`,
       animationDelay: `${delay}s`,
     }}
   />
@@ -54,7 +54,14 @@ const Particle = ({ delay, left }) => (
 const HowItWorks = () => {
   const containerRef = useRef(null);
   const [activeStage, setActiveStage] = useState(0);
-  const [progress, setProgress] = useState(0);
+
+  const particles = useMemo(
+    () =>
+      [...Array(12)].map((_, i) => (
+        <Particle key={i} delay={i * 1.3} left={Math.random() * 100} />
+      )),
+    []
+  );
 
   useEffect(() => {
     const handleScroll = () => {
@@ -62,98 +69,104 @@ const HowItWorks = () => {
 
       const rect = containerRef.current.getBoundingClientRect();
       const windowHeight = window.innerHeight;
-      const elementHeight = rect.height;
 
-      const scrollableDistance = elementHeight - windowHeight;
-      const scrolled = -rect.top;
+      const scrollable = Math.max(1, rect.height - windowHeight);
+      const progress = Math.min(1, Math.max(0, -rect.top / scrollable));
 
-      let newProgress = scrolled / scrollableDistance;
-      newProgress = Math.max(0, Math.min(1, newProgress));
-
-      setProgress(newProgress);
-
-      const stageIndex = Math.min(
+      const index = Math.min(
         stages.length - 1,
-        Math.floor(newProgress * stages.length)
+        Math.floor(progress * stages.length)
       );
 
-      setActiveStage(stageIndex);
+      setActiveStage(index);
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
-
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <div ref={containerRef} className="relative h-[400vh] bg-rose-50">
+    <section
+      ref={containerRef}
+      className="relative min-h-[300vh] md:min-h-[400vh] bg-rose-50"
+    >
       <style>{`
         @keyframes drift {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
+          0%,100% { transform: translateY(0); }
+          50% { transform: translateY(-18px); }
         }
       `}</style>
-      
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col md:flex-row">
 
-        {/* Background Particles */}
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-          {[...Array(15)].map((_, i) => (
-            <Particle key={i} delay={i * 1.5} left={Math.random() * 100} />
+      <div className="sticky top-0 h-screen flex flex-col md:flex-row overflow-hidden">
+
+        {/* Background particles */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          {particles}
+        </div>
+
+        {/* IMAGE — TOP on mobile, RIGHT on desktop */}
+        <div className="relative z-10 w-full md:w-1/2 h-[45vh] md:h-full order-1 md:order-2">
+          <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-l from-rose-50 via-transparent to-transparent" />
+          {stages.map((stage, index) => (
+            <img
+              key={stage.id}
+              src={stage.image}
+              alt={stage.title}
+              className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${
+                index === activeStage
+                  ? 'opacity-100 scale-100'
+                  : 'opacity-0 scale-110'
+              }`}
+            />
           ))}
         </div>
 
-        {/* LEFT CONTENT */}
-        <div className="relative z-10 w-full md:w-1/2 h-full flex flex-col px-6 md:px-16 lg:px-24">
+        {/* TEXT — BELOW image on mobile, LEFT on desktop */}
+        <div className="relative z-20 w-full md:w-1/2 flex flex-col justify-start md:justify-center px-4 sm:px-6 md:px-16 py-8 md:py-0 order-2 md:order-1">
 
-          {/* Header */}
-          <div className="absolute top-8 md:top-16 left-6 md:left-16 lg:left-24 z-20 max-w-xl pr-4">
-            <h1 className="font-serif text-3xl md:text-5xl text-stone-800 mb-4 leading-tight">
-              How It <br />
-              <span className="italic text-rose-500">Works</span>
+          {/* Heading */}
+          <header className="mb-8 max-w-md md:max-w-xl">
+            <h1 className="font-serif text-[clamp(2rem,5vw,3.5rem)] text-stone-800 leading-tight">
+              How It <span className="italic text-rose-500">Works</span>
             </h1>
-            <p className="text-base md:text-lg text-stone-600">
-              A structured, gentle approach to your mental wellness journey.
+            <p className="mt-3 text-stone-600 text-base md:text-lg">
+              A gentle, structured path toward emotional well-being.
             </p>
-          </div>
+          </header>
 
-          {/* Progress Line */}
-
-          {/* Stage Content */}
-          <div className="relative h-full flex flex-col justify-center md:pl-12">
+          {/* Stage Cards */}
+          <div className="relative min-h-[320px]">
             {stages.map((stage, index) => {
-              const isActive = index === activeStage;
               const Icon = stage.icon;
+              const active = index === activeStage;
 
               return (
                 <div
                   key={stage.id}
-                  className={`absolute w-full md:w-[85%] top-[65%] -translate-y-1/2 -translate-x-4 md:-translate-x-6 transition-all duration-1200 ${
-                    isActive
-                      ? 'opacity-100 scale-100'
-                      : 'opacity-0 scale-95 blur-sm'
+                  className={`absolute inset-0 transition-all duration-700 ${
+                    active
+                      ? 'opacity-100 translate-y-0'
+                      : 'opacity-0 translate-y-6 pointer-events-none'
                   }`}
                 >
-                  <div className="bg-rose-300/10 backdrop-blur-md border border-white/30 rounded-3xl p-8 md:p-10">
+                  <div className="bg-white/60 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-xl max-w-md md:max-w-xl">
                     <div className="flex items-center gap-3 mb-4">
-                      <span className="flex items-center justify-center w-10 h-10 rounded-full bg-rose-100 text-rose-600">
+                      <div className="w-10 h-10 flex items-center justify-center rounded-full bg-rose-100 text-rose-500">
                         <Icon size={20} />
-                      </span>
-                      <span className="text-sm font-bold tracking-widest text-rose-400 uppercase">
-                        Step 0{stage.id}
+                      </div>
+                      <span className="text-xs tracking-widest font-bold text-rose-400">
+                        STEP 0{stage.id}
                       </span>
                     </div>
 
-                    <h2 className="text-3xl md:text-5xl text-stone-800 mb-4">
+                    <h2 className="text-2xl sm:text-3xl font-semibold text-stone-800 mb-2">
                       {stage.title}
                     </h2>
-
-                    <h3 className="text-xl md:text-2xl text-rose-500 italic mb-6">
+                    <h3 className="text-lg italic text-rose-500 mb-4">
                       {stage.subtitle}
                     </h3>
-
-                    <p className="text-lg text-stone-600 max-w-md">
+                    <p className="text-stone-600 leading-relaxed">
                       {stage.description}
                     </p>
                   </div>
@@ -161,37 +174,10 @@ const HowItWorks = () => {
               );
             })}
           </div>
+
         </div>
-
-        {/* RIGHT IMAGES */}
-        <div className="relative z-10 w-full md:w-1/2 h-[40vh] md:h-full bg-rose-50/50">
-          <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-l from-rose-50 via-transparent to-transparent" />
-
-          <div className="relative w-full h-full flex items-center justify-center overflow-hidden p-6 md:p-12">
-            {stages.map((stage, index) => {
-              const isActive = index === activeStage;
-
-              return (
-                <div
-                  key={stage.id}
-                  className={`absolute inset-0 md:inset-12 rounded-[2rem] overflow-hidden shadow-2xl transition-all duration-1500 ${
-                    isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
-                  }`}
-                >
-                  <img
-                    src={stage.image}
-                    alt={stage.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-rose-900/10" />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
       </div>
-    </div>
+    </section>
   );
 };
 

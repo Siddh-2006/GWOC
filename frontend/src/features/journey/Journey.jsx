@@ -263,13 +263,13 @@ const StageCard = ({ stage, state }) => {
       }
     },
     completed: {
-      opacity: 0.5,
+      opacity: 0,
       y: 0,
-      scale: 0.96,
+      scale: 0.94,
       height: 'auto',
       marginBottom: 24,
       pointerEvents: "auto",
-      filter: "grayscale(20%)",
+      filter: "grayscale(40%)",
       transition: { duration: 0.5 }
     }
   };
@@ -347,7 +347,7 @@ export const Journey = () => {
     <div ref={containerRef} className="relative h-[800vh] bg-gradient-to-b from-purple-50 to-pink-50">
 
       {/* Sticky Viewport: This stays fixed while we scroll */}
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col md:flex-row">
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col md:flex-row px-4 sm:px-6 md:px-0">
 
         {/* Heading - Top Left Corner */}
         <motion.div
@@ -411,21 +411,23 @@ export const Journey = () => {
             return (
               <div
                 key={stage.id}
-                className={`absolute flex flex-col items-center pointer-events-auto ${isLastTwo ? 'justify-start' : 'justify-end'}`}
+                className={`absolute flex flex-col items-center pointer-events-auto ${
+                  isLastTwo ? 'justify-start' : 'justify-end'
+                }`}
                 style={{
                   left: `${pt.x}%`,
                   top: `${pt.y}%`,
                   transform: isLastTwo ? 'translate(-50%, 0)' : 'translate(-50%, -100%)',
                   paddingTop: isLastTwo ? '40px' : '0',
                   paddingBottom: isLastTwo ? '0' : '40px',
-                  width: '320px', // Fixed width for consistent bubbles
-                  maxWidth: '85vw' // Prevent overflow on small screens
                 }}
               >
-                <StageCard
-                  stage={stage}
-                  state={cardState}
-                />
+                <div className="w-[240px] max-w-[70vw] md:w-[320px] md:max-w-[85vw]">
+                  <StageCard
+                    stage={stage}
+                    state={cardState}
+                  />
+                </div>
               </div>
             );
           })}
