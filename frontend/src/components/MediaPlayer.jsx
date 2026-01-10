@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Play, Pause, Volume2, VolumeX, Maximize, Download, Heart, MessageCircle } from 'lucide-react';
+import { X, Play, Pause, Volume2, VolumeX, Maximize, Download, Heart, MessageCircle, Eye } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 
 const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -33,6 +35,9 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (!isOpen) return;
+
+      // Ignore shortcuts if user is typing in an input or textarea
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
       switch (e.code) {
         case 'Space':
@@ -204,7 +209,7 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}
-          className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+          className="bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] lg:max-h-[90vh] overflow-y-auto scrollbar-hide"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -402,7 +407,7 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
             </div>
 
             {/* Sidebar */}
-            <div className="w-full lg:w-80 border-l bg-gray-50">
+            <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l bg-gray-50">
               <div className="p-4">
                 {/* Description */}
                 <div className="mb-6">
@@ -425,71 +430,106 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
                 )}
 
                 {/* Actions */}
-                <div className="flex items-center gap-4 mb-6 pb-6 border-b">
-                  {isAuthenticated && (
+                <div className="flex items-center justify-between mb-4 pb-4 border-b">
+                  <div className="flex items-center gap-4">
                     <motion.button
-                      onClick={() => onLike && onLike(media._id)}
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          navigate('/login');
+                          return;
+                        }
+                        onLike && onLike(media._id);
+                      }}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      className={`flex items-center gap-2 transition-colors ${media.hasLiked
+                      className={`transition-colors ${media.hasLiked
                         ? 'text-red-500'
-                        : 'text-gray-600 hover:text-red-500'
+                        : 'text-gray-700 hover:text-red-500'
                         }`}
                     >
                       <Heart
-                        size={20}
-                        className={media.hasLiked ? "fill-red-500 text-red-500" : "text-gray-600"}
+                        size={28}
+                        className={media.hasLiked ? "fill-red-500 text-red-500" : "text-gray-700"}
                       />
-                      <span>{Array.isArray(media.likes) ? media.likes.length : media.likesCount || media.likes || 0}</span>
                     </motion.button>
-                  )}
-                  <button
-                    onClick={() => setShowComments(!showComments)}
-                    className="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-colors"
-                  >
-                    <MessageCircle size={20} />
-                    <span>{media.comments?.length || 0}</span>
-                  </button>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          navigate('/login');
+                          return;
+                        }
+                        setShowComments(!showComments);
+                      }}
+                      className="text-gray-700 hover:text-blue-500 transition-colors"
+                    >
+                      <MessageCircle size={28} />
+                    </motion.button>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <Eye size={18} />
+                    <span className="font-medium">{media.views || 0}</span>
+                  </div>
                 </div>
+
+                {/* Likes Count */}
+                {isAuthenticated && (
+                  <div className="mb-4">
+                    <p className="font-semibold text-gray-800">
+                      {Array.isArray(media.likes) ? media.likes.length : media.likesCount || media.likes || 0} likes
+                    </p>
+                  </div>
+                )}
 
                 {/* Comments Section */}
                 {showComments && (
-                  <div>
+                  <div className="flex flex-col flex-1">
                     <h3 className="font-semibold text-gray-800 mb-4">Comments</h3>
 
-                    {/* Add Comment */}
-                    <form onSubmit={handleCommentSubmit} className="mb-4">
-                      <textarea
-                        value={comment}
-                        onChange={(e) => setComment(e.target.value)}
-                        placeholder="Add a comment..."
-                        className="w-full p-3 border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                        rows="3"
-                      />
-                      <button
-                        type="submit"
-                        disabled={!comment.trim()}
-                        className="mt-2 btn-primary text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Post Comment
-                      </button>
-                    </form>
-
                     {/* Comments List */}
-                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                    <div className="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2 scrollbar-hide">
                       {media.comments && media.comments.length > 0 ? (
                         media.comments.map((comment, index) => (
-                          <div key={index} className="bg-white p-3 rounded-xl">
-                            <p className="text-sm text-gray-800">{comment.content}</p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {new Date(comment.createdAt).toLocaleDateString()}
+                          <div key={index} className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                            <p className="text-sm text-gray-800 leading-relaxed">{comment.content}</p>
+                            <p className="text-[10px] text-gray-400 mt-2 uppercase font-medium">
+                              {new Date(comment.createdAt).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })}
                             </p>
                           </div>
                         ))
                       ) : (
-                        <p className="text-sm text-gray-500 text-center py-4">No comments yet</p>
+                        <p className="text-sm text-gray-500 text-center py-4 italic">No comments yet. Be the first to share one!</p>
                       )}
                     </div>
+
+                    {/* Add Comment */}
+                    {isAuthenticated && (
+                      <div className="mt-auto pt-4 border-t border-gray-100">
+                        <form onSubmit={handleCommentSubmit} className="flex gap-3">
+                          <textarea
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                            placeholder="Add a comment..."
+                            className="flex-1 px-4 py-2 border border-gray-200 rounded-2xl resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm leading-relaxed"
+                            rows="1"
+                            style={{ minHeight: '40px' }}
+                          />
+                          <button
+                            type="submit"
+                            disabled={!comment.trim()}
+                            className="px-6 py-2 bg-primary text-white rounded-full hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold text-sm shadow-sm"
+                          >
+                            Post
+                          </button>
+                        </form>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
