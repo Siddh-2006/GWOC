@@ -35,6 +35,7 @@ import PaymentPage from './pages/PaymentPage';
 
 import useAuthStore from './store/useAuthStore';
 import ResourceReader from './features/psycho-education/ResourceReader';
+import NotFound from './pages/NotFound';
 
 
 import AdminLayout from './features/admin/layouts/AdminLayout';
@@ -97,6 +98,9 @@ function App() {
     <Router>
       <ScrollToTop />
       <Routes>
+        {/* Stand-alone NotFound page (Outside Layout) */}
+        <Route path="/404" element={<NotFound />} />
+
         <Route
           path="/*"
           element={
@@ -129,6 +133,8 @@ function App() {
                 <Route path="/reset-password" element={<AuthRoute><ResetPassword /></AuthRoute>} />
                 <Route path="/pay" element={<PaymentPage />} />
                 <Route path="/oldadmin" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
+
+                <Route path="*" element={<Navigate to="/404" replace />} />
               </Routes>
               <Chatbot />
             </Layout>

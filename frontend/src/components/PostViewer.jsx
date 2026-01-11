@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, MessageCircle, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import ImageWithFallback from './ImageWithFallback';
 import useAuthStore from '../store/useAuthStore';
 
 const PostViewer = ({ post, isOpen, onClose, onLike, onComment }) => {
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [comment, setComment] = useState('');
@@ -45,7 +47,7 @@ const PostViewer = ({ post, isOpen, onClose, onLike, onComment }) => {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}
-          className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+          className="bg-white rounded-3xl max-w-4xl w-full max-h-[95vh] lg:max-h-[90vh] overflow-y-auto scrollbar-hide"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -67,7 +69,7 @@ const PostViewer = ({ post, isOpen, onClose, onLike, onComment }) => {
             </button>
           </div>
 
-          <div className="flex flex-col lg:flex-row max-h-[calc(90vh-80px)]">
+          <div className="flex flex-col lg:flex-row lg:max-h-[calc(90vh-80px)]">
             {/* Image Section */}
             <div className="flex-1 relative bg-black">
               {images.length > 0 ? (
@@ -137,26 +139,36 @@ const PostViewer = ({ post, isOpen, onClose, onLike, onComment }) => {
             </div>
 
             {/* Content Section */}
-            <div className="w-full lg:w-96 border-l bg-white flex flex-col">
+            <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l bg-white flex flex-col">
               <div className="flex-1 overflow-y-auto p-6">
                 {/* Post Actions */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-4">
-                    {isAuthenticated && (
-                      <motion.button
-                        onClick={() => onLike && onLike(post._id)}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className={`transition-colors ${post.hasLiked
-                          ? 'text-red-500'
-                          : 'text-gray-700 hover:text-red-500'
-                          }`}
-                      >
-                        <Heart size={28} className={post.hasLiked ? "fill-red-500 text-red-500" : "text-gray-700"} />
-                      </motion.button>
-                    )}
+                    <motion.button
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          navigate('/login');
+                          return;
+                        }
+                        onLike && onLike(post._id);
+                      }}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      className={`transition-colors ${post.hasLiked
+                        ? 'text-red-500'
+                        : 'text-gray-700 hover:text-red-500'
+                        }`}
+                    >
+                      <Heart size={28} className={post.hasLiked ? "fill-red-500 text-red-500" : "text-gray-700"} />
+                    </motion.button>
 
                     <motion.button
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          navigate('/login');
+                          return;
+                        }
+                      }}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       className="text-gray-700 hover:text-blue-500 transition-colors"
@@ -233,24 +245,26 @@ const PostViewer = ({ post, isOpen, onClose, onLike, onComment }) => {
               </div>
 
               {/* Add Comment */}
-              <div className="p-4 border-t border-gray-100">
-                <form onSubmit={handleCommentSubmit} className="flex gap-3">
-                  <input
-                    type="text"
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    placeholder="Add a comment..."
-                    className="flex-1 px-4 py-2 border border-gray-200 rounded-full focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                  />
-                  <button
-                    type="submit"
-                    disabled={!comment.trim()}
-                    className="px-6 py-2 bg-primary text-white rounded-full hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
-                  >
-                    Post
-                  </button>
-                </form>
-              </div>
+              {isAuthenticated && (
+                <div className="p-4 border-t border-gray-100">
+                  <form onSubmit={handleCommentSubmit} className="flex gap-3">
+                    <input
+                      type="text"
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      placeholder="Add a comment..."
+                      className="flex-1 px-4 py-2 border border-gray-200 rounded-full focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!comment.trim()}
+                      className="px-6 py-2 bg-primary text-white rounded-full hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                    >
+                      Post
+                    </button>
+                  </form>
+                </div>
+              )}
             </div>
           </div>
         </motion.div>
