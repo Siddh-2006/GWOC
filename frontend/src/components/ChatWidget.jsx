@@ -10,6 +10,7 @@ import {
   Phone,
   Loader2
 } from 'lucide-react';
+import apiClient from '../api/apiClient';
 
 const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -64,18 +65,12 @@ const ChatWidget = () => {
         content: msg.content
       }));
 
-      const response = await fetch('/api/chatbot/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: userMessage.content,
-          chatHistory: chatHistory
-        })
+      const response = await apiClient.post('/chatbot/chat', {
+        message: userMessage.content,
+        chatHistory: chatHistory
       });
 
-      const data = await response.json();
+      const data = response.data;
 
       if (data.success) {
         const botMessage = {
