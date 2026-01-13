@@ -1,7 +1,7 @@
 import React from 'react';
 import HeroSlider from '../components/HeroSlider';
 import Journey from '../features/journey/Journey';
-import HowItWorks from '../components/HowItWorks';
+import HowItWorks from '../components/HowItWorksNew';
 import TeamSection from '../components/TeamSection';
 import FootnoteCTA from '../components/FootnoteCTA';
 

@@ -119,7 +119,51 @@ export const sendBookingConfirmation = async (booking, slot, status, rejectionRe
           </div>
         </div>
       `;
-    } else if (status === 'confirmed') {
+    } else if (status === 'awaiting_payment') {
+      subject = 'Booking Request & Payment Received - Verification Pending';
+      html = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+            <div style="background-color: #f59e0b; padding: 30px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px;">MindSettler</h1>
+              <p style="color: #fffbeb; margin: 10px 0 0 0; font-size: 16px;">Payment Verification Pending</p>
+            </div>
+            
+            <div style="padding: 40px 30px;">
+              <h2 style="color: #1e293b; margin-bottom: 20px;">Request Received</h2>
+              
+              <p style="color: #64748b; font-size: 16px; line-height: 1.6;">
+                Dear ${booking.personalInfo.name},
+              </p>
+              
+              <p style="color: #64748b; font-size: 16px; line-height: 1.6;">
+                Thank you for your booking request and payment details. We have received your Transaction ID: <strong>${booking.payment?.paymentId || 'N/A'}</strong>.
+              </p>
+
+               <div style="background-color: #fff7ed; padding: 25px; border-radius: 12px; margin: 25px 0; border-left: 4px solid #f59e0b;">
+                <h3 style="color: #9a3412; margin-top: 0; margin-bottom: 15px;">What's Next?</h3>
+                <p style="margin: 8px 0; color: #431407;">Our team is verifying your payment. Once confirmed, you will receive the final booking confirmation with the meeting link.</p>
+              </div>
+              
+              <div style="background-color: #f8fafc; padding: 25px; border-radius: 12px; margin: 25px 0; border-left: 4px solid #6366f1;">
+                <h3 style="color: #1e293b; margin-top: 0; margin-bottom: 15px;">Requested Details</h3>
+                <p style="margin: 8px 0; color: #475569;"><strong>Date:</strong> ${formatDate(slot.date)}</p>
+                <p style="margin: 8px 0; color: #475569;"><strong>Time:</strong> ${formatTime(slot.startTime)} - ${formatTime(slot.endTime)}</p>
+                <p style="margin: 8px 0; color: #475569;"><strong>Session Mode:</strong> ${booking.sessionMode === 'online' ? 'Online' : 'In-Person'}</p>
+                <p style="margin: 8px 0; color: #475569;"><strong>Amount Paid:</strong> ₹${booking.payment.amount}</p>
+              </div>
+              
+              <p style="color: #64748b; font-size: 14px; text-align: center;">
+                This process usually takes less than 24 hours.
+              </p>
+            </div>
+            
+            <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+              <p style="color: #64748b; margin: 0; font-size: 12px;">
+                MindSettler Studio, Surat, Gujarat, India
+              </p>
+            </div>
+          </div>
+        `;
       subject = 'Payment Received & Session Confirmed - MindSettler';
       const sessionDate = booking.adminResponse.confirmedDate || slot?.date || new Date();
       const sessionTime = booking.adminResponse.confirmedTime || slot?.startTime || '00:00';

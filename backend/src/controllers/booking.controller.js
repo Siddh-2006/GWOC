@@ -74,7 +74,8 @@ export const bookingController = {
         sessionContent,
         sessionMode,
         location,
-        reflectionSessionId
+        reflectionSessionId,
+        transactionId // Extract transaction ID
       } = req.body;
 
       // Validate required fields
@@ -128,6 +129,15 @@ export const bookingController = {
         return res.status(400).json({
           success: false,
           message: 'Valid session mode (online/offline) is required'
+        });
+      }
+
+      // Allow transactionId for offline sessions too if they pay in advance, but optional.
+      // For Online sessions, payment is compulsory now (as per user request).
+      if (sessionMode === 'online' && !transactionId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Payment is required for online sessions. Please provide Transaction ID.'
         });
       }
 
@@ -199,9 +209,11 @@ export const bookingController = {
         payment: {
           amount: paymentAmount,
           currency: 'INR',
-          status: 'pending'
+          status: transactionId ? 'pending_verification' : 'pending',
+          paymentId: transactionId || null,
+          paymentMethod: transactionId ? 'upi' : undefined
         },
-        status: 'pending'
+        status: transactionId ? 'awaiting_payment' : 'pending'
       });
 
       await booking.save();
@@ -218,7 +230,7 @@ export const bookingController = {
         booking.notifications.adminNotified = true;
 
         // Send confirmation to user
-        await sendBookingConfirmation(booking, slot, 'pending');
+        await sendBookingConfirmation(booking, slot, booking.status);
         booking.notifications.userNotified = true;
 
         await booking.save();
