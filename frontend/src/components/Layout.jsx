@@ -5,19 +5,9 @@ import { motion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 
 const Layout = ({ children }) => {
-  const location = useLocation();
-  const isContentWebRoute = location.pathname.startsWith('/resources') ||
-    location.pathname.startsWith('/psycho-education/library');
-  const isHomePage = location.pathname === '/';
-
-  if (isContentWebRoute) {
-    return <>{children}</>;
-  }
-
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Don't render Navbar on home page - Home component manages its own navbar */}
-      {!isHomePage && <Navbar />}
+      <Navbar />
       <motion.main
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -27,7 +17,7 @@ const Layout = ({ children }) => {
         {children}
       </motion.main>
       <Footer />
-    </div>
+    </div >
   );
 };
 

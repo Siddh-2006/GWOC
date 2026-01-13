@@ -21,6 +21,7 @@ import { Corporate } from './pages/Corporate';
 import PsychoEducationHub from './pages/PsychoEducationHub';
 import PsychoEducation from './pages/PsychoEducation';
 import LibraryPage from './pages/content-web/LibraryPage';
+import LibraryPageRefined from './pages/content-web/LibraryPageRefined';
 
 import PrivacyPolicy from './pages/policies/PrivacyPolicy';
 import RefundPolicy from './pages/policies/RefundPolicy';
@@ -52,7 +53,7 @@ const AuthLoader = () => (
   <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
     <div className="text-center">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-      <p className="text-gray-600">Initializing session...</p>
+      <p className="text-gray-600">Loading...</p>
     </div>
   </div>
 );
@@ -111,6 +112,7 @@ function App() {
                 <Route path="/psycho-education" element={<PsychoEducationHub />} />
                 <Route path="/psycho-education/read/:slug" element={<ResourceReader />} />
                 <Route path="/psycho-education/library" element={<LibraryPage />} />
+                <Route path="/library" element={<LibraryPageRefined />} />
                 <Route path="/psycho-education/oldlibrary" element={<PsychoEducation />} />
                 <Route path="/how-it-works" element={<Placeholder title="How It Works" />} />
                 <Route path="/resources" element={<Resources />} />

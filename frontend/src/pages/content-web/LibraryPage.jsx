@@ -6,9 +6,9 @@ import { psychoEducationApi } from '../../services/psychoEducation.api';
 import useAuthStore from '../../store/useAuthStore';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../../components/ToastContainer';
-import ContentWebLayout from '../../features/ContentWeb/components/ContentWebLayout';
 import AddPsychoEducationModal from '../../components/admin/AddPsychoEducationModal';
 import LibraryDetailModal from '../../features/ContentWeb/components/LibraryDetailModal';
+import ContentFilterBar from '../../features/ContentWeb/components/ContentFilterBar';
 
 const LibraryPage = () => {
   const [searchParams] = useSearchParams();
@@ -119,7 +119,8 @@ const LibraryPage = () => {
   };
 
   return (
-    <ContentWebLayout>
+    <div className="min-h-screen bg-[#FFF5F7] pt-24 md:pt-28">
+      <ContentFilterBar />
       <div className="max-w-7xl mx-auto px-6 md:px-12 pb-24">
         {/* ACTION BAR */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-10 pt-4 gap-6 sm:gap-0">
@@ -242,7 +243,7 @@ const LibraryPage = () => {
         content={selectedContent}
         onLike={handleLike}
       />
-    </ContentWebLayout>
+    </div>
   );
 };
 
