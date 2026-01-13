@@ -68,7 +68,8 @@ const Login = () => {
 
           <div className="relative z-10">
             <Link to="/">
-              <Logo variant="invert" className="h-14 mb-12" />
+              <Logo variant="white" className="h-14 mb-12" />
+
             </Link>
             <h1 className="text-5xl font-bold leading-tight mb-6">
               Welcome Back to <span className="text-secondary italic">MindSettler</span>
@@ -97,7 +98,8 @@ const Login = () => {
             transition={{ delay: 0.1 }}
           >
             <div className="mb-10 lg:hidden text-center">
-              <Logo className="h-10 mx-auto" />
+              <Logo variant="white" className="h-10 mx-auto" />
+
             </div>
 
             <h2 className="text-4xl font-bold text-primary mb-2 text-center lg:text-left">Sign In</h2>

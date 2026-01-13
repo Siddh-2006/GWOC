@@ -16,10 +16,10 @@ const ForgotPassword = () => {
     e.preventDefault();
     setLoading(true);
     clearError();
-    
+
     try {
       const response = await authApi.forgotPassword(email);
-      
+
       if (response.success) {
         navigate('/reset-password', { state: { email } });
       } else {
@@ -41,7 +41,8 @@ const ForgotPassword = () => {
         className="max-w-xl w-full glass-card p-8 md:p-12"
       >
         <div className="text-center mb-10">
-          <Logo className="h-12 mx-auto mb-8" />
+          <Logo variant="white" className="h-12 mx-auto mb-8" />
+
           <div className="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-secondary">
             <KeyRound size={32} />
           </div>

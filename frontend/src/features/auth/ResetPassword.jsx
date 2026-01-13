@@ -42,7 +42,7 @@ const ResetPassword = () => {
 
     setLoading(true);
     clearError();
-    
+
     try {
       const response = await authApi.resetPassword({
         email,
@@ -90,7 +90,8 @@ const ResetPassword = () => {
         className="max-w-xl w-full glass-card p-8 md:p-12"
       >
         <div className="text-center mb-10">
-          <Logo className="h-12 mx-auto mb-8" />
+          <Logo variant="white" className="h-12 mx-auto mb-8" />
+
           <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-600">
             <ShieldCheck size={32} />
           </div>
