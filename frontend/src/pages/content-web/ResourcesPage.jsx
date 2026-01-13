@@ -8,7 +8,6 @@ import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../../components/ToastContainer';
 import ContentWebLayout from '../../features/ContentWeb/components/ContentWebLayout';
 import MediaPlayer from '../../components/MediaPlayer';
-import PostViewer from '../../components/PostViewer';
 import ImageWithFallback from '../../components/ImageWithFallback';
 import AddMediaModal from '../../components/admin/AddMediaModal';
 import InlineVideoPlayer from '../../components/InlineVideoPlayer';
@@ -32,7 +31,6 @@ const ResourcesPage = () => {
 
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [showPlayer, setShowPlayer] = useState(false);
-  const [showPostViewer, setShowPostViewer] = useState(false);
 
   const fetchMedia = useCallback(async (page = 1) => {
     try {
@@ -120,11 +118,8 @@ const ResourcesPage = () => {
 
   const handleMediaClick = async (item) => {
     setSelectedMedia(item);
-    if (item.type === 'post') {
-      setShowPostViewer(true);
-    } else {
-      setShowPlayer(true);
-    }
+    // Use MediaPlayer for all media types including posts
+    setShowPlayer(true);
 
     try {
       const response = await mediaApi.getMedia(item._id);
@@ -203,7 +198,7 @@ const ResourcesPage = () => {
                   onClick={() => handleMediaClick(item)}
                   className={`group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer flex ${viewMode === 'grid' ? 'flex-col h-full' : 'flex-row items-center p-4 gap-6'}`}
                 >
-                  <div className={`relative overflow-hidden bg-gray-50 ${viewMode === 'grid' ? 'aspect-video' : 'w-48 h-32 rounded-2xl flex-shrink-0'}`}>
+                  <div className={`relative overflow-hidden bg-gray-50 ${viewMode === 'grid' ? 'aspect-video' : 'w-48 h-32 rounded-2xl shrink-0'}`}>
                     {(item.type === 'video' || item.type === 'vlog') && item.fileUrl ? (
                       <InlineVideoPlayer
                         src={item.fileUrl}
@@ -231,7 +226,7 @@ const ResourcesPage = () => {
                     )}
                   </div>
 
-                  <div className={`p-6 flex flex-col flex-grow ${viewMode === 'list' && 'py-2'}`}>
+                  <div className={`p-6 flex flex-col grow ${viewMode === 'list' && 'py-2'}`}>
                     <h3 className={`${viewMode === 'grid' ? 'text-lg' : 'text-xl'} font-bold text-slate-800 mb-3 line-clamp-2 leading-tight group-hover:text-primary transition-colors`}>
                       {item.title}
                     </h3>
@@ -257,7 +252,7 @@ const ResourcesPage = () => {
                           <span className="text-sm font-semibold tracking-tight">{item.views || 0}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-primary hover:gap-2 transition-all tracking-[0.1em] uppercase">
+                      <div className="flex items-center gap-1 text-[10px] font-bold text-primary hover:gap-2 transition-all tracking-widest uppercase">
                         {item.type === 'video' ? 'WATCH' : item.type === 'audio' ? 'LISTEN' : 'READ'}
                         <MoveRight size={14} />
                       </div>
@@ -295,15 +290,6 @@ const ResourcesPage = () => {
           media={selectedMedia}
           isOpen={showPlayer}
           onClose={() => setShowPlayer(false)}
-          onLike={(mediaId) => handleLike(mediaId)}
-          onComment={handleComment}
-        />
-      )}
-      {showPostViewer && selectedMedia && (
-        <PostViewer
-          post={selectedMedia}
-          isOpen={showPostViewer}
-          onClose={() => setShowPostViewer(false)}
           onLike={(mediaId) => handleLike(mediaId)}
           onComment={handleComment}
         />

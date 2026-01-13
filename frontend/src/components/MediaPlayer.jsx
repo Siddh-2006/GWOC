@@ -21,6 +21,7 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
   const [showMobileDrawer, setShowMobileDrawer] = useState(false); // Mobile drawer state
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0); // For post image navigation
 
   const videoRef = useRef(null);
   const audioRef = useRef(null);
@@ -34,6 +35,7 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
       setShowControls(true);
       setShowSidebar(true); // Show sidebar by default on desktop
       setShowMobileDrawer(false); // Reset mobile drawer
+      setCurrentImageIndex(0); // Reset image index
     }
   }, [isOpen, media]);
 
@@ -52,11 +54,19 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
           break;
         case 'ArrowLeft':
           e.preventDefault();
-          seekRelative(-10);
+          if (isPost && media.assets && media.assets.length > 1) {
+            prevImage();
+          } else {
+            seekRelative(-10);
+          }
           break;
         case 'ArrowRight':
           e.preventDefault();
-          seekRelative(10);
+          if (isPost && media.assets && media.assets.length > 1) {
+            nextImage();
+          } else {
+            seekRelative(10);
+          }
           break;
         case 'ArrowUp':
           e.preventDefault();
@@ -216,11 +226,29 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
     }
   };
 
+  // Image navigation functions for posts
+  const nextImage = () => {
+    if (media.assets && media.assets.length > 1) {
+      setCurrentImageIndex((prev) => (prev + 1) % media.assets.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (media.assets && media.assets.length > 1) {
+      setCurrentImageIndex((prev) => (prev - 1 + media.assets.length) % media.assets.length);
+    }
+  };
+
+  const goToImage = (index) => {
+    setCurrentImageIndex(index);
+  };
+
   if (!isOpen || !media) return null;
 
   const isVideo = media.type === 'video' || media.type === 'vlog';
   const isAudio = media.type === 'audio';
   const isDocument = media.type === 'document';
+  const isPost = media.type === 'post' || media.type === 'image';
 
   return (
     <AnimatePresence>
@@ -465,6 +493,86 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
                   </div>
                 </div>
               )}
+
+              {isPost && (
+                <div className="relative w-full h-full flex items-center justify-center bg-gray-50">
+                  {/* Post Images - handle both fileUrl and assets array */}
+                  {(media.fileUrl || (media.assets && media.assets.length > 0)) ? (
+                    <div className="relative w-full h-full flex items-center justify-center">
+                      {/* Display current image */}
+                      <img
+                        src={media.assets && media.assets.length > 0 
+                          ? media.assets[currentImageIndex]?.fileUrl 
+                          : media.fileUrl
+                        }
+                        alt={`${media.title} - Image ${currentImageIndex + 1}`}
+                        className="max-w-full max-h-full object-contain transition-opacity duration-300"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                      
+                      {/* Navigation arrows - only show if multiple images */}
+                      {media.assets && media.assets.length > 1 && (
+                        <>
+                          {/* Previous button */}
+                          <button
+                            onClick={prevImage}
+                            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-all duration-200 z-10"
+                            title="Previous image"
+                          >
+                            <ChevronLeft size={24} />
+                          </button>
+                          
+                          {/* Next button */}
+                          <button
+                            onClick={nextImage}
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-all duration-200 z-10"
+                            title="Next image"
+                          >
+                            <ChevronRight size={24} />
+                          </button>
+                        </>
+                      )}
+                      
+                      {/* Image counter */}
+                      {media.assets && media.assets.length > 1 && (
+                        <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          {currentImageIndex + 1} / {media.assets.length}
+                        </div>
+                      )}
+
+                      {/* Image dots indicator */}
+                      {media.assets && media.assets.length > 1 && media.assets.length <= 10 && (
+                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                          {media.assets.map((_, index) => (
+                            <button
+                              key={index}
+                              onClick={() => goToImage(index)}
+                              className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                                index === currentImageIndex 
+                                  ? 'bg-white scale-125' 
+                                  : 'bg-white/50 hover:bg-white/80'
+                              }`}
+                              title={`Go to image ${index + 1}`}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* If no image, show placeholder */
+                    <div className="w-full h-full flex items-center justify-center p-8 bg-linear-to-br from-gray-100 to-gray-200">
+                      <div className="text-center">
+                        <div className="w-24 h-24 bg-[#3F2965] bg-opacity-20 rounded-full flex items-center justify-center mb-6 mx-auto">
+                          <MessageCircle size={32} className="text-[#3F2965]" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-800">{media.title}</h3>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Desktop Sidebar - only visible on lg+ screens */}
@@ -487,6 +595,43 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
                         <h3 className="font-semibold text-gray-800 mb-2">Description</h3>
                         <p className="text-sm text-gray-600 leading-relaxed">{media.description}</p>
                       </div>
+
+                      {/* Post Content - only for posts */}
+                      {isPost && media.content && media.content !== media.description && (
+                        <div className="mb-6">
+                          <h3 className="font-semibold text-gray-800 mb-2">Content</h3>
+                          <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap bg-gray-50 p-3 rounded-lg">
+                            {media.content}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Post Images Gallery - only for posts with multiple assets */}
+                      {isPost && media.assets && media.assets.length > 1 && (
+                        <div className="mb-6">
+                          <h3 className="font-semibold text-gray-800 mb-2">Images ({media.assets.length})</h3>
+                          <div className="grid grid-cols-2 gap-2">
+                            {media.assets.slice(0, 4).map((asset, index) => (
+                              <img
+                                key={index}
+                                src={asset.fileUrl}
+                                alt={`${media.title} - Image ${index + 1}`}
+                                className={`w-full h-20 object-cover rounded-lg cursor-pointer transition-all ${
+                                  index === currentImageIndex 
+                                    ? 'ring-2 ring-[#3F2965] opacity-100' 
+                                    : 'hover:opacity-80'
+                                }`}
+                                onClick={() => goToImage(index)}
+                              />
+                            ))}
+                            {media.assets.length > 4 && (
+                              <div className="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 text-xs">
+                                +{media.assets.length - 4} more
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
 
                       {/* Tags */}
                       {media.tags && media.tags.length > 0 && (
@@ -672,6 +817,43 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
                       <h4 className="font-semibold text-gray-800 mb-2">Description</h4>
                       <p className="text-sm text-gray-600 leading-relaxed">{media.description}</p>
                     </div>
+
+                    {/* Post Content - only for posts */}
+                    {isPost && media.content && media.content !== media.description && (
+                      <div>
+                        <h4 className="font-semibold text-gray-800 mb-2">Content</h4>
+                        <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap bg-gray-50 p-4 rounded-xl">
+                          {media.content}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Post Images Gallery - only for posts with multiple assets */}
+                    {isPost && media.assets && media.assets.length > 1 && (
+                      <div>
+                        <h4 className="font-semibold text-gray-800 mb-2">Images ({media.assets.length})</h4>
+                        <div className="grid grid-cols-2 gap-3">
+                          {media.assets.slice(0, 4).map((asset, index) => (
+                            <img
+                              key={index}
+                              src={asset.fileUrl}
+                              alt={`${media.title} - Image ${index + 1}`}
+                              className={`w-full h-24 object-cover rounded-xl cursor-pointer transition-all ${
+                                index === currentImageIndex 
+                                  ? 'ring-2 ring-[#3F2965] opacity-100' 
+                                  : 'hover:opacity-80'
+                              }`}
+                              onClick={() => goToImage(index)}
+                            />
+                          ))}
+                          {media.assets.length > 4 && (
+                            <div className="w-full h-24 bg-gray-100 rounded-xl flex items-center justify-center text-gray-500 text-sm">
+                              +{media.assets.length - 4} more
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Tags */}
                     {media.tags && media.tags.length > 0 && (
