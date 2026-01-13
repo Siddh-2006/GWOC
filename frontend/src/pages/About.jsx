@@ -1,400 +1,497 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, useInView, useScroll, useSpring } from 'framer-motion';
-import { Volume2, VolumeX } from 'lucide-react';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { Heart, Shield, Eye, Sparkles, ArrowRight, CheckCircle2, AlertCircle, Quote, Target } from 'lucide-react';
+import ScrollFloat from '../components/animations/ScrollFloat';
+import Stack from '../components/animations/Stack';
+import CardSwap, { Card } from '../components/animations/CardSwap';
+import MagicBento from '../components/MagicBento';
 
 const About = () => {
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
-  const containerRef = useRef(null);
-  const videoRef = useRef(null);
-  const hoverTimerRef = useRef(null);
-  const flipBackTimerRef = useRef(null);
-
-  const handleMouseEnter = () => {
-    if (flipBackTimerRef.current) {
-      clearTimeout(flipBackTimerRef.current);
-      flipBackTimerRef.current = null;
-    }
-
-    if (!isFlipped) {
-      hoverTimerRef.current = setTimeout(() => {
-        setIsFlipped(true);
-      }, 2000);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (hoverTimerRef.current) {
-      clearTimeout(hoverTimerRef.current);
-      hoverTimerRef.current = null;
-    }
-
-    if (isFlipped) {
-      flipBackTimerRef.current = setTimeout(() => {
-        setIsFlipped(false);
-      }, 5000);
-    }
-  };
-
-  useEffect(() => {
-    if (videoRef.current) {
-      if (isFlipped) {
-        videoRef.current.currentTime = 0;
-        videoRef.current.play().catch(() => {
-          // Autoplay prevented - this is normal behavior
-        });
-      } else {
-        videoRef.current.pause();
-      }
-    }
-  }, [isFlipped]);
-
-  const toggleMute = (e) => {
-    e.stopPropagation();
-    setIsMuted(!isMuted);
-  };
-
-  const contentRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: contentRef,
-    offset: ["start start", "end end"]
-  });
-
-  const scaleY = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
-
-  // Animation variants for gentle fade-in with upward motion
+  // Animation variants
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
     visible: {
       opacity: 1,
       y: 0,
+      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+    }
+  };
+
+  // TODO: About Page Refactor Checklist
+  // - [x] Refine About Page Layout
+  //     - [x] Swap CardSwap and Stack components
+  //     - [x] Standardize typography to compact premium style
+  //     - [x] Rebalance Ethos and Founder section layouts
+  //     - [x] Fix card label clipping issues
+  //     - [x] Adjust Stack fanning direction and peek-out effect
+  //     - [x] Align Hero design to editorial mockup (colors, scale, and background)
+  //     - [x] Redesign section titles (Editorial Hero / Simple Sections)
+  // - [ ] Responsiveness check across all devices
+
+  const float = {
+    animate: {
+      y: [0, -12, 0],
       transition: {
-        duration: 1.0,
-        ease: "easeOut"
+        duration: 6,
+        repeat: Infinity,
+        ease: "easeInOut"
       }
     }
   };
 
-  // Section component with scroll-triggered animation
   const AnimatedSection = ({ children, className = "" }) => {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
-      <div className={`relative pl-0 lg:pl-12 ${className}`}>
-        {/* Timeline Dot */}
-        <motion.div
-          className="absolute left-0 top-10 w-3 h-3 -ml-1 rounded-full bg-purple-500 z-10 hidden lg:block"
-          initial={{ scale: 0 }}
-          animate={isInView ? { scale: 1 } : { scale: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        />
-
-        <motion.div
-          ref={ref}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
-          variants={fadeInUp}
-          className="bg-purple-100/50 p-8 rounded-3xl border border-purple-100 shadow-sm"
-        >
-          {children}
-        </motion.div>
-      </div>
+      <motion.div
+        ref={ref}
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
+        variants={fadeInUp}
+        className={className}
+      >
+        {children}
+      </motion.div>
     );
   };
 
+  const WavyDivider = ({ top = false, color = "fill-white/80" }) => (
+    <div className={`absolute left-0 w-full overflow-hidden leading-0 ${top ? 'top-0 rotate-180' : 'bottom-0'} -z-1`}>
+      <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className={`relative block w-full h-[80px] md:h-[120px] ${color}`}>
+        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"></path>
+      </svg>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20">
-      <div className="flex min-h-screen">
-        {/* LEFT PANEL - Static/Sticky with Original Flip Animation */}
-        <div className="hidden lg:flex lg:w-2/5 xl:w-1/3 sticky top-0 h-screen overflow-hidden">
-          <div className="relative w-full flex flex-col items-center justify-center p-6 lg:p-12">
-            {/* Soft gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-100/40 via-purple-50/30 to-green-100/40" />
+    <div className="min-h-screen bg-white selection:bg-primary/10 selection:text-primary overflow-x-hidden">
 
-            {/* Portrait container with flip animation */}
-            <div className="relative z-10 text-center">
-              <div
-                className="relative mb-8"
-                ref={containerRef}
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
+      {/* 1. CINEMATIC HERO */}
+      <section className="relative bg-gradient-to-b from-bg via-white to-bg overflow-hidden py-28 border-b border-gray-50">
+        {/* Soft background accents */}
+        <div className="absolute top-0 right-0 w-[420px] h-[420px] bg-pink-100/25 rounded-full blur-[120px] -mr-44 -mt-44" />
+        <div className="absolute bottom-0 left-0 w-[420px] h-[420px] bg-purple-100/25 rounded-full blur-[120px] -ml-44 -mb-44" />
+
+        <div className="container mx-auto px-6 lg:px-20 flex flex-col lg:flex-row items-center gap-20 relative z-10">
+          {/* LEFT CONTENT */}
+          <div className="w-full lg:w-1/2 space-y-10">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.7 }}
+              className="flex items-center gap-4"
+            >
+              <div className="w-10 h-[2px] bg-pink-500" />
+              <span className="text-secondary font-semibold tracking-[0.35em] uppercase text-xs">
+                About MindSettler
+              </span>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 25 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-primary"
+            >
+              The Architecture <br />
+              <span className="text-secondary">of Inner Clarity</span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 25 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.7 }}
+              className="text-lg md:text-xl text-primary/80 leading-relaxed max-w-xl border-l border-primary/20 pl-6"
+            >
+              Healing happens in circles, not lines. We provide the map to return to old places with new eyes, honoring the landscape of your internal world.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 25 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.7 }}
+            >
+              <button
+                onClick={() => window.location.href = '/booking'}
+                className="px-9 py-4 bg-[#1a1831] text-white font-bold rounded-2xl shadow-xl shadow-pink-100 hover:bg-primary transition-all flex items-center gap-4 group text-[10px] tracking-[0.3em] uppercase"
               >
-                <div className="relative w-80 h-[28rem] mx-auto" style={{ perspective: "1000px" }}>
-                  <motion.div
-                    className="w-full h-full relative"
-                    style={{ transformStyle: "preserve-3d" }}
-                    initial={{ rotateY: 0, rotateZ: 3 }}
-                    animate={{
-                      rotateY: isFlipped ? 180 : 0,
-                      rotateZ: isFlipped ? 0 : 3
-                    }}
-                    transition={{ duration: 0.8, ease: "easeInOut" }}
-                  >
-                    {/* Front Face - Photo */}
-                    <div
-                      className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden shadow-2xl shadow-blue-200/30"
-                      style={{ backfaceVisibility: "hidden" }}
-                    >
+                START YOUR JOURNEY
+                <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+              </button>
+            </motion.div>
+          </div>
+
+          {/* RIGHT COLUMN: Stack Animation */}
+          <div className="w-full lg:w-1/2 flex justify-center items-end h-[600px] pb-20 overflow-visible relative">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+              className="relative flex justify-center items-end w-full h-full overflow-visible"
+            >
+              <Stack
+                randomRotation={true}
+                sensitivity={180}
+                sendToBackOnClick={true}
+                cards={[
+                  // Approach Card
+                  <div key="appr" className="relative w-[420px] h-[460px] border-none shadow-2xl rounded-[3rem] bg-white overflow-visible">
+                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-50">
+                      <div className="flex items-center gap-2 px-6 py-2.5 bg-gray-900 shadow-xl rounded-full border border-gray-800 whitespace-nowrap">
+                        <Sparkles size={10} className="text-indigo-400" />
+                        <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">Our Approach</span>
+                      </div>
+                    </div>
+                    <div className="relative w-full h-full rounded-[3rem] overflow-hidden border border-gray-100">
+                      <img src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1200&auto=format" className="w-full h-full object-cover" alt="Approach" />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
+                      <div className="absolute bottom-10 left-10 right-10 z-10">
+                        <div className="bg-white/80 backdrop-blur-xl px-8 py-5 rounded-3xl border border-white/50 shadow-lg">
+                          <p className="text-sm font-bold text-gray-900 italic leading-snug">"A unique methodology rooted in clinical depth and human heart."</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>,
+                  // Mission Card
+                  <div key="miss" className="relative w-[420px] h-[460px] border-none shadow-2xl rounded-[3rem] bg-white overflow-visible">
+                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-50">
+                      <div className="flex items-center gap-2 px-6 py-2.5 bg-gray-900 shadow-xl rounded-full border border-gray-800 whitespace-nowrap">
+                        <Target size={10} className="text-primary" />
+                        <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">Our Mission</span>
+                      </div>
+                    </div>
+                    <div className="relative w-full h-full rounded-[3rem] overflow-hidden border border-gray-100">
                       <img
-                        src="/assets/pranika.jpg"
-                        alt="Parnika - Founder of MindSettler"
-                        className="w-full h-full object-cover"
+                        src="https://images.unsplash.com/photo-1516307364728-25b1b49fe701?q=80&w=1200&auto=format"
+                        className="absolute inset-0 w-full h-full object-cover opacity-[0.15]"
+                        alt="Mission"
                       />
+                      <div className="relative z-10 w-full h-full p-14 flex flex-col justify-center text-center">
+                        <div className="mx-auto w-12 h-12 bg-secondary/5 rounded-2xl flex items-center justify-center text-secondary mb-8 border border-secondary/10">
+                          <Target size={24} />
+                        </div>
+                        <h4 className="text-lg md:text-xl font-bold mb-4 tracking-tight text-gray-900 leading-tight">Accessible excellence for every inner world.</h4>
+                        <p className="text-[12px] text-gray-400 leading-relaxed font-medium px-4">
+                          Bridging the gap between clinical research and genuine human connection.
+                        </p>
+                      </div>
                     </div>
-
-                    {/* Back Face - Video */}
-                    <div
-                      className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden shadow-2xl shadow-blue-200/30"
-                      style={{
-                        backfaceVisibility: "hidden",
-                        transform: "rotateY(180deg)"
-                      }}
-                    >
-                      <video
-                        ref={videoRef}
-                        src="/assets/pranika1.mp4"
-                        className="w-full h-full object-cover"
-                        muted={isMuted}
-                        playsInline
-                        onEnded={() => setIsFlipped(false)}
+                  </div>,
+                  // Philosophy Card
+                  <div key="phil" className="relative w-[420px] h-[460px] border-none shadow-2xl rounded-[3rem] bg-white overflow-visible">
+                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-50">
+                      <div className="flex items-center gap-2 px-6 py-2.5 bg-gray-900 shadow-xl rounded-full border border-gray-800 whitespace-nowrap">
+                        <Quote size={10} className="text-secondary" />
+                        <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">Our Philosophy</span>
+                      </div>
+                    </div>
+                    <div className="relative w-full h-full rounded-[3rem] overflow-hidden border border-gray-100">
+                      <img
+                        src="https://images.unsplash.com/photo-1502481851512-e9e2529bbbf9?q=80&w=1200&auto=format"
+                        className="absolute inset-0 w-full h-full object-cover opacity-20"
+                        alt="Philosophy"
                       />
-
-                      {/* Sound Toggle Button */}
-                      <button
-                        onClick={toggleMute}
-                        className="absolute bottom-6 right-6 p-3 bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-sm transition-all transform hover:scale-110 z-10"
-                        aria-label={isMuted ? "Unmute video" : "Mute video"}
-                      >
-                        {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                      </button>
+                      <div className="relative z-10 w-full h-full p-14 flex flex-col justify-center text-center">
+                        <div className="mx-auto w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center text-primary mb-8 border border-primary/10">
+                          <Quote size={24} />
+                        </div>
+                        <h4 className="text-lg md:text-xl font-bold mb-4 tracking-tight text-gray-900 leading-tight">Healing is an unfolding journey, not a destination.</h4>
+                        <p className="text-[12px] text-gray-400 leading-relaxed font-medium italic px-4">
+                          "We believe in the power of patience, presence, and personalized clinical care."
+                        </p>
+                      </div>
                     </div>
-                  </motion.div>
-                </div>
-              </div>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1.0, delay: 0.5 }}
-                className="space-y-4"
-              >
-                <blockquote className="text-2xl font-light text-slate-700 leading-relaxed italic">
-                  "Understanding is the first form of care."
-                </blockquote>
-                <div className="text-slate-500">
-                  <p className="font-bold">Parnika</p>
-                  <p className="text-sm">Founder, MindSettler</p>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT PANEL - Scrollable Content */}
-        <div className="flex-1 lg:w-3/5 xl:w-2/3 flex flex-col justify-center min-h-screen" ref={contentRef}>
-          <div className="max-w-4xl mx-auto px-6 lg:px-12 py-20 lg:py-24 relative">
-
-            {/* Timeline Line Container */}
-            <div className="absolute left-6 lg:left-12 top-[8.5rem] bottom-24 w-1 bg-slate-200 hidden lg:block">
-              <motion.div
-                className="absolute top-0 left-0 w-full bg-purple-500 origin-top"
-                style={{ scaleY, height: "100%" }}
-              />
-            </div>
-
-            {/* Mobile Portrait - Only shown on smaller screens */}
-            <div className="lg:hidden mb-16 text-center">
-              <div className="w-56 h-80 mx-auto rounded-2xl overflow-hidden shadow-xl shadow-blue-200/30 mb-6">
-                <img
-                  src="/assets/pranika.jpg"
-                  alt="Parnika - Founder of MindSettler"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <blockquote className="text-xl font-light text-slate-700 leading-relaxed italic mb-4">
-                "Understanding is the first form of care."
-              </blockquote>
-              <div className="text-slate-500">
-                <p className="font-bold">Parnika</p>
-                <p className="text-sm">Founder, MindSettler</p>
-              </div>
-            </div>
-
-            {/* Opening Statement */}
-            <AnimatedSection className="mb-20">
-              <h1 className="text-4xl lg:text-5xl font-semibold text-pink-600 mb-8 leading-tight">
-                What MindSettler Is
-              </h1>
-              <div className="space-y-6 text-lg leading-relaxed text-slate-600">
-                <p>
-                  MindSettler is a psycho-education and mental well-being platform that focuses on understanding before action.
-                </p>
-                <p>
-                  We support awareness and human-led guidance through both online and offline sessions, creating space for reflection without pressure.
-                </p>
-              </div>
-            </AnimatedSection>
-
-            {/* Aim */}
-            <AnimatedSection className="mb-20">
-              <h2 className="text-3xl font-semibold text-pink-600 mb-8">Our Aim</h2>
-              <div className="space-y-6 text-lg leading-relaxed text-slate-600">
-                <p>
-                  To make mental health understanding less intimidating.
-                </p>
-                <p>
-                  To create space for reflection without pressure, prioritizing clarity over urgency.
-                </p>
-                <p className="text-xl font-medium text-slate-700 italic">
-                  Understanding comes first.
-                </p>
-              </div>
-            </AnimatedSection>
-
-            {/* Goal */}
-            <AnimatedSection className="mb-20">
-              <h2 className="text-3xl font-semibold text-pink-600 mb-8">Our Goal</h2>
-              <div className="space-y-6 text-lg leading-relaxed text-slate-600">
-                <p>
-                  Guide individuals toward informed, human support while normalizing the process of seeking guidance.
-                </p>
-                <p>
-                  Provide safe, confidential pathways to sessions that honor each person's unique journey.
-                </p>
-                <p className="text-xl font-medium text-slate-700 italic">
-                  We walk alongside, we don't push forward.
-                </p>
-              </div>
-            </AnimatedSection>
-
-            {/* Founder's Story */}
-            <AnimatedSection className="mb-20">
-              <h2 className="text-3xl font-semibold text-pink-600 mb-8">Parnika's Story</h2>
-              <div className="space-y-6 text-lg leading-relaxed text-slate-600">
-                <p>
-                  MindSettler was born from observation, not crisis. Parnika recognized the lack of safe spaces for reflection and the need for calm, human-centered mental health support.
-                </p>
-                <p>
-                  The intention was always to create a platform built with care, not speed—a place where understanding unfolds naturally.
-                </p>
-                <p className="text-xl font-medium text-slate-700 italic">
-                  MindSettler was built with care, not speed.
-                </p>
-              </div>
-            </AnimatedSection>
-
-            {/* Philosophy of Care */}
-            <AnimatedSection className="mb-20">
-              <h2 className="text-3xl font-semibold text-pink-600 mb-8">Our Philosophy of Care</h2>
-              <div className="grid md:grid-cols-3 gap-8 text-center">
-                <div className="p-6 bg-white/60 rounded-2xl shadow-sm">
-                  <h3 className="text-xl font-medium text-slate-700 mb-3">Psycho-education</h3>
-                  <p className="text-slate-600">Not diagnosis</p>
-                </div>
-                <div className="p-6 bg-white/60 rounded-2xl shadow-sm">
-                  <h3 className="text-xl font-medium text-slate-700 mb-3">Understanding</h3>
-                  <p className="text-slate-600">Not fixing</p>
-                </div>
-                <div className="p-6 bg-white/60 rounded-2xl shadow-sm">
-                  <h3 className="text-xl font-medium text-slate-700 mb-3">Reflection</h3>
-                  <p className="text-slate-600">Not reaction</p>
-                </div>
-              </div>
-            </AnimatedSection>
-
-            {/* What MindSettler Is / Is Not */}
-            <AnimatedSection className="mb-20">
-              <h2 className="text-3xl font-semibold text-pink-600 mb-8">What We Are & What We're Not</h2>
-              <div className="grid md:grid-cols-2 gap-12">
-                <div>
-                  <h3 className="text-2xl font-medium text-green-700 mb-6">MindSettler Is</h3>
-                  <ul className="space-y-4 text-lg text-slate-600">
-                    <li>• A psycho-education space</li>
-                    <li>• A guided well-being platform</li>
-                    <li>• A human-led support system</li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="text-2xl font-medium text-slate-500 mb-6">MindSettler Is Not</h3>
-                  <ul className="space-y-4 text-lg text-slate-600">
-                    <li>• An emergency service</li>
-                    <li>• An AI therapy tool</li>
-                    <li>• An instant solution platform</li>
-                  </ul>
-                </div>
-              </div>
-            </AnimatedSection>
-
-            {/* Confidentiality & Trust */}
-            <AnimatedSection className="mb-20">
-              <h2 className="text-3xl font-semibold text-pink-600 mb-8">Confidentiality & Trust</h2>
-              <div>
-                <div className="space-y-6 text-lg leading-relaxed text-slate-600">
-                  <p>
-                    Privacy is central to everything we do. All sessions are completely confidential.
-                  </p>
-                  <p>
-                    We never share individual data, and our corporate services are entirely non-reporting.
-                  </p>
-                  <p className="text-xl font-medium text-slate-700">
-                    Your trust is the foundation of our work.
-                  </p>
-                </div>
-              </div>
-            </AnimatedSection>
-
-            {/* Who MindSettler Is For */}
-            <AnimatedSection className="mb-20">
-              <h2 className="text-3xl font-semibold text-pink-600 mb-8">Who MindSettler Is For</h2>
-              <div className="space-y-6 text-lg leading-relaxed text-slate-600">
-                <p>
-                  People feeling confused or overwhelmed who are exploring mental health gently.
-                </p>
-                <p>
-                  First-time help-seekers and individuals who value calm structure over urgent solutions.
-                </p>
-                <p>
-                  Anyone who believes that understanding themselves is worth the time it takes.
-                </p>
-              </div>
-            </AnimatedSection>
-
-            {/* Closing Statement */}
-            <AnimatedSection className="mb-20">
-              <div className="text-center py-8">
-                <div className="flex justify-center mb-8">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    whileInView={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 200, delay: 0.5 }}
-                  >
-                    <img src="../../public/logo.png" alt="MindSettler" className="h-24 w-auto object-contain" />
-                  </motion.div>
-                </div>
-
-                <div className="space-y-8">
-                  <div className="space-y-2">
-                    <p className="text-2xl text-slate-700 font-medium">No rush.</p>
-                    <p className="text-xl text-slate-600">Use at your own pace.</p>
                   </div>
+                ]}
+              />
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
-                  <div className="w-24 h-1 bg-gradient-to-r from-purple-300 to-pink-300 mx-auto rounded-full opacity-50" />
+      {/* 2. WHAT MINDSETTLER IS (Video & Ethos) */}
+      <section className="py-24 px-6 bg-white relative overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            {/* Left: Video Player */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="relative aspect-video rounded-[3rem] overflow-hidden shadow-2xl border-8 border-gray-50 group"
+            >
+              <video
+                src="/assets/pranika1.mp4"
+                controls
+                className="w-full h-full object-cover"
+                poster="/assets/pranika1.jpg"
+              />
+              <div className="absolute inset-0 pointer-events-none border border-white/20 rounded-[2.5rem]" />
+            </motion.div>
 
-                  <blockquote className="text-3xl md:text-4xl font-serif italic text-purple-900/80 leading-relaxed">
-                    "Understanding unfolds differently for everyone."
-                  </blockquote>
+            {/* Right: Ethos Content */}
+            <AnimatedSection>
+              <div className="space-y-8">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gray-50 border border-gray-100 rounded-full">
+                  <span className="text-[8px] font-bold text-gray-400 uppercase tracking-[0.4em]">The Core Vision</span>
+                </div>
+
+                <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-[1.1] mb-8 font-serif">
+                  What Is <br />
+                  <span className="text-primary italic">MindSettler?</span>
+                </h2>
+
+                <p className="text-base text-gray-600 leading-relaxed font-medium">
+                  We are a clinical sanctuary where contemporary neuroscience meets compassionate human insight. MindSettler isn't just a counseling service—it's a space where your internal narrative is honored, explored, and gently reframed.
+                </p>
+
+                <div className="grid grid-cols-2 gap-6 pt-4">
+                  <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100">
+                    <div className="text-primary font-bold text-xl mb-1">98%</div>
+                    <div className="text-[8px] uppercase tracking-[0.3em] text-gray-400 font-bold">Client Comfort</div>
+                  </div>
+                  <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100">
+                    <div className="text-secondary font-bold text-xl mb-1">Human</div>
+                    <div className="text-[8px] uppercase tracking-[0.3em] text-gray-400 font-bold">Led Approach</div>
+                  </div>
+                </div>
+              </div>
+            </AnimatedSection>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. PREMIUM DIFFERENTIATION (MAGIC BENTO) */}
+      <section className="py-12 bg-[#FFF0F3] relative overflow-hidden">
+        {/* Background Aura */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[140px] -z-1" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary/5 rounded-full blur-[140px] -z-1" />
+
+        <div className="max-w-5xl mx-auto px-6 relative z-10">
+          <AnimatedSection className="text-center mb-8">
+            <span className="text-primary font-bold text-[8px] tracking-[0.4em] uppercase mb-2 block">Integrity First</span>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight font-serif italic">
+              Alignment & Clarity
+            </h2>
+            <div className="w-10 h-1 bg-primary/20 mx-auto mt-3 rounded-full" />
+          </AnimatedSection>
+
+          <MagicBento />
+        </div>
+
+        <WavyDivider color="fill-gray-50/80" />
+      </section>
+
+      {/* 3. MEET THE FOUNDER (Interactive Display) */}
+      <section className="py-32 px-6 relative bg-gray-50/80 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            {/* Left: Founder Content */}
+            <AnimatedSection>
+              <div className="space-y-10">
+                <div>
+                  <span className="text-primary font-bold text-[8px] uppercase tracking-[0.4em] mb-4 block underline decoration-primary/20 underline-offset-8">Voices of Vision</span>
+
+                  <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-[1.1] mb-8 font-serif">
+                    About <br />
+                    <span className="text-secondary italic">the Founder</span>
+                  </h2>
+                </div>
+                <p className="text-sm text-gray-500 leading-relaxed font-medium max-w-lg">
+                  I founded MindSettler because I saw a profound need for a space where clinical support feels human.
+                  My goal is to create a site that honors the complexity of your internal world with curiosity and compassion.
+                </p>
+
+                <div className="grid gap-8">
+                  {[
+                    { icon: Eye, title: "Master of Arts", detail: "Counseling Psychology, GGU (2022)", color: "primary" },
+                    { icon: Sparkles, title: "Human-Led", detail: "Rooted in clinical research & radical empathy.", color: "secondary" }
+                  ].map((item, i) => (
+                    <motion.div
+                      key={i}
+                      whileHover={{ x: 10 }}
+                      className="flex gap-8 items-center p-8 bg-white/60 backdrop-blur-md rounded-[2.5rem] border border-white shadow-xl shadow-indigo-100/30 group hover:border-primary/20 transition-all duration-500"
+                    >
+                      <div className={`w-14 h-14 bg-${item.color}/10 rounded-2xl flex items-center justify-center text-${item.color} group-hover:bg-${item.color} group-hover:text-white transition-all duration-500`}>
+                        <item.icon size={26} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-900 text-sm mb-1 uppercase tracking-widest">{item.title}</h4>
+                        <p className="text-sm text-gray-500 font-medium">{item.detail}</p>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
             </AnimatedSection>
 
+            {/* Right: Founder Image Stack */}
+            <div className="relative h-[500px] w-full max-w-[440px] mx-auto hidden lg:block">
+              <CardSwap
+                width={440}
+                height={500}
+                cardDistance={20}
+                verticalDistance={30}
+                delay={6000}
+              >
+                {/* MISSION CARD */}
+                <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white">
+                  <div className="w-full h-full p-10 flex flex-col justify-center text-center bg-white/60 backdrop-blur-xl border border-white/40 rounded-[2.5rem]">
+                    <div className="mx-auto w-14 h-14 bg-secondary/20 rounded-2xl flex items-center justify-center text-secondary mb-6">
+                      <Sparkles size={28} />
+                    </div>
+                    <h4 className="text-base font-bold mb-2 tracking-tight text-gray-900">Evolving Care</h4>
+                    <p className="text-xs text-gray-600 leading-relaxed font-medium">
+                      Bridging clinical expertise with deep human insight to create sustainable mental wellness.
+                    </p>
+                  </div>
+                </Card>
+
+                {/* ETHOS CARD */}
+                <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white">
+                  <div className="w-full h-full p-10 flex flex-col justify-center text-center bg-indigo-50/80 backdrop-blur-xl border border-white/40 rounded-[2.5rem]">
+                    <div className="mx-auto w-14 h-14 bg-primary/20 rounded-2xl flex items-center justify-center text-primary mb-6 shadow-inner">
+                      <Heart size={28} fill="currentColor" />
+                    </div>
+                    <h4 className="text-xl font-bold mb-4 tracking-tight text-gray-900">Our Core Ethos</h4>
+                    <p className="text-sm text-gray-600 leading-relaxed font-medium italic">
+                      "To listen not just with ears, but with an open heart that honors the silence between words."
+                    </p>
+                  </div>
+                </Card>
+
+                {/* PORTRAIT CARD (FRONT) */}
+                <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white">
+                  <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden border-[10px] border-white/60">
+                    <img src="/assets/pranika.jpg" className="w-full h-full object-cover" alt="Founder" />
+                    <div className="absolute inset-0 bg-linear-to-t from-primary/80 via-transparent to-transparent" />
+                    <div className="absolute bottom-10 left-0 right-0 text-center text-white px-8">
+                      <h3 className="text-2xl font-bold tracking-tight mb-1">Parnika Bajaj</h3>
+                      <p className="text-[9px] uppercase tracking-[0.3em] opacity-90 font-bold">Counseling Psychologist</p>
+                    </div>
+                  </div>
+                </Card>
+              </CardSwap>
+            </div>
           </div>
         </div>
-      </div>
+        <WavyDivider top color="fill-gray-50/80" />
+      </section>
+
+      {/* 4. IS / IS NOT SECTION (Aura Immersive) */}
+      <section className="py-32 bg-white overflow-hidden relative">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[160px] opacity-40" />
+          <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-secondary/5 rounded-full blur-[160px] opacity-30" />
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 lg:px-8 relative z-10">
+          <AnimatedSection className="text-center mb-20">
+            <span className="text-primary font-bold text-[8px] tracking-[0.4em] uppercase mb-4 block">Integrity First</span>
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-[1.1] mb-8 font-serif">
+              Alignment & <br />
+              <span className="text-primary italic">Integrity</span>
+            </h2>
+            <div className="w-10 h-0.5 bg-primary/20 mx-auto rounded-full mt-4" />
+          </AnimatedSection>
+
+          <div className="grid md:grid-cols-2 gap-12">
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+              className="p-12 rounded-[3rem] bg-indigo-50/50 backdrop-blur-2xl border border-white shadow-2xl relative overflow-hidden group"
+            >
+              <div className="absolute top-0 right-0 p-10 text-green-500/5 group-hover:scale-110 transition-transform duration-700">
+                <CheckCircle2 size={140} />
+              </div>
+              <h3 className="text-2xl font-bold mb-10 flex items-center gap-5 text-green-600">
+                <CheckCircle2 size={32} /> MindSettler Is
+              </h3>
+              <ul className="space-y-6 relative z-10">
+                {[
+                  "A psycho-education space",
+                  "A guided well-being platform",
+                  "A human-led support system"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-5 text-[17px] font-bold text-gray-700">
+                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_12px_rgba(34,197,94,0.4)]" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+              className="p-12 rounded-[3rem] bg-gray-50/50 backdrop-blur-2xl border border-gray-100 shadow-xl relative overflow-hidden group"
+            >
+              <div className="absolute top-0 right-0 p-10 text-gray-200/5 group-hover:scale-110 transition-transform duration-700">
+                <AlertCircle size={140} />
+              </div>
+              <h3 className="text-2xl font-bold mb-10 flex items-center gap-5 text-gray-400">
+                <AlertCircle size={32} /> MindSettler Is Not
+              </h3>
+              <ul className="space-y-6 relative z-10">
+                {[
+                  "An emergency service",
+                  "An AI therapy tool",
+                  "An instant solution platform"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-5 text-[17px] font-bold text-gray-400">
+                    <div className="w-1.5 h-1.5 bg-gray-300 rounded-full" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          </div>
+        </div>
+        <WavyDivider color="fill-aurora-light" />
+      </section>
+
+      {/* 5. FINAL CTA (Soft & Emotional) */}
+      <section className="py-48 px-6 relative bg-aurora-light overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=2000&auto=format" className="absolute inset-0 w-full h-full object-cover opacity-[0.05] grayscale" alt="Relaxation" />
+        </div>
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <AnimatedSection>
+            <motion.div
+              variants={float}
+              animate="animate"
+              className="inline-flex items-center justify-center w-20 h-20 bg-white/80 backdrop-blur-xl rounded-full mb-12 shadow-2xl border border-white/50"
+            >
+              <Heart size={36} className="text-primary" fill="currentColor" />
+            </motion.div>
+
+            <ScrollFloat
+              containerClassName="mb-16"
+              textClassName="text-3xl md:text-4xl font-serif italic text-gray-900 leading-[1.3] tracking-tight"
+              scrollStart="top 110%"
+              scrollEnd="top 30%"
+            >
+              Understanding unfolds differently for everyone. Take your time.
+            </ScrollFloat>
+
+            <div className="flex flex-col sm:flex-row gap-8 justify-center items-center">
+              <motion.button
+                whileHover={{ scale: 1.05, y: -4 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => window.location.href = '/booking'}
+                className="px-14 py-5 bg-linear-to-r from-primary to-secondary text-white font-black rounded-[2rem] shadow-[0_20px_50px_rgba(var(--primary-rgb),0.3)] hover:opacity-90 transition-all font-title uppercase tracking-widest text-[11px]"
+              >
+                Book Your First Session
+              </motion.button>
+              <div className="text-left border-l-2 border-gray-200 pl-6 py-1">
+                <p className="text-[10px] text-gray-400 font-bold tracking-[0.4em] uppercase leading-relaxed mb-1">Status</p>
+                <p className="text-xs text-gray-900 font-bold uppercase tracking-tight">Spaces Available</p>
+              </div>
+            </div>
+          </AnimatedSection>
+        </div>
+      </section>
     </div>
   );
 };
