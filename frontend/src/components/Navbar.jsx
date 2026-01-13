@@ -51,6 +51,7 @@ const Navbar = () => {
     { name: 'Psycho-Education', path: '/psycho-education' },
     { name: 'Corporate', path: '/corporate' },
     { name: 'Resources', path: '/resources' },
+    { name: 'Library', path: '/library', mobileOnly: true },
     { name: 'Contact', path: '/contact' },
   ];
 
@@ -64,7 +65,7 @@ const Navbar = () => {
 
           {/* Desktop Links */}
           <div className="hidden lg:flex items-center space-x-8">
-            {navLinks.map((link) => (
+            {navLinks.filter(l => !l.mobileOnly).map((link) => (
               <div
                 key={link.name}
                 className="relative py-2"
@@ -74,8 +75,8 @@ const Navbar = () => {
                 <Link
                   to={link.path}
                   className={`text-lg font-semibold link-underline pb-1 transition-colors hover:text-secondary flex items-center gap-1 ${location.pathname === link.path
-                      ? 'text-secondary'
-                      : (isWhite ? 'text-white' : 'text-primary')
+                    ? 'text-secondary'
+                    : (isWhite ? 'text-white' : 'text-primary')
                     }`}
                 >
                   {link.name}

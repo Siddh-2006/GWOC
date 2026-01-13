@@ -21,6 +21,7 @@ import { Corporate } from './pages/Corporate';
 import PsychoEducationHub from './pages/PsychoEducationHub';
 import PsychoEducation from './pages/PsychoEducation';
 import LibraryPage from './pages/content-web/LibraryPage';
+import LibraryPageRefined from './pages/content-web/LibraryPageRefined';
 
 import PrivacyPolicy from './pages/policies/PrivacyPolicy';
 import RefundPolicy from './pages/policies/RefundPolicy';
@@ -111,6 +112,7 @@ function App() {
                 <Route path="/psycho-education" element={<PsychoEducationHub />} />
                 <Route path="/psycho-education/read/:slug" element={<ResourceReader />} />
                 <Route path="/psycho-education/library" element={<LibraryPage />} />
+                <Route path="/library" element={<LibraryPageRefined />} />
                 <Route path="/psycho-education/oldlibrary" element={<PsychoEducation />} />
                 <Route path="/how-it-works" element={<Placeholder title="How It Works" />} />
                 <Route path="/resources" element={<Resources />} />

@@ -1,26 +1,30 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Heart, Eye, Search, Plus, Grid, List, MoveRight } from 'lucide-react';
 import { mediaApi } from '../../services/media.api';
 import useAuthStore from '../../store/useAuthStore';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../../components/ToastContainer';
-import ContentWebLayout from '../../features/ContentWeb/components/ContentWebLayout';
+import ContentFilterBar from '../../features/ContentWeb/components/ContentFilterBar';
 import MediaPlayer from '../../components/MediaPlayer';
 import PostViewer from '../../components/PostViewer';
 import ImageWithFallback from '../../components/ImageWithFallback';
 import AddMediaModal from '../../components/admin/AddMediaModal';
+import ResourceSidebar from '../../features/ContentWeb/components/ResourceSidebar';
+import ResourceMobileDropdown from '../../features/ContentWeb/components/ResourceMobileDropdown';
 import InlineVideoPlayer from '../../components/InlineVideoPlayer';
 
 const ResourcesPage = () => {
   const { user, isAuthenticated } = useAuthStore();
   const { toasts, success, error: showError, removeToast } = useToast();
+  const location = useLocation();
   const isAdmin = user?.role === 'admin';
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const typeParam = searchParams.get('type') || 'all';
   const searchTerm = searchParams.get('search') || '';
+  const [localSearch, setLocalSearch] = useState(searchTerm);
 
   const [media, setMedia] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,11 +61,51 @@ const ResourcesPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, typeParam]);
+  }, [searchParams]); // Use whole searchParams for robust reactivity 
 
   useEffect(() => {
     fetchMedia(1);
-  }, [fetchMedia, searchTerm, typeParam]);
+  }, [fetchMedia, searchParams]);
+
+  // Search Typewriter Effect for Main Search Bar
+  const [placeholder, setPlaceholder] = useState('');
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const placeholderWords = ['depression', 'happiness roadmap', 'imposter syndrome', 'law of attraction'];
+
+  useEffect(() => {
+    const typeSpeed = isDeleting ? 50 : 150;
+    const timeout = setTimeout(() => {
+      const currentWord = placeholderWords[placeholderIndex];
+      if (!isDeleting && placeholder === currentWord) {
+        setTimeout(() => setIsDeleting(true), 1500);
+      } else if (isDeleting && placeholder === '') {
+        setIsDeleting(false);
+        setPlaceholderIndex((prev) => (prev + 1) % placeholderWords.length);
+      } else {
+        setPlaceholder(currentWord.substring(0, placeholder.length + (isDeleting ? -1 : 1)));
+      }
+    }, typeSpeed);
+    return () => clearTimeout(timeout);
+  }, [placeholder, placeholderIndex, isDeleting]);
+
+  // Debounce search update to URL (Matches Library behavior)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const currentURLSearch = searchParams.get('search') || '';
+      if (localSearch !== currentURLSearch) {
+        const newParams = new URLSearchParams(searchParams);
+        if (localSearch) newParams.set('search', localSearch);
+        else newParams.delete('search');
+        setSearchParams(newParams);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [localSearch, searchParams, setSearchParams]);
+
+  const handleSearchChange = (e) => {
+    setLocalSearch(e.target.value);
+  };
 
   const handleLike = async (mediaId, e) => {
     if (e) e.stopPropagation();
@@ -144,148 +188,211 @@ const ResourcesPage = () => {
   };
 
   return (
-    <ContentWebLayout>
-      <div className="max-w-7xl mx-auto px-6 md:px-12 pb-24">
-        {/* ACTION BAR */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 pt-4 gap-6 sm:gap-0">
-          <div className="flex items-center gap-4 w-full sm:w-auto overflow-x-auto scrollbar-hide pb-1 sm:pb-0">
-            {isAdmin && (
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="bg-primary/10 text-primary p-2.5 rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm flex items-center gap-2 font-bold text-sm uppercase tracking-wider"
-              >
-                <Plus size={20} />
-                Add Content
-              </button>
-            )}
+    <div className="min-h-screen bg-[#FFF5F7] pt-24 md:pt-28">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 pb-24 flex flex-col lg:flex-row gap-8">
+
+        {/* Sidebar (Desktop Only) */}
+        <div className="hidden lg:block w-64 flex-shrink-0">
+          <div className="sticky top-28">
+            <ResourceSidebar />
           </div>
         </div>
 
-        {/* Error State */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-2xl mb-8 flex justify-between items-center">
-            <p className="font-medium">{error}</p>
-            <button onClick={() => fetchMedia(1)} className="text-sm font-bold underline">Retry</button>
-          </div>
-        )}
+        {/* Main Content Area */}
+        <main className="flex-grow min-w-0">
 
-        {/* Content Grid/List */}
-        {loading && media.length === 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-gray-50 animate-pulse rounded-3xl h-64" />
-            ))}
-          </div>
-        ) : media.length === 0 ? (
-          <div className="text-center py-24 bg-white rounded-[3rem] border border-gray-200 border-dashed">
-            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
-              <Search size={40} />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-600 mb-2">No resources found</h3>
-            <p className="text-gray-400">Try adjusting your search terms.</p>
-          </div>
-        ) : (
-          <motion.div
-            layout
-            className={viewMode === 'grid'
-              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-              : "flex flex-col gap-6 max-w-4xl mx-auto"
-            }
-          >
-            <AnimatePresence mode="popLayout">
-              {media.map((item) => (
-                <motion.div
-                  key={item._id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  onClick={() => handleMediaClick(item)}
-                  className={`group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer flex ${viewMode === 'grid' ? 'flex-col h-full' : 'flex-row items-center p-4 gap-6'}`}
+          {/* Header & Search */}
+          <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-8 gap-4">
+            <div className="hidden md:block">
+              <div className="inline-flex items-center p-1.5 bg-purple-50/50 rounded-[2rem] border border-purple-100 mb-2">
+                <Link
+                  to="/resources"
+                  className={`px-8 py-3 rounded-[1.5rem] text-xl font-bold transition-all duration-300 ${location.pathname === '/resources'
+                    ? 'bg-primary text-white shadow-lg shadow-primary/25 scale-105'
+                    : 'text-slate-400 hover:text-primary hover:bg-white/50'
+                    }`}
                 >
-                  <div className={`relative overflow-hidden bg-gray-50 ${viewMode === 'grid' ? 'aspect-video' : 'w-48 h-32 rounded-2xl flex-shrink-0'}`}>
-                    {(item.type === 'video' || item.type === 'vlog') && item.fileUrl ? (
-                      <InlineVideoPlayer
-                        src={item.fileUrl}
-                        poster={item.thumbnailUrl}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <ImageWithFallback
-                        src={item.thumbnailUrl || (item.type === 'post' && item.assets && item.assets[0]?.fileUrl)}
-                        alt={item.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                      <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center text-primary transform scale-90 group-hover:scale-100 transition-transform duration-300">
-                        {item.type === 'video' ? <Play fill="currentColor" size={24} /> : <Eye size={24} />}
-                      </div>
-                    </div>
-                    {item.type && (
-                      <div className="absolute top-4 left-4">
-                        <span className="px-3 py-1 bg-white/95 backdrop-blur-md rounded-full text-[10px] font-bold text-primary uppercase tracking-tighter shadow-sm border border-white/20">
-                          {item.type}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  Resources
+                </Link>
+                <Link
+                  to="/library"
+                  className={`px-8 py-3 rounded-[1.5rem] text-xl font-bold transition-all duration-300 ${location.pathname === '/library'
+                    ? 'bg-primary text-white shadow-lg shadow-primary/25 scale-105'
+                    : 'text-slate-400 hover:text-primary hover:bg-white/50'
+                    }`}
+                >
+                  Library
+                </Link>
+              </div>
+            </div>
 
-                  <div className={`p-6 flex flex-col flex-grow ${viewMode === 'list' && 'py-2'}`}>
-                    <h3 className={`${viewMode === 'grid' ? 'text-lg' : 'text-xl'} font-bold text-slate-800 mb-3 line-clamp-2 leading-tight group-hover:text-primary transition-colors`}>
-                      {item.title}
-                    </h3>
-                    {viewMode === 'grid' && (
-                      <p className="text-slate-500 text-sm line-clamp-3 mb-6 leading-relaxed">
-                        {item.description}
-                      </p>
-                    )}
+            <div className="w-full md:w-auto flex items-center gap-4">
+              <div className="relative w-full md:w-80">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <input
+                  type="text"
+                  placeholder={`Search for ${placeholder}...`}
+                  value={localSearch}
+                  onChange={handleSearchChange}
+                  className="w-full pl-12 pr-4 py-3 bg-white border border-purple-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-sm z-10"
+                />
+              </div>
 
-                    <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
-                      <div className="flex items-center gap-4">
-                        {isAuthenticated &&
-                          <button
-                            onClick={(e) => handleLike(item._id, e)}
-                            className={`flex items-center gap-1.5 transition-colors ${item.hasLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}`}
-                          >
-                            <Heart size={16} className={item.hasLiked ? 'fill-rose-500' : ''} />
-                            <span className="text-sm font-semibold tracking-tight">{item.likesCount || 0}</span>
-                          </button>
-                        }
-                        <div className="flex items-center gap-1.5 text-slate-400">
-                          <Eye size={16} />
-                          <span className="text-sm font-semibold tracking-tight">{item.views || 0}</span>
+              {/* Mobile Filter & View Toggle */}
+              <div className="flex md:hidden items-center gap-2 flex-shrink-0">
+                <ResourceMobileDropdown />
+                <button
+                  onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                  className="w-12 h-12 bg-white border border-purple-100 rounded-2xl flex items-center justify-center shadow-sm text-primary active:scale-95 transition-all"
+                  title="Toggle View Mode"
+                >
+                  {viewMode === 'grid' ? <List size={22} /> : <Grid size={22} />}
+                </button>
+              </div>
+
+              {/* Mobile Dropdown (Visible only on lg and below but hidden on mobile in favor of the flex above) */}
+              <div className="hidden md:flex lg:hidden flex-shrink-0">
+                <ResourceMobileDropdown />
+              </div>
+
+              {isAdmin && (
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="bg-primary text-white p-3 rounded-xl hover:bg-secondary transition-all shadow-lg shadow-primary/20 flex-shrink-0"
+                >
+                  <Plus size={20} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Error State */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-2xl mb-8 flex justify-between items-center">
+              <p className="font-medium">{error}</p>
+              <button onClick={() => fetchMedia(1)} className="text-sm font-bold underline">Retry</button>
+            </div>
+          )}
+
+          {/* Content Grid/List */}
+          {loading && media.length === 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-gray-50 animate-pulse rounded-3xl h-64" />
+              ))}
+            </div>
+          ) : media.length === 0 ? (
+            <div className="text-center py-24 bg-white rounded-[3rem] border border-gray-200 border-dashed">
+              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
+                <Search size={40} />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-600 mb-2">No resources found</h3>
+              <p className="text-gray-400">Try adjusting your search terms.</p>
+            </div>
+          ) : (
+            <motion.div
+              layout
+              className={viewMode === 'grid'
+                ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
+                : "flex flex-col gap-6"
+              }
+            >
+              <AnimatePresence mode="popLayout">
+                {media.map((item) => (
+                  <motion.div
+                    key={item._id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    onClick={() => handleMediaClick(item)}
+                    className={`group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer flex ${viewMode === 'grid' ? 'flex-col h-full' : 'flex-row items-center p-4 gap-6'}`}
+                  >
+                    <div className={`relative overflow-hidden bg-gray-50 ${viewMode === 'grid' ? 'aspect-video' : 'w-48 h-32 rounded-2xl flex-shrink-0'}`}>
+                      {(item.type === 'video' || item.type === 'vlog') && item.fileUrl ? (
+                        <InlineVideoPlayer
+                          src={item.fileUrl}
+                          poster={item.thumbnailUrl}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <ImageWithFallback
+                          src={item.thumbnailUrl || (item.type === 'post' && item.assets && item.assets[0]?.fileUrl)}
+                          alt={item.title}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center text-primary transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                          {item.type === 'video' ? <Play fill="currentColor" size={24} /> : <Eye size={24} />}
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-primary hover:gap-2 transition-all tracking-[0.1em] uppercase">
-                        {item.type === 'video' ? 'WATCH' : item.type === 'audio' ? 'LISTEN' : 'READ'}
-                        <MoveRight size={14} />
+                      {item.type && (
+                        <div className="absolute top-4 left-4">
+                          <span className="px-3 py-1 bg-white/95 backdrop-blur-md rounded-full text-[10px] font-bold text-primary uppercase tracking-tighter shadow-sm border border-white/20">
+                            {item.type}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className={`p-6 flex flex-col flex-grow ${viewMode === 'list' && 'py-2'}`}>
+                      <h3 className={`${viewMode === 'grid' ? 'text-lg' : 'text-xl'} font-bold text-slate-800 mb-3 line-clamp-2 leading-tight group-hover:text-primary transition-colors`}>
+                        {item.title}
+                      </h3>
+                      {viewMode === 'grid' && (
+                        <p className="text-slate-500 text-sm line-clamp-3 mb-6 leading-relaxed">
+                          {item.description}
+                        </p>
+                      )}
+
+                      <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
+                        <div className="flex items-center gap-4">
+                          {isAuthenticated &&
+                            <button
+                              onClick={(e) => handleLike(item._id, e)}
+                              className={`flex items-center gap-1.5 transition-colors ${item.hasLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}`}
+                            >
+                              <Heart size={16} className={item.hasLiked ? 'fill-rose-500' : ''} />
+                              <span className="text-sm font-semibold tracking-tight">{item.likesCount || 0}</span>
+                            </button>
+                          }
+                          <div className="flex items-center gap-1.5 text-slate-400">
+                            <Eye size={16} />
+                            <span className="text-sm font-semibold tracking-tight">{item.views || 0}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-primary hover:gap-2 transition-all tracking-[0.1em] uppercase">
+                          {item.type === 'video' ? 'WATCH' : item.type === 'audio' ? 'LISTEN' : 'READ'}
+                          <MoveRight size={14} />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
-        )}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          )}
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-20 flex justify-center gap-2">
-            {[...Array(totalPages)].map((_, i) => (
-              <button
-                key={i}
-                onClick={() => fetchMedia(i + 1)}
-                className={`w-12 h-12 rounded-2xl font-bold transition-all ${currentPage === i + 1
-                  ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-110'
-                  : 'bg-white text-slate-400 hover:bg-slate-50 border border-slate-100'
-                  }`}
-              >
-                {i + 1}
-              </button>
-            ))}
-          </div>
-        )}
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-20 flex justify-center gap-2">
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => fetchMedia(i + 1)}
+                  className={`w-12 h-12 rounded-2xl font-bold transition-all ${currentPage === i + 1
+                    ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-110'
+                    : 'bg-white text-slate-400 hover:bg-slate-50 border border-slate-100'
+                    }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+          )}
+
+        </main>
       </div>
 
       <ToastContainer toasts={toasts} onRemove={removeToast} />
@@ -315,7 +422,7 @@ const ResourcesPage = () => {
           onMediaAdded={handleMediaAdded}
         />
       )}
-    </ContentWebLayout>
+    </div>
   );
 };
 
