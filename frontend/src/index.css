@@ -297,3 +297,60 @@
   animation: shimmer 2s infinite linear;
   border-radius: 50%;
 }
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 6s ease-in-out infinite;
+}
+
+/* Z-Axis Text Flip (ALL MENU ITEMS) */
+
+.sm-zwrap {
+  position: relative;
+  display: inline-block;
+  perspective: 1200px;
+  height: 1.2em;
+}
+
+.sm-ztext {
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  transition:
+    transform 0.7s cubic-bezier(0.76, 0, 0.24, 1),
+    filter 0.5s ease,
+    opacity 0.5s ease;
+  will-change: transform, filter;
+}
+
+/* Front face */
+.sm-zfront {
+  transform: rotateX(0deg) translateZ(0);
+  filter: blur(0);
+}
+
+/* Back face */
+.sm-zback {
+  position: absolute;
+  inset: 0;
+  transform: rotateX(-90deg) translateZ(0);
+  opacity: 0;
+  color: var(--sm-accent, #3F2965);
+}
+
+/* Hover / Active State */
+.sm-panel-item:hover .sm-zfront,
+.sm-panel-item:active .sm-zfront {
+  transform: rotateX(90deg);
+  filter: blur(2px);
+  opacity: 0;
+}
+
+.sm-panel-item:hover .sm-zback,
+.sm-panel-item:active .sm-zback {
+  transform: rotateX(0deg);
+  opacity: 1;
+}
