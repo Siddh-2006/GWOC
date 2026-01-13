@@ -110,7 +110,7 @@ app.use(cors({
     
     const allowedOrigins = [
       'http://localhost:3000',
-      'https://mindsettlerxparnika.vercel.app',
+      'https://gwoc-f8d2.vercel.app',
       'https://gwoc-lovat.vercel.app',
       process.env.FRONTEND_URL,
       process.env.CORS_ORIGIN
