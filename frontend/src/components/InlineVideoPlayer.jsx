@@ -63,23 +63,23 @@ const InlineVideoPlayer = ({ src, poster, className = "", onPlay, onPause }) => 
           <div className="flex items-center gap-2">
             <button
               onClick={togglePlay}
-              className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 hover:bg-white/30 transition-all"
+              className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/50 hover:bg-white transition-all shadow-lg"
             >
               {isPlaying ? (
-                <Pause size={16} className="text-white" />
+                <Pause size={16} className="text-[#3F2965]" />
               ) : (
-                <Play size={16} className="text-white ml-0.5" />
+                <Play size={16} className="text-[#3F2965] ml-0.5" />
               )}
             </button>
             
             <button
               onClick={toggleMute}
-              className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 hover:bg-white/30 transition-all"
+              className="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/50 hover:bg-white transition-all shadow-lg"
             >
               {isMuted ? (
-                <VolumeX size={12} className="text-white" />
+                <VolumeX size={12} className="text-[#3F2965]" />
               ) : (
-                <Volume2 size={12} className="text-white" />
+                <Volume2 size={12} className="text-[#3F2965]" />
               )}
             </button>
           </div>

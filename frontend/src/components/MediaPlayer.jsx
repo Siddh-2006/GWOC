@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Play, Pause, Volume2, VolumeX, Maximize, Download, Heart, MessageCircle, Eye } from 'lucide-react';
+import { X, Play, Pause, Volume2, VolumeX, Maximize, Download, Heart, MessageCircle, Eye, ChevronRight, ChevronLeft, Info, ChevronDown } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 
 const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
@@ -17,6 +17,10 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
   const [showComments, setShowComments] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true); // Show sidebar by default on desktop
+  const [showMobileDrawer, setShowMobileDrawer] = useState(false); // Mobile drawer state
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
 
   const videoRef = useRef(null);
   const audioRef = useRef(null);
@@ -28,6 +32,8 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
       setIsPlaying(false);
       setCurrentTime(0);
       setShowControls(true);
+      setShowSidebar(true); // Show sidebar by default on desktop
+      setShowMobileDrawer(false); // Reset mobile drawer
     }
   }, [isOpen, media]);
 
@@ -190,6 +196,26 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
     }
   };
 
+  // Touch handlers for swipe-to-close
+  const handleTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientY);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientY);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isDownSwipe = distance < -50; // Swipe down threshold
+    
+    if (isDownSwipe) {
+      setShowMobileDrawer(false);
+    }
+  };
+
   if (!isOpen || !media) return null;
 
   const isVideo = media.type === 'video' || media.type === 'vlog';
@@ -202,49 +228,82 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/90 backdrop-blur-md z-200 flex items-center justify-center p-2 sm:p-4"
         onClick={onClose}
       >
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}
-          className="bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] lg:max-h-[90vh] overflow-y-auto scrollbar-hide"
+          className={`bg-white rounded-xl sm:rounded-2xl max-h-[95vh] lg:max-h-[90vh] overflow-hidden flex flex-col transition-all duration-300 w-full ${
+            showSidebar ? 'max-w-6xl' : 'max-w-4xl'
+          } mx-auto relative`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b">
-            <div className="flex-1">
-              <h2 className="text-xl font-bold text-gray-800 truncate">{media.title}</h2>
-              <p className="text-sm text-gray-600 capitalize">{media.type}</p>
+          <div className="flex items-center justify-between p-3 sm:p-4 border-b bg-white">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800 truncate">{media.title}</h2>
+              <p className="text-xs sm:text-sm text-gray-600 capitalize">{media.type}</p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="hidden md:block text-xs text-gray-500">
-                <span className="bg-gray-100 px-2 py-1 rounded">Space</span> Play/Pause •
-                <span className="bg-gray-100 px-2 py-1 rounded ml-1">←→</span> Seek •
-                <span className="bg-gray-100 px-2 py-1 rounded ml-1">M</span> Mute
-              </div>
+              {/* Desktop sidebar toggle - hidden on mobile */}
+              <button
+                onClick={() => setShowSidebar(!showSidebar)}
+                className={`hidden lg:flex px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all duration-200 items-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium ${
+                  showSidebar 
+                    ? 'bg-[#3F2965] text-white shadow-md' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                title={showSidebar ? 'Hide details' : 'Show details'}
+              >
+                <Info size={14} className="sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">
+                  {showSidebar ? 'Hide Details' : 'Show Details'}
+                </span>
+                <span className="sm:hidden">
+                  {showSidebar ? 'Hide' : 'Info'}
+                </span>
+              </button>
+              
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <X size={24} />
+                <X size={20} className="sm:w-6 sm:h-6" />
               </button>
             </div>
           </div>
 
-          <div className="flex flex-col lg:flex-row">
-            {/* Media Content */}
-            <div className="flex-1">
+          <div className="flex flex-1 overflow-hidden flex-col lg:flex-row">
+            {/* Media Content - Clean mobile view, sidebar on desktop */}
+            <div className={`shrink-0 flex items-center justify-center bg-black transition-all duration-300 relative ${
+              showSidebar ? 'lg:w-2/3' : 'w-full'
+            } h-full lg:h-auto`}>
+              {/* Mobile info button - clean and minimal */}
+              <button
+                onClick={() => {
+                  // Only open drawer on mobile screens
+                  if (window.innerWidth < 1024) {
+                    setShowMobileDrawer(true);
+                  }
+                }}
+                className={`lg:hidden absolute bottom-6 right-6 z-10 w-14 h-14 bg-[#3F2965] hover:bg-[#3F2965]/90 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg ${
+                  showMobileDrawer ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                }`}
+                title="Show details"
+              >
+                <Info size={20} className="text-white" />
+              </button>
               {isVideo && (
                 <div
-                  className="relative bg-black aspect-video"
+                  className="relative w-full h-full flex items-center justify-center"
                   onMouseMove={handleMouseMove}
                 >
                   <video
                     ref={videoRef}
                     src={media.fileUrl}
-                    className="w-full h-full"
+                    className="max-w-full max-h-full object-contain"
                     onTimeUpdate={handleTimeUpdate}
                     onLoadedMetadata={handleLoadedMetadata}
                     onLoadStart={handleLoadStart}
@@ -262,7 +321,7 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"
+                        className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent"
                       >
                         {/* Loading State */}
                         {isLoading && (
@@ -291,18 +350,18 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
                           <div className="absolute inset-0 flex items-center justify-center">
                             <button
                               onClick={togglePlay}
-                              className="w-16 h-16 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-all"
+                              className="w-12 h-12 sm:w-16 sm:h-16 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-all shadow-lg"
                             >
-                              {isPlaying ? <Pause size={24} className="text-white" /> : <Play size={24} className="text-white ml-1" />}
+                              {isPlaying ? <Pause size={20} className="text-[#3F2965] sm:w-6 sm:h-6" /> : <Play size={20} className="text-[#3F2965] ml-0.5 sm:w-6 sm:h-6 sm:ml-1" />}
                             </button>
                           </div>
                         )}
 
                         {/* Bottom Controls */}
-                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-4">
                           {/* Progress Bar */}
                           <div
-                            className="w-full h-2 bg-white bg-opacity-30 rounded-full cursor-pointer mb-4"
+                            className="w-full h-1.5 sm:h-2 bg-white bg-opacity-30 rounded-full cursor-pointer mb-2 sm:mb-4"
                             onClick={handleSeek}
                           >
                             <div
@@ -313,19 +372,19 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
 
                           {/* Controls */}
                           <div className="flex items-center justify-between text-white">
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 sm:gap-4">
                               <button onClick={togglePlay}>
-                                {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+                                {isPlaying ? <Pause size={16} className="sm:w-5 sm:h-5" /> : <Play size={16} className="sm:w-5 sm:h-5" />}
                               </button>
                               <button onClick={toggleMute}>
-                                {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                                {isMuted ? <VolumeX size={16} className="sm:w-5 sm:h-5" /> : <Volume2 size={16} className="sm:w-5 sm:h-5" />}
                               </button>
-                              <span className="text-sm">
+                              <span className="text-xs sm:text-sm">
                                 {formatTime(currentTime)} / {formatTime(duration)}
                               </span>
                             </div>
                             <button onClick={handleDownload}>
-                              <Download size={20} />
+                              <Download size={16} className="sm:w-5 sm:h-5" />
                             </button>
                           </div>
                         </div>
@@ -336,69 +395,71 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
               )}
 
               {isAudio && (
-                <div className="p-8 bg-gradient-to-br from-purple-100 to-pink-100 aspect-video flex flex-col items-center justify-center">
-                  <audio
-                    ref={audioRef}
-                    src={media.fileUrl}
-                    onTimeUpdate={handleTimeUpdate}
-                    onLoadedMetadata={handleLoadedMetadata}
-                    onLoadStart={handleLoadStart}
-                    onCanPlay={handleCanPlay}
-                    onError={handleError}
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                  />
-
-                  <div className="text-center mb-8">
-                    <div className="w-24 h-24 bg-primary bg-opacity-20 rounded-full flex items-center justify-center mb-4 mx-auto">
-                      <Volume2 size={32} className="text-primary" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-800">{media.title}</h3>
-                  </div>
-
-                  {/* Audio Controls */}
+                <div className="w-full h-full flex items-center justify-center p-4 sm:p-8 bg-linear-to-br from-purple-100 to-pink-100 min-h-[300px] sm:min-h-[400px] relative">
                   <div className="w-full max-w-md">
-                    <div
-                      className="w-full h-2 bg-white bg-opacity-50 rounded-full cursor-pointer mb-4"
-                      onClick={handleSeek}
-                    >
-                      <div
-                        className="h-full bg-primary rounded-full"
-                        style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
-                      />
+                    <audio
+                      ref={audioRef}
+                      src={media.fileUrl}
+                      onTimeUpdate={handleTimeUpdate}
+                      onLoadedMetadata={handleLoadedMetadata}
+                      onLoadStart={handleLoadStart}
+                      onCanPlay={handleCanPlay}
+                      onError={handleError}
+                      onPlay={() => setIsPlaying(true)}
+                      onPause={() => setIsPlaying(false)}
+                    />
+
+                    <div className="text-center mb-6 sm:mb-8">
+                      <div className="w-16 h-16 sm:w-24 sm:h-24 bg-primary bg-opacity-20 rounded-full flex items-center justify-center mb-3 sm:mb-4 mx-auto">
+                        <Volume2 size={24} className="text-primary sm:w-8 sm:h-8" />
+                      </div>
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-800">{media.title}</h3>
                     </div>
 
-                    <div className="flex items-center justify-center gap-4">
-                      <button
-                        onClick={togglePlay}
-                        className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary/90 transition-colors"
+                    {/* Audio Controls */}
+                    <div className="w-full">
+                      <div
+                        className="w-full h-1.5 sm:h-2 bg-white bg-opacity-50 rounded-full cursor-pointer mb-3 sm:mb-4"
+                        onClick={handleSeek}
                       >
-                        {isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-0.5" />}
-                      </button>
-                      <button onClick={toggleMute} className="text-gray-600 hover:text-primary">
-                        {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                      </button>
-                      <span className="text-sm text-gray-600">
-                        {formatTime(currentTime)} / {formatTime(duration)}
-                      </span>
+                        <div
+                          className="h-full bg-primary rounded-full"
+                          style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-center gap-3 sm:gap-4">
+                        <button
+                          onClick={togglePlay}
+                          className="w-10 h-10 sm:w-12 sm:h-12 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary/90 transition-colors"
+                        >
+                          {isPlaying ? <Pause size={16} className="sm:w-5 sm:h-5" /> : <Play size={16} className="ml-0.5 sm:w-5 sm:h-5" />}
+                        </button>
+                        <button onClick={toggleMute} className="text-gray-600 hover:text-primary">
+                          {isMuted ? <VolumeX size={16} className="sm:w-5 sm:h-5" /> : <Volume2 size={16} className="sm:w-5 sm:h-5" />}
+                        </button>
+                        <span className="text-xs sm:text-sm text-gray-600">
+                          {formatTime(currentTime)} / {formatTime(duration)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
               {isDocument && (
-                <div className="p-8 bg-gray-50 aspect-video flex flex-col items-center justify-center">
+                <div className="w-full h-full flex items-center justify-center p-4 sm:p-8 bg-gray-50 min-h-[300px] sm:min-h-[400px] relative">
                   <div className="text-center">
-                    <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-4 mx-auto">
-                      <Download size={32} className="text-blue-600" />
+                    <div className="w-16 h-16 sm:w-24 sm:h-24 bg-blue-100 rounded-full flex items-center justify-center mb-3 sm:mb-4 mx-auto">
+                      <Download size={24} className="text-blue-600 sm:w-8 sm:h-8" />
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">{media.title}</h3>
-                    <p className="text-gray-600 mb-6">{media.description}</p>
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">{media.title}</h3>
+                    <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 px-4">{media.description}</p>
                     <button
                       onClick={handleDownload}
-                      className="btn-primary flex items-center gap-2"
+                      className="btn-primary flex items-center gap-2 text-sm sm:text-base px-4 py-2 sm:px-6 sm:py-3"
                     >
-                      <Download size={20} />
+                      <Download size={16} className="sm:w-5 sm:h-5" />
                       Download Document
                     </button>
                   </div>
@@ -406,135 +467,343 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
               )}
             </div>
 
-            {/* Sidebar */}
-            <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l bg-gray-50">
-              <div className="p-4">
-                {/* Description */}
-                <div className="mb-6">
-                  <h3 className="font-semibold text-gray-800 mb-2">Description</h3>
-                  <p className="text-sm text-gray-600">{media.description}</p>
-                </div>
+            {/* Desktop Sidebar - only visible on lg+ screens */}
+            <AnimatePresence>
+              {showSidebar && (
+                <motion.div
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ 
+                    width: '33.333333%', 
+                    opacity: 1
+                  }}
+                  exit={{ width: 0, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  className="hidden lg:flex border-l bg-gray-50 flex-col overflow-hidden shadow-lg"
+                >
+                  <div className="flex-1 overflow-y-auto scrollbar-hide">
+                    <div className="p-4">
+                      {/* Description */}
+                      <div className="mb-6">
+                        <h3 className="font-semibold text-gray-800 mb-2">Description</h3>
+                        <p className="text-sm text-gray-600 leading-relaxed">{media.description}</p>
+                      </div>
 
-                {/* Tags */}
-                {media.tags && media.tags.length > 0 && (
-                  <div className="mb-6">
-                    <h3 className="font-semibold text-gray-800 mb-2">Tags</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {media.tags.map(tag => (
-                        <span key={tag} className="px-2 py-1 bg-white text-gray-600 text-xs rounded-full">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex items-center justify-between mb-4 pb-4 border-b">
-                  <div className="flex items-center gap-4">
-                    <motion.button
-                      onClick={() => {
-                        if (!isAuthenticated) {
-                          navigate('/login');
-                          return;
-                        }
-                        onLike && onLike(media._id);
-                      }}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className={`transition-colors ${media.hasLiked
-                        ? 'text-red-500'
-                        : 'text-gray-700 hover:text-red-500'
-                        }`}
-                    >
-                      <Heart
-                        size={28}
-                        className={media.hasLiked ? "fill-red-500 text-red-500" : "text-gray-700"}
-                      />
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => {
-                        if (!isAuthenticated) {
-                          navigate('/login');
-                          return;
-                        }
-                        setShowComments(!showComments);
-                      }}
-                      className="text-gray-700 hover:text-blue-500 transition-colors"
-                    >
-                      <MessageCircle size={28} />
-                    </motion.button>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-gray-500">
-                    <Eye size={18} />
-                    <span className="font-medium">{media.views || 0}</span>
-                  </div>
-                </div>
-
-                {/* Likes Count */}
-                {isAuthenticated && (
-                  <div className="mb-4">
-                    <p className="font-semibold text-gray-800">
-                      {Array.isArray(media.likes) ? media.likes.length : media.likesCount || media.likes || 0} likes
-                    </p>
-                  </div>
-                )}
-
-                {/* Comments Section */}
-                {showComments && (
-                  <div className="flex flex-col flex-1">
-                    <h3 className="font-semibold text-gray-800 mb-4">Comments</h3>
-
-                    {/* Comments List */}
-                    <div className="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2 scrollbar-hide">
-                      {media.comments && media.comments.length > 0 ? (
-                        media.comments.map((comment, index) => (
-                          <div key={index} className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                            <p className="text-sm text-gray-800 leading-relaxed">{comment.content}</p>
-                            <p className="text-[10px] text-gray-400 mt-2 uppercase font-medium">
-                              {new Date(comment.createdAt).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
-                            </p>
+                      {/* Tags */}
+                      {media.tags && media.tags.length > 0 && (
+                        <div className="mb-6">
+                          <h3 className="font-semibold text-gray-800 mb-2">Tags</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {media.tags.map(tag => (
+                              <span key={tag} className="px-2 py-1 bg-white text-gray-600 text-xs rounded-full border">
+                                {tag}
+                              </span>
+                            ))}
                           </div>
-                        ))
-                      ) : (
-                        <p className="text-sm text-gray-500 text-center py-4 italic">No comments yet. Be the first to share one!</p>
+                        </div>
                       )}
+
+                      {/* Actions */}
+                      <div className="flex items-center justify-between mb-4 pb-4 border-b">
+                        <div className="flex items-center gap-4">
+                          <motion.button
+                            onClick={() => {
+                              if (!isAuthenticated) {
+                                navigate('/login');
+                                return;
+                              }
+                              onLike && onLike(media._id);
+                            }}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className={`transition-colors ${media.hasLiked
+                              ? 'text-red-500'
+                              : 'text-gray-700 hover:text-red-500'
+                              }`}
+                          >
+                            <Heart
+                              size={24}
+                              className={media.hasLiked ? "fill-red-500 text-red-500" : "text-gray-700"}
+                            />
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => {
+                              if (!isAuthenticated) {
+                                navigate('/login');
+                                return;
+                              }
+                              setShowComments(!showComments);
+                            }}
+                            className="text-gray-700 hover:text-blue-500 transition-colors"
+                          >
+                            <MessageCircle size={24} />
+                          </motion.button>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-gray-500">
+                          <Eye size={16} />
+                          <span className="text-sm font-medium">{media.views || 0}</span>
+                        </div>
+                      </div>
+
+                      {/* Likes Count */}
+                      {isAuthenticated && (
+                        <div className="mb-4">
+                          <p className="font-semibold text-gray-800 text-sm">
+                            {Array.isArray(media.likes) ? media.likes.length : media.likesCount || media.likes || 0} likes
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Comments Section */}
+                      <div className="flex flex-col flex-1">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-semibold text-gray-800">Comments</h3>
+                          <button
+                            onClick={() => setShowComments(!showComments)}
+                            className="text-sm text-primary hover:text-primary/80 transition-colors"
+                          >
+                            {showComments ? 'Hide' : 'Show'}
+                          </button>
+                        </div>
+
+                        {showComments && (
+                          <>
+                            {/* Comments List */}
+                            <div className="space-y-3 mb-4 flex-1 overflow-y-auto pr-2 scrollbar-hide">
+                              {media.comments && media.comments.length > 0 ? (
+                                media.comments.map((comment, index) => (
+                                  <div key={index} className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                                    <p className="text-sm text-gray-800 leading-relaxed">{comment.content}</p>
+                                    <p className="text-xs text-gray-400 mt-2 uppercase font-medium">
+                                      {new Date(comment.createdAt).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric'
+                                      })}
+                                    </p>
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="text-sm text-gray-500 text-center py-4 italic">No comments yet. Be the first to share one!</p>
+                              )}
+                            </div>
+
+                            {/* Add Comment */}
+                            {isAuthenticated && (
+                              <div className="mt-auto pt-4 border-t border-gray-200">
+                                <form onSubmit={handleCommentSubmit} className="flex gap-3">
+                                  <textarea
+                                    value={comment}
+                                    onChange={(e) => setComment(e.target.value)}
+                                    placeholder="Add a comment..."
+                                    className="flex-1 px-3 py-2 border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm leading-relaxed"
+                                    rows="2"
+                                  />
+                                  <button
+                                    type="submit"
+                                    disabled={!comment.trim()}
+                                    className="px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold text-sm shadow-sm self-end"
+                                  >
+                                    Post
+                                  </button>
+                                </form>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Mobile Bottom Drawer - only visible on mobile */}
+          <AnimatePresence>
+            {showMobileDrawer && (
+              <>
+                {/* Backdrop */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="lg:hidden fixed inset-0 bg-black/50 z-50"
+                  onClick={() => setShowMobileDrawer(false)}
+                />
+                
+                {/* Drawer */}
+                <motion.div
+                  initial={{ y: '100%' }}
+                  animate={{ y: 0 }}
+                  exit={{ y: '100%' }}
+                  transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                  className="lg:hidden fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-50 max-h-[80vh] flex flex-col"
+                  onClick={(e) => e.stopPropagation()}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  {/* Drawer Handle */}
+                  <div className="flex justify-center py-3 border-b border-gray-100">
+                    <button
+                      onClick={() => setShowMobileDrawer(false)}
+                      className="w-12 h-1 bg-gray-300 rounded-full hover:bg-gray-400 transition-colors"
+                    />
+                  </div>
+
+                  {/* Drawer Header */}
+                  <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                    <h3 className="text-lg font-semibold text-gray-800">Details</h3>
+                    <button
+                      onClick={() => setShowMobileDrawer(false)}
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      <ChevronDown size={20} className="text-gray-600" />
+                    </button>
+                  </div>
+
+                  {/* Drawer Content */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                    {/* Description */}
+                    <div>
+                      <h4 className="font-semibold text-gray-800 mb-2">Description</h4>
+                      <p className="text-sm text-gray-600 leading-relaxed">{media.description}</p>
                     </div>
 
-                    {/* Add Comment */}
-                    {isAuthenticated && (
-                      <div className="mt-auto pt-4 border-t border-gray-100">
-                        <form onSubmit={handleCommentSubmit} className="flex gap-3">
-                          <textarea
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                            placeholder="Add a comment..."
-                            className="flex-1 px-4 py-2 border border-gray-200 rounded-2xl resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm leading-relaxed"
-                            rows="1"
-                            style={{ minHeight: '40px' }}
-                          />
-                          <button
-                            type="submit"
-                            disabled={!comment.trim()}
-                            className="px-6 py-2 bg-primary text-white rounded-full hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold text-sm shadow-sm"
-                          >
-                            Post
-                          </button>
-                        </form>
+                    {/* Tags */}
+                    {media.tags && media.tags.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-gray-800 mb-2">Tags</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {media.tags.map(tag => (
+                            <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     )}
+
+                    {/* Actions */}
+                    <div className="flex items-center justify-between py-4 border-y border-gray-100">
+                      <div className="flex items-center gap-6">
+                        <motion.button
+                          onClick={() => {
+                            if (!isAuthenticated) {
+                              navigate('/login');
+                              return;
+                            }
+                            onLike && onLike(media._id);
+                          }}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className={`flex items-center gap-2 transition-colors ${media.hasLiked
+                            ? 'text-red-500'
+                            : 'text-gray-700 hover:text-red-500'
+                            }`}
+                        >
+                          <Heart
+                            size={24}
+                            className={media.hasLiked ? "fill-red-500 text-red-500" : "text-gray-700"}
+                          />
+                          <span className="text-sm font-medium">
+                            {Array.isArray(media.likes) ? media.likes.length : media.likesCount || media.likes || 0}
+                          </span>
+                        </motion.button>
+                        
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => {
+                            if (!isAuthenticated) {
+                              navigate('/login');
+                              return;
+                            }
+                            setShowComments(!showComments);
+                          }}
+                          className="flex items-center gap-2 text-gray-700 hover:text-blue-500 transition-colors"
+                        >
+                          <MessageCircle size={24} />
+                          <span className="text-sm font-medium">
+                            {media.comments ? media.comments.length : 0}
+                          </span>
+                        </motion.button>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <Eye size={16} />
+                        <span className="text-sm font-medium">{media.views || 0} views</span>
+                      </div>
+                    </div>
+
+                    {/* Comments Section */}
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-semibold text-gray-800">Comments</h4>
+                        <button
+                          onClick={() => setShowComments(!showComments)}
+                          className="text-sm text-[#3F2965] hover:text-[#3F2965]/80 transition-colors"
+                        >
+                          {showComments ? 'Hide' : 'Show'}
+                        </button>
+                      </div>
+
+                      {showComments && (
+                        <>
+                          {/* Comments List */}
+                          <div className="space-y-3 mb-4 max-h-[30vh] overflow-y-auto">
+                            {media.comments && media.comments.length > 0 ? (
+                              media.comments.map((comment, index) => (
+                                <div key={index} className="bg-gray-50 p-3 rounded-xl">
+                                  <p className="text-sm text-gray-800 leading-relaxed">{comment.content}</p>
+                                  <p className="text-xs text-gray-500 mt-2">
+                                    {new Date(comment.createdAt).toLocaleDateString('en-US', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      year: 'numeric'
+                                    })}
+                                  </p>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-gray-500 text-center py-8 italic">
+                                No comments yet. Be the first to share one!
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Add Comment */}
+                          {isAuthenticated && (
+                            <div className="border-t border-gray-100 pt-4">
+                              <form onSubmit={handleCommentSubmit} className="flex gap-3">
+                                <textarea
+                                  value={comment}
+                                  onChange={(e) => setComment(e.target.value)}
+                                  placeholder="Add a comment..."
+                                  className="flex-1 px-4 py-3 border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-[#3F2965]/20 focus:border-[#3F2965] outline-none text-sm leading-relaxed"
+                                  rows="3"
+                                />
+                                <button
+                                  type="submit"
+                                  disabled={!comment.trim()}
+                                  className="px-6 py-3 bg-[#3F2965] text-white rounded-xl hover:bg-[#3F2965]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold text-sm shadow-sm self-end"
+                                >
+                                  Post
+                                </button>
+                              </form>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
-            </div>
-          </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </motion.div>
       </motion.div>
     </AnimatePresence>
