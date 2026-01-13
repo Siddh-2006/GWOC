@@ -5,7 +5,10 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 
 // Configure environment variables first
-dotenv.config({ path: '.env' });
+// In serverless, environment variables are provided by the platform
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: '.env' });
+}
 
 // Import routes
 import authRoutes from './api/auth.routes.js';
@@ -142,6 +145,14 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'MindSettler API is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/otp', otpRoutes);
 app.use('/api/booking', bookingRoutes);
@@ -198,11 +209,18 @@ app.get('/health', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  if (process.env.NODE_ENV !== 'production') {
+// Only start the server if not in serverless environment
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
-  }
-  
-  // Start the session reminder service
+    
+    // Start the session reminder service
+    sessionReminderService.start();
+  });
+} else {
+  // In production (serverless), just start the reminder service
   sessionReminderService.start();
-});
+}
+
+// Export the Express app for Vercel serverless functions
+export default app;
