@@ -9,38 +9,38 @@ const MOBILE_BREAKPOINT = 768;
 const cardData = [
   {
     color: 'rgba(255, 255, 255, 0.95)',
-    title: 'A Sanctuary of Trust',
-    description: 'Your narrative is held in the strictest sacredness. We curate a space where vulnerability is met with absolute privacy and zero judgment.',
+    title: 'Breaking Patterns',
+    description: 'We help you identify and release unhelpful cycles. Together, we work to understand the root of your coping habits and empower you to establish healthier, sustainable behaviors that serve your true self.',
     label: '01'
   },
   {
     color: 'rgba(255, 255, 255, 0.95)',
-    title: 'Tailored Inner Maps',
-    description: 'There are no templates here. Each session is a co-created map, intricately woven to align with your neural landscape.',
+    title: 'Building Confidence',
+    description: 'Rediscover your inherent worth. We provide the tools to silence the inner critic, helping you build a solid foundation of self-esteem and deep, unwavering trust in your own abilities.',
     label: '02'
   },
   {
     color: 'rgba(255, 255, 255, 0.95)',
-    title: 'Rhythmic Progress',
-    description: 'Mental wellness shouldn\'t feel chaotic. Our sessions follow a reliable rhythm: grounded check-ins and reflective integration.',
+    title: 'Healing Trauma',
+    description: 'Your past does not have to define your future. We offer a safe, clinically rooted space to process painful experiences, allowing you to move from a state of surviving to truly thriving.',
     label: '03'
   },
   {
     color: 'rgba(255, 255, 255, 0.95)',
-    title: 'Clinically Rooted',
-    description: 'We bridge human heart and scientific rigor. Using a multi-modal approach rooted in contemporary neuropsychology.',
+    title: 'Deepening Connections',
+    description: 'Relationships are the cornerstone of wellbeing. We explore attachment styles and communication patterns to help you foster deeper, more secure, and meaningful connections with others.',
     label: '04'
   },
   {
     color: 'rgba(255, 255, 255, 0.95)',
-    title: 'Seamless Accessibility',
-    description: 'Healing is not bound by geography. Whether at our studio or connection digitally, therapeutic support fits into your life\'s rhythm.',
+    title: 'Family Harmony',
+    description: 'Navigating family dynamics can be complex. We support you through parenting hurdles and family conflicts, offering strategies to restore balance, understanding, and peace within the home.',
     label: '05'
   },
   {
     color: 'rgba(255, 255, 255, 0.95)',
-    title: 'Whole-Person Care',
-    description: 'We look at the whole person, not just the symptom. From untangling trauma to nurturing health, we address your entire existence.',
+    title: 'Holistic Growth',
+    description: 'Beyond symptom relief, we focus on the whole person. We integrate your mental, emotional, and relational health to support a journey of profound personal growth and lasting clarity.',
     label: '06'
   }
 ];

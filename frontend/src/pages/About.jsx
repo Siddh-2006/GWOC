@@ -94,8 +94,8 @@ const About = () => {
               transition={{ duration: 0.8 }}
               className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-primary"
             >
-              The Architecture <br />
-              <span className="text-secondary">of Inner Clarity</span>
+              Understanding is the first form of care<br />
+              {/* <span className="text-secondary">you with</span> */}
             </motion.h1>
 
             <motion.p
@@ -114,7 +114,7 @@ const About = () => {
             >
               <button
                 onClick={() => window.location.href = '/booking'}
-                className="px-9 py-4 bg-[#1a1831] text-white font-bold rounded-2xl shadow-xl shadow-pink-100 hover:bg-primary transition-all flex items-center gap-4 group text-[10px] tracking-[0.3em] uppercase"
+                className="px-9 py-4 bg-secondary text-white font-bold rounded-2xl shadow-xl shadow-pink-100 hover:bg-primary transition-all flex items-center gap-4 group text-[10px] tracking-[0.3em] uppercase"
               >
                 START YOUR JOURNEY
                 <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
@@ -133,7 +133,7 @@ const About = () => {
             >
               <Stack
                 randomRotation={true}
-                sensitivity={180}
+                sensitivity={180 }
                 sendToBackOnClick={true}
                 cards={[
                   // Approach Card
@@ -145,11 +145,20 @@ const About = () => {
                       </div>
                     </div>
                     <div className="relative w-full h-full rounded-[3rem] overflow-hidden border border-gray-100">
-                      <img src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1200&auto=format" className="w-full h-full object-cover" alt="Approach" />
-                      <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
-                      <div className="absolute bottom-10 left-10 right-10 z-10">
-                        <div className="bg-white/80 backdrop-blur-xl px-8 py-5 rounded-3xl border border-white/50 shadow-lg">
-                          <p className="text-sm font-bold text-gray-900 italic leading-snug">"A unique methodology rooted in clinical depth and human heart."</p>
+                      <img
+                        src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1200&auto=format"
+                        className="absolute inset-0 w-full h-full object-cover opacity-20"
+                        alt="Approach"
+                      />
+                      <div className="relative z-10 w-full h-full p-14 flex flex-col justify-center text-center">
+                        <div className="mx-auto w-12 h-12 bg-indigo-400/5 rounded-2xl flex items-center justify-center text-indigo-400 mb-8 border border-indigo-400/10">
+                          <Quote size={24} />
+                        </div>
+                        <h4 className="text-lg md:text-xl font-bold mb-4 tracking-tight text-gray-900 leading-tight">A unique methodology rooted in clinical depth and human heart.</h4>
+                        <div className="space-y-2 text-[12px] text-gray-600 leading-relaxed font-medium px-4">
+                          <p>Guide individuals toward informed, human support while normalizing the process of seeking guidance.</p>
+                          <p>Provide safe, confidential pathways to sessions that honor each person's unique journey.</p>
+                          <p>We walk alongside, we don't push forward.</p>
                         </div>
                       </div>
                     </div>
@@ -164,18 +173,20 @@ const About = () => {
                     </div>
                     <div className="relative w-full h-full rounded-[3rem] overflow-hidden border border-gray-100">
                       <img
-                        src="https://images.unsplash.com/photo-1516307364728-25b1b49fe701?q=80&w=1200&auto=format"
-                        className="absolute inset-0 w-full h-full object-cover opacity-[0.15]"
+                        src="/assets/mountain2.jpg"
+                        className="absolute inset-0 w-full h-full object-cover opacity-20"
                         alt="Mission"
                       />
                       <div className="relative z-10 w-full h-full p-14 flex flex-col justify-center text-center">
                         <div className="mx-auto w-12 h-12 bg-secondary/5 rounded-2xl flex items-center justify-center text-secondary mb-8 border border-secondary/10">
-                          <Target size={24} />
+                          <Quote size={24} />
                         </div>
                         <h4 className="text-lg md:text-xl font-bold mb-4 tracking-tight text-gray-900 leading-tight">Accessible excellence for every inner world.</h4>
-                        <p className="text-[12px] text-gray-400 leading-relaxed font-medium px-4">
-                          Bridging the gap between clinical research and genuine human connection.
-                        </p>
+                        <div className="space-y-2 text-[12px] text-gray-600 leading-relaxed font-medium px-4">
+                          <p>To make mental health understanding less intimidating.</p>
+                          <p>To create space for reflection without pressure, prioritizing clarity over urgency.</p>
+                          <p>Understanding comes first.</p>
+                        </div>
                       </div>
                     </div>
                   </div>,
@@ -189,7 +200,7 @@ const About = () => {
                     </div>
                     <div className="relative w-full h-full rounded-[3rem] overflow-hidden border border-gray-100">
                       <img
-                        src="https://images.unsplash.com/photo-1502481851512-e9e2529bbbf9?q=80&w=1200&auto=format"
+                        src="/assets/river1.jpg"
                         className="absolute inset-0 w-full h-full object-cover opacity-20"
                         alt="Philosophy"
                       />
@@ -197,10 +208,12 @@ const About = () => {
                         <div className="mx-auto w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center text-primary mb-8 border border-primary/10">
                           <Quote size={24} />
                         </div>
-                        <h4 className="text-lg md:text-xl font-bold mb-4 tracking-tight text-gray-900 leading-tight">Healing is an unfolding journey, not a destination.</h4>
-                        <p className="text-[12px] text-gray-400 leading-relaxed font-medium italic px-4">
-                          "We believe in the power of patience, presence, and personalized clinical care."
-                        </p>
+                        <h4 className="text-lg md:text-xl font-bold mb-6 tracking-tight text-gray-900 leading-tight">Our Philosophy of Care</h4>
+                        <div className="space-y-2 text-[12px] text-gray-600 leading-relaxed font-medium">
+                          <p>Psycho-education: Not diagnosis</p>
+                          <p>Understanding: Not fixing</p>
+                          <p>Reflection: Not reaction</p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -221,13 +234,12 @@ const About = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="relative aspect-video rounded-[3rem] overflow-hidden shadow-2xl border-8 border-gray-50 group"
+              className="relative aspect-[3/4] max-w-xs mx-auto rounded-[3rem] overflow-hidden shadow-2xl border-8 border-gray-50 group"
             >
               <video
                 src="/assets/pranika1.mp4"
                 controls
                 className="w-full h-full object-cover"
-                poster="/assets/pranika1.jpg"
               />
               <div className="absolute inset-0 pointer-events-none border border-white/20 rounded-[2.5rem]" />
             </motion.div>
@@ -239,24 +251,26 @@ const About = () => {
                   <span className="text-[8px] font-bold text-gray-400 uppercase tracking-[0.4em]">The Core Vision</span>
                 </div>
 
-                <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-[1.1] mb-8 font-serif">
+                <h2 className="text-3xl md:text-5xl font-bold text-primary leading-[1.1] mb-8 font-serif">
                   What Is <br />
                   <span className="text-primary italic">MindSettler?</span>
                 </h2>
 
                 <p className="text-base text-gray-600 leading-relaxed font-medium">
-                  We are a clinical sanctuary where contemporary neuroscience meets compassionate human insight. MindSettler isn't just a counseling service—it's a space where your internal narrative is honored, explored, and gently reframed.
+                  MindSettler is a psycho-education and mental well-being platform that focuses on understanding before action.
+
+We support awareness and human-led guidance through both online and offline sessions, creating space for reflection without pressure.
                 </p>
 
                 <div className="grid grid-cols-2 gap-6 pt-4">
-                  <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100">
-                    <div className="text-primary font-bold text-xl mb-1">98%</div>
-                    <div className="text-[8px] uppercase tracking-[0.3em] text-gray-400 font-bold">Client Comfort</div>
-                  </div>
-                  <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100">
-                    <div className="text-secondary font-bold text-xl mb-1">Human</div>
-                    <div className="text-[8px] uppercase tracking-[0.3em] text-gray-400 font-bold">Led Approach</div>
-                  </div>
+                  {/* <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100"> */}
+                    {/* <div className="text-primary font-bold text-xl mb-1">98%</div> */}
+                    {/* <div className="text-[8px] uppercase tracking-[0.3em] text-gray-400 font-bold">Client Comfort</div> */}
+                  {/* </div> */}
+                  {/* <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100"> */}
+                    {/* <div className="text-secondary font-bold text-xl mb-1">Human</div> */}
+                    {/* <div className="text-[8px] uppercase tracking-[0.3em] text-gray-400 font-bold">Led Approach</div> */}
+                  {/* </div> */}
                 </div>
               </div>
             </AnimatedSection>
@@ -272,9 +286,9 @@ const About = () => {
 
         <div className="max-w-5xl mx-auto px-6 relative z-10">
           <AnimatedSection className="text-center mb-8">
-            <span className="text-primary font-bold text-[8px] tracking-[0.4em] uppercase mb-2 block">Integrity First</span>
+            <span className="text-primary font-bold text-[8px] tracking-[0.4em] uppercase mb-2 block">Compassionate Care</span>
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight font-serif italic">
-              Alignment & Clarity
+              We Help You With
             </h2>
             <div className="w-10 h-1 bg-primary/20 mx-auto mt-3 rounded-full" />
           </AnimatedSection>
@@ -285,119 +299,14 @@ const About = () => {
         <WavyDivider color="fill-gray-50/80" />
       </section>
 
-      {/* 3. MEET THE FOUNDER (Interactive Display) */}
-      <section className="py-32 px-6 relative bg-gray-50/80 overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-            {/* Left: Founder Content */}
-            <AnimatedSection>
-              <div className="space-y-10">
-                <div>
-                  <span className="text-primary font-bold text-[8px] uppercase tracking-[0.4em] mb-4 block underline decoration-primary/20 underline-offset-8">Voices of Vision</span>
-
-                  <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-[1.1] mb-8 font-serif">
-                    About <br />
-                    <span className="text-secondary italic">the Founder</span>
-                  </h2>
-                </div>
-                <p className="text-sm text-gray-500 leading-relaxed font-medium max-w-lg">
-                  I founded MindSettler because I saw a profound need for a space where clinical support feels human.
-                  My goal is to create a site that honors the complexity of your internal world with curiosity and compassion.
-                </p>
-
-                <div className="grid gap-8">
-                  {[
-                    { icon: Eye, title: "Master of Arts", detail: "Counseling Psychology, GGU (2022)", color: "primary" },
-                    { icon: Sparkles, title: "Human-Led", detail: "Rooted in clinical research & radical empathy.", color: "secondary" }
-                  ].map((item, i) => (
-                    <motion.div
-                      key={i}
-                      whileHover={{ x: 10 }}
-                      className="flex gap-8 items-center p-8 bg-white/60 backdrop-blur-md rounded-[2.5rem] border border-white shadow-xl shadow-indigo-100/30 group hover:border-primary/20 transition-all duration-500"
-                    >
-                      <div className={`w-14 h-14 bg-${item.color}/10 rounded-2xl flex items-center justify-center text-${item.color} group-hover:bg-${item.color} group-hover:text-white transition-all duration-500`}>
-                        <item.icon size={26} />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-gray-900 text-sm mb-1 uppercase tracking-widest">{item.title}</h4>
-                        <p className="text-sm text-gray-500 font-medium">{item.detail}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            </AnimatedSection>
-
-            {/* Right: Founder Image Stack */}
-            <div className="relative h-[500px] w-full max-w-[440px] mx-auto hidden lg:block">
-              <CardSwap
-                width={440}
-                height={500}
-                cardDistance={20}
-                verticalDistance={30}
-                delay={6000}
-              >
-                {/* MISSION CARD */}
-                <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white">
-                  <div className="w-full h-full p-10 flex flex-col justify-center text-center bg-white/60 backdrop-blur-xl border border-white/40 rounded-[2.5rem]">
-                    <div className="mx-auto w-14 h-14 bg-secondary/20 rounded-2xl flex items-center justify-center text-secondary mb-6">
-                      <Sparkles size={28} />
-                    </div>
-                    <h4 className="text-base font-bold mb-2 tracking-tight text-gray-900">Evolving Care</h4>
-                    <p className="text-xs text-gray-600 leading-relaxed font-medium">
-                      Bridging clinical expertise with deep human insight to create sustainable mental wellness.
-                    </p>
-                  </div>
-                </Card>
-
-                {/* ETHOS CARD */}
-                <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white">
-                  <div className="w-full h-full p-10 flex flex-col justify-center text-center bg-indigo-50/80 backdrop-blur-xl border border-white/40 rounded-[2.5rem]">
-                    <div className="mx-auto w-14 h-14 bg-primary/20 rounded-2xl flex items-center justify-center text-primary mb-6 shadow-inner">
-                      <Heart size={28} fill="currentColor" />
-                    </div>
-                    <h4 className="text-xl font-bold mb-4 tracking-tight text-gray-900">Our Core Ethos</h4>
-                    <p className="text-sm text-gray-600 leading-relaxed font-medium italic">
-                      "To listen not just with ears, but with an open heart that honors the silence between words."
-                    </p>
-                  </div>
-                </Card>
-
-                {/* PORTRAIT CARD (FRONT) */}
-                <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white">
-                  <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden border-[10px] border-white/60">
-                    <img src="/assets/pranika.jpg" className="w-full h-full object-cover" alt="Founder" />
-                    <div className="absolute inset-0 bg-linear-to-t from-primary/80 via-transparent to-transparent" />
-                    <div className="absolute bottom-10 left-0 right-0 text-center text-white px-8">
-                      <h3 className="text-2xl font-bold tracking-tight mb-1">Parnika Bajaj</h3>
-                      <p className="text-[9px] uppercase tracking-[0.3em] opacity-90 font-bold">Counseling Psychologist</p>
-                    </div>
-                  </div>
-                </Card>
-              </CardSwap>
-            </div>
-          </div>
-        </div>
-        <WavyDivider top color="fill-gray-50/80" />
-      </section>
-
-      {/* 4. IS / IS NOT SECTION (Aura Immersive) */}
-      <section className="py-32 bg-white overflow-hidden relative">
+      {/* 3. IS / IS NOT SECTION (Aura Immersive) */}
+      <section className="py-32 bg-gradient-to-br from-pink-50 via-white to-gray-100 overflow-hidden relative">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[160px] opacity-40" />
           <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-secondary/5 rounded-full blur-[160px] opacity-30" />
         </div>
 
         <div className="max-w-6xl mx-auto px-4 lg:px-8 relative z-10">
-          <AnimatedSection className="text-center mb-20">
-            <span className="text-primary font-bold text-[8px] tracking-[0.4em] uppercase mb-4 block">Integrity First</span>
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-[1.1] mb-8 font-serif">
-              Alignment & <br />
-              <span className="text-primary italic">Integrity</span>
-            </h2>
-            <div className="w-10 h-0.5 bg-primary/20 mx-auto rounded-full mt-4" />
-          </AnimatedSection>
-
           <div className="grid md:grid-cols-2 gap-12">
             <motion.div
               whileHover={{ scale: 1.01 }}
@@ -448,7 +357,84 @@ const About = () => {
             </motion.div>
           </div>
         </div>
-        <WavyDivider color="fill-aurora-light" />
+        <WavyDivider color="fill-gray-50/80" />
+      </section>
+
+      {/* 4. MEET THE FOUNDER (Interactive Display) */}
+      <section className="py-32 px-6 relative bg-gray-50/80 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            {/* Left: Founder Content */}
+            <AnimatedSection>
+              <div className="space-y-10">
+                <div>
+                  <span className="text-primary font-bold text-[8px] uppercase tracking-[0.4em] mb-4 block underline decoration-primary/20 underline-offset-8">Voices of Vision</span>
+
+                  <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-[1.1] mb-8 font-serif">
+                    Parnika's <br />
+                    <span className="text-secondary italic">Story</span>
+                  </h2>
+                </div>
+                <div className="space-y-6">
+                  <p className="text-sm text-gray-500 leading-relaxed font-medium max-w-lg">
+                    MindSettler was born from observation, not crisis. Parnika recognized the lack of safe spaces for reflection and the need for calm, human-centered mental health support.
+                  </p>
+                  <p className="text-sm text-gray-500 leading-relaxed font-medium max-w-lg">
+                    The intention was always to create a platform built with care, not speed—a place where understanding unfolds naturally.
+                  </p>
+                  <p className="text-base text-gray-700 leading-relaxed font-medium max-w-lg italic">
+                    MindSettler was built with care, not speed.
+                  </p>
+                </div>
+
+                <div className="grid gap-8">
+                  {[
+                    { icon: Eye, title: "Master of Arts", detail: "Counseling Psychology, GGU (2022)", color: "primary" },
+                    { icon: Sparkles, title: "Human-Led", detail: "Rooted in clinical research & radical empathy.", color: "secondary" }
+                  ].map((item, i) => (
+                    <motion.div
+                      key={i}
+                      whileHover={{ x: 10 }}
+                      className="flex gap-8 items-center p-8 bg-white/60 backdrop-blur-md rounded-[2.5rem] border border-white shadow-xl shadow-indigo-100/30 group hover:border-primary/20 transition-all duration-500"
+                    >
+                      <div className={`w-14 h-14 bg-${item.color}/10 rounded-2xl flex items-center justify-center text-${item.color} group-hover:bg-${item.color} group-hover:text-white transition-all duration-500`}>
+                        <item.icon size={26} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-900 text-sm mb-1 uppercase tracking-widest">{item.title}</h4>
+                        <p className="text-sm text-gray-500 font-medium">{item.detail}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </AnimatedSection>
+
+            {/* Right: Founder Image Stack */}
+            <div className="relative h-[500px] w-full max-w-[440px] mx-auto hidden lg:block">
+              <CardSwap
+                width={440}
+                height={500}
+                cardDistance={20}
+                verticalDistance={30}
+                delay={6000}
+              >
+                {/* PORTRAIT CARD (FRONT) */}
+                <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white">
+                  <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden border-[10px] border-white/60">
+                    <img src="/assets/pranika.jpg" className="w-full h-full object-cover" alt="Founder" />
+                    <div className="absolute inset-0 bg-linear-to-t from-primary/80 via-transparent to-transparent" />
+                    <div className="absolute bottom-10 left-0 right-0 text-center text-white px-8">
+                      <h3 className="text-2xl font-bold tracking-tight mb-1">Parnika Bajaj</h3>
+                      <p className="text-[9px] uppercase tracking-[0.3em] opacity-90 font-bold">Counseling Psychologist</p>
+                    </div>
+                  </div>
+                </Card>
+              </CardSwap>
+            </div>
+          </div>
+        </div>
+        <WavyDivider top color="fill-gray-50/80" />
       </section>
 
       {/* 5. FINAL CTA (Soft & Emotional) */}
