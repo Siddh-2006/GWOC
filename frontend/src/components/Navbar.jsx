@@ -44,7 +44,10 @@ const Navbar = () => {
   const [mobileHubOpen, setMobileHubOpen] = useState(false);
 
   const isHomePage = location.pathname === '/';
-  const isWhite = isHomePage && !scrolled;
+  const isResourcesPage = location.pathname === '/resources';
+  // Allow transparent navbar on Home AND Resources
+  const isTransparentPage = isHomePage || isResourcesPage;
+  const isWhite = isTransparentPage && !scrolled;
 
   const navLinks = [
     { name: 'About', path: '/about' },
@@ -55,7 +58,7 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-md py-2' : 'bg-transparent py-4'}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-pink-100/90 backdrop-blur-md shadow-md py-2' : 'bg-transparent py-4'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center">
@@ -74,8 +77,8 @@ const Navbar = () => {
                 <Link
                   to={link.path}
                   className={`text-lg font-semibold link-underline pb-1 transition-colors hover:text-secondary flex items-center gap-1 ${location.pathname === link.path
-                      ? 'text-secondary'
-                      : (isWhite ? 'text-white' : 'text-primary')
+                    ? 'text-secondary'
+                    : (isWhite ? 'text-white' : 'text-primary')
                     }`}
                 >
                   {link.name}

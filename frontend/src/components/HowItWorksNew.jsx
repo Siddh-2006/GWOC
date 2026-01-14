@@ -53,83 +53,119 @@ const HowItWorks = () => {
     restDelta: 0.001
   });
 
-  const backgroundColor = useTransform(
-    smoothProgress,
-    [0, 0.33, 0.66, 1],
-    stages.map(s => s.color)
-  );
-
   return (
-    <div ref={containerRef} className="relative h-[400vh]">
-      <motion.div
-        style={{ backgroundColor }}
-        className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden transition-colors duration-700"
-      >
-        <div className="w-full max-w-7xl mx-auto px-6 lg:px-12 h-full flex items-center justify-center">
+    <div ref={containerRef} className="relative h-[400vh] bg-white">
+      {/* 
+         1. Increased top padding to pt-32 to clear navbar.
+         2. Added px-4 to prevent edge touching.
+         3. Reduced max-w to 7xl to constrain resizing.
+      */}
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-center pt-32 pb-12 px-4 md:px-8">
 
-          <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        {/* DYNAMIC BACKGROUND LAYER */}
+        <div className="absolute inset-0 z-0">
+          {stages.map((stage, i) => {
+            const stepSize = 1 / stages.length;
+            const start = i * stepSize;
+            const end = (i + 1) * stepSize;
+
+            const opacity = useTransform(
+              smoothProgress,
+              [start, start + 0.1, end - 0.1, end],
+              [0, 1, 1, 0]
+            );
+
+            return (
+              <motion.div
+                key={`bg-${i}`}
+                style={{ opacity }}
+                className="absolute inset-0 w-full h-full"
+              >
+                {/* Background Image - Blurred but more visible now */}
+                {/* Reduced blur slightly (3xl -> 2xl) and increased opacity (50 -> 70) */}
+                <img
+                  src={stage.image}
+                  alt=""
+                  className="w-full h-full object-cover blur-2xl scale-110 opacity-70"
+                />
+
+                {/* Layering: Pinkish but TRANSLUCENT enough to see the image forms */}
+                {/* Changed from 95% opacity to ~70-80% gradient to reveal the bg image */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-pink-50/60 to-purple-50/80"></div>
+
+                {/* Subtle texture layer */}
+                <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px]"></div>
+
+                {/* Decorative gradient orbs for "ETHEREAL" feel */}
+                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-pink-300/20 rounded-full blur-[100px]"></div>
+                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-300/20 rounded-full blur-[100px]"></div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+
+        {/* CONTENT CONTAINER - Reduced max-width and internal sizing */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto h-full flex items-center justify-center">
+          <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
 
             {/* LEFT SIDE: CONTENT */}
-            <div className="relative h-[50vh] flex flex-col justify-center order-2 lg:order-1">
+            <div className="relative h-[40vh] md:h-[50vh] flex flex-col justify-center order-2 lg:order-1">
               {stages.map((stage, i) => {
-                // strict isolation of ranges to prevent overlap
-                const stepSize = 1 / stages.length; // 0.25
+                const stepSize = 1 / stages.length;
                 const start = i * stepSize;
                 const end = (i + 1) * stepSize;
 
-                // Content fades in slightly later and fades out slightly earlier to avoid overlap
-                const opacity = useTransform(
-                  smoothProgress,
-                  [start, start + 0.05, end - 0.05, end],
-                  [0, 1, 1, 0]
-                );
-
-                const y = useTransform(
-                  smoothProgress,
-                  [start, start + 0.1, end - 0.1, end],
-                  [50, 0, 0, -50]
-                );
-
-                // Only render if we are roughly in the window (optimization)
-                // Note: pure CSS opacity handles visibility, but pointer-events control interaction
+                const opacity = useTransform(smoothProgress, [start, start + 0.05, end - 0.05, end], [0, 1, 1, 0]);
+                const x = useTransform(smoothProgress, [start, start + 0.1, end - 0.1, end], [-30, 0, 0, -30]);
                 const pointerEvents = useTransform(opacity, value => value > 0.5 ? 'auto' : 'none');
 
                 return (
                   <motion.div
-                    key={i}
-                    style={{ opacity, y, pointerEvents }}
+                    key={`content-${i}`}
+                    style={{ opacity, x, pointerEvents }}
                     className="absolute inset-0 flex flex-col justify-center text-left"
                   >
-                    <div className="space-y-6 max-w-xl">
+                    <div className="space-y-4 max-w-xl">
+                      {/* Step Indicator */}
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-1 rounded-full" style={{ backgroundColor: stage.accent }} />
-                        <span className="font-bold tracking-widest uppercase text-xs" style={{ color: stage.accent }}>
+                        <motion.div
+                          initial={{ width: 0 }}
+                          whileInView={{ width: 30 }}
+                          transition={{ duration: 0.8 }}
+                          className="h-1 rounded-full"
+                          style={{ backgroundColor: stage.accent }}
+                        />
+                        <span className="font-bold tracking-widest uppercase text-xs md:text-sm" style={{ color: stage.accent }}>
                           Step 0{i + 1}
                         </span>
                       </div>
 
-                      <div className="space-y-4">
-                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+                      {/* Headings - Reduced sizes */}
+                      <div className="space-y-1">
+                        <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-[1.1] tracking-tight">
                           {stage.title}
                         </h2>
-                        <h3 className="text-lg font-medium text-gray-400">
+                        <h3 className="text-lg md:text-2xl font-medium text-gray-500/90">
                           {stage.subtitle}
                         </h3>
                       </div>
 
-                      <div className="p-6 bg-white/60 backdrop-blur-md rounded-2xl border border-white/50 shadow-sm">
-                        <p className="text-base md:text-lg text-gray-600 leading-relaxed">
+                      {/* Description Box - More compact */}
+                      <div className="p-5 md:p-6 bg-white/40 backdrop-blur-xl rounded-[1.5rem] border border-white/60 shadow-lg shadow-purple-500/5">
+                        <p className="text-base md:text-lg text-gray-700 leading-relaxed font-medium">
                           {stage.description}
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-4 pt-2">
-                        <div className="flex items-center justify-center w-12 h-12 rounded-full text-white shadow-lg shadow-purple-900/10" style={{ backgroundColor: stage.accent }}>
-                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                      {/* Objective Pill */}
+                      <div className="inline-flex items-center gap-3 pt-2">
+                        <div className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full text-white shadow-xl shadow-purple-900/10 transform hover:scale-110 transition-transform duration-300" style={{ backgroundColor: stage.accent }}>
+                          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
                         </div>
                         <div>
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Objective</p>
-                          <p className="font-semibold text-gray-800">{stage.goal}</p>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Key Objective</p>
+                          <p className="text-base md:text-lg font-bold text-gray-800">{stage.goal}</p>
                         </div>
                       </div>
                     </div>
@@ -138,35 +174,34 @@ const HowItWorks = () => {
               })}
             </div>
 
-            {/* RIGHT SIDE: IMAGES */}
-            <div className="relative h-[50vh] lg:h-[60vh] flex items-center justify-center order-1 lg:order-2">
+            {/* RIGHT SIDE: IMAGES - Hidden on Mobile to prevent overlap, visible on Large screens */}
+            {/* On mobile, we rely on the blurred background layer for visual context */}
+            <div className="hidden lg:flex relative h-[35vh] md:h-[45vh] lg:h-[60vh] items-center justify-center order-1 lg:order-2">
               {stages.map((stage, i) => {
                 const stepSize = 1 / stages.length;
                 const start = i * stepSize;
                 const end = (i + 1) * stepSize;
 
-                const opacity = useTransform(
-                  smoothProgress,
-                  [start, start + 0.05, end - 0.05, end],
-                  [0, 1, 1, 0]
-                );
+                const opacity = useTransform(smoothProgress, [start, start + 0.05, end - 0.05, end], [0, 1, 1, 0]);
+                const scale = useTransform(smoothProgress, [start, end], [1.05, 0.95]); // Subtle scaling
+                const rotate = useTransform(smoothProgress, [start, end], [2, -1]);
+                const y = useTransform(smoothProgress, [start, end], [30, 0]);
 
-                const scale = useTransform(smoothProgress, [start, end], [1.05, 1]);
-                const rotate = useTransform(smoothProgress, [start, end], [2, 0]);
 
                 return (
                   <motion.div
-                    key={i}
-                    style={{ opacity, scale, rotate }}
+                    key={`img-${i}`}
+                    style={{ opacity, scale, rotate, y }}
                     className="absolute inset-0 flex items-center justify-center"
                   >
-                    <div className="relative w-full max-w-md aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-white bg-white">
+                    {/* Smaller max-width for image container */}
+                    <div className="relative w-full max-w-sm md:max-w-md aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl border-[8px] border-white/80 bg-white">
                       <img
                         src={stage.image}
                         alt={stage.title}
-                        className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-105"
+                        className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-60" />
+                      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent" />
                     </div>
                   </motion.div>
                 );
@@ -175,7 +210,7 @@ const HowItWorks = () => {
 
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };
