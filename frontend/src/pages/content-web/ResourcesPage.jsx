@@ -6,7 +6,6 @@ import { mediaApi } from '../../services/media.api';
 import useAuthStore from '../../store/useAuthStore';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../../components/ToastContainer';
-import ContentFilterBar from '../../features/ContentWeb/components/ContentFilterBar';
 import MediaPlayer from '../../components/MediaPlayer';
 import ImageWithFallback from '../../components/ImageWithFallback';
 import AddMediaModal from '../../components/admin/AddMediaModal';
@@ -35,6 +34,31 @@ const ResourcesPage = () => {
 
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [showPlayer, setShowPlayer] = useState(false);
+
+  // Unified media click handler for both desktop and mobile
+  const handleMediaClickUnified = (item, source = 'unknown') => {
+    if (!item) return;
+    
+    try {
+      setSelectedMedia(item);
+      setShowPlayer(true);
+      
+      // Track view asynchronously
+      setTimeout(async () => {
+        try {
+          const response = await mediaApi.getMedia(item._id);
+          if (response.success) {
+            setMedia(prev => prev.map(m => m._id === item._id ? { ...m, views: response.data.views } : m));
+            setSelectedMedia(response.data);
+          }
+        } catch (err) {
+          console.error('Error tracking view:', err);
+        }
+      }, 0);
+    } catch (error) {
+      console.error('ERROR in handleMediaClickUnified:', error);
+    }
+  };
 
   const fetchMedia = useCallback(async (page = 1) => {
     try {
@@ -160,22 +184,6 @@ const ResourcesPage = () => {
     }
   };
 
-  const handleMediaClick = async (item) => {
-    setSelectedMedia(item);
-    // Use MediaPlayer for all media types including posts
-    setShowPlayer(true);
-
-    try {
-      const response = await mediaApi.getMedia(item._id);
-      if (response.success) {
-        setMedia(prev => prev.map(m => m._id === item._id ? { ...m, views: response.data.views } : m));
-        setSelectedMedia(response.data);
-      }
-    } catch (err) {
-      console.error('Error tracking view:', err);
-    }
-  };
-
   const handleMediaAdded = (newMedia) => {
     setMedia(prev => [newMedia, ...prev]);
     success('Media added successfully!');
@@ -183,26 +191,26 @@ const ResourcesPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF5F7] pt-24 md:pt-28">
-      <div className="max-w-7xl mx-auto px-6 md:px-12 pb-24 flex flex-col lg:flex-row gap-8">
+    <div className="min-h-screen bg-[#FFF5F7] pt-20 sm:pt-24 md:pt-28">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 pb-24 flex flex-col lg:flex-row gap-8">
 
         {/* Sidebar (Desktop Only) */}
-        <div className="hidden lg:block w-64 flex-shrink-0">
+        <div className="hidden lg:block w-64 shrink-0">
           <div className="sticky top-28">
             <ResourceSidebar />
           </div>
         </div>
 
         {/* Main Content Area */}
-        <main className="flex-grow min-w-0">
+        <main className="grow min-w-0">
 
           {/* Header & Search */}
           <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-8 gap-4">
             <div className="hidden md:block">
-              <div className="inline-flex items-center p-1.5 bg-purple-50/50 rounded-[2rem] border border-purple-100 mb-2">
+              <div className="inline-flex items-center p-1.5 bg-purple-50/50 rounded-4xl border border-purple-100 mb-2">
                 <Link
                   to="/resources"
-                  className={`px-8 py-3 rounded-[1.5rem] text-xl font-bold transition-all duration-300 ${location.pathname === '/resources'
+                  className={`px-8 py-3 rounded-3xl text-xl font-bold transition-all duration-300 ${location.pathname === '/resources'
                     ? 'bg-primary text-white shadow-lg shadow-primary/25 scale-105'
                     : 'text-slate-400 hover:text-primary hover:bg-white/50'
                     }`}
@@ -211,7 +219,7 @@ const ResourcesPage = () => {
                 </Link>
                 <Link
                   to="/library"
-                  className={`px-8 py-3 rounded-[1.5rem] text-xl font-bold transition-all duration-300 ${location.pathname === '/library'
+                  className={`px-8 py-3 rounded-3xl text-xl font-bold transition-all duration-300 ${location.pathname === '/library'
                     ? 'bg-primary text-white shadow-lg shadow-primary/25 scale-105'
                     : 'text-slate-400 hover:text-primary hover:bg-white/50'
                     }`}
@@ -221,43 +229,76 @@ const ResourcesPage = () => {
               </div>
             </div>
 
-            <div className="w-full md:w-auto flex items-center gap-4">
-              <div className="relative w-full md:w-80">
+            <div className="w-full md:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+              <div className="relative w-full sm:w-80">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input
                   type="text"
                   placeholder={`Search for ${placeholder}...`}
                   value={localSearch}
                   onChange={handleSearchChange}
-                  className="w-full pl-12 pr-4 py-3 bg-white border border-purple-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-sm z-10"
+                  className="w-full pl-12 pr-4 py-3 bg-white border border-purple-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
                 />
               </div>
 
-              {/* Mobile Filter & View Toggle */}
-              <div className="flex md:hidden items-center gap-2 flex-shrink-0">
-                <ResourceMobileDropdown />
-                <button
-                  onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                  className="w-12 h-12 bg-white border border-purple-100 rounded-2xl flex items-center justify-center shadow-sm text-primary active:scale-95 transition-all"
-                  title="Toggle View Mode"
-                >
-                  {viewMode === 'grid' ? <List size={22} /> : <Grid size={22} />}
-                </button>
-              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {/* Mobile Filter & View Toggle */}
+                <div className="flex md:hidden items-center gap-2">
+                  <ResourceMobileDropdown />
+                  <button
+                    onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                    className="w-12 h-12 bg-white border border-purple-100 rounded-2xl flex items-center justify-center shadow-sm text-primary active:scale-95 transition-all"
+                    title="Toggle View Mode"
+                  >
+                    {viewMode === 'grid' ? <List size={22} /> : <Grid size={22} />}
+                  </button>
+                </div>
 
-              {/* Mobile Dropdown (Visible only on lg and below but hidden on mobile in favor of the flex above) */}
-              <div className="hidden md:flex lg:hidden flex-shrink-0">
-                <ResourceMobileDropdown />
-              </div>
+                {/* Tablet Filter & View Toggle */}
+                <div className="hidden md:flex lg:hidden items-center gap-2">
+                  <ResourceMobileDropdown />
+                  <button
+                    onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                    className="w-12 h-12 bg-white border border-purple-100 rounded-2xl flex items-center justify-center shadow-sm text-primary active:scale-95 transition-all"
+                    title="Toggle View Mode"
+                  >
+                    {viewMode === 'grid' ? <List size={22} /> : <Grid size={22} />}
+                  </button>
+                </div>
 
-              {isAdmin && (
-                <button
-                  onClick={() => setShowAddModal(true)}
-                  className="bg-primary text-white p-3 rounded-xl hover:bg-secondary transition-all shadow-lg shadow-primary/20 flex-shrink-0"
-                >
-                  <Plus size={20} />
-                </button>
-              )}
+                {/* Desktop View Toggle */}
+                <div className="hidden lg:flex items-center gap-2">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${viewMode === 'grid'
+                      ? 'bg-primary text-white shadow-lg shadow-primary/25'
+                      : 'bg-white border border-purple-100 text-primary hover:bg-purple-50'
+                      }`}
+                    title="Grid View"
+                  >
+                    <Grid size={22} />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${viewMode === 'list'
+                      ? 'bg-primary text-white shadow-lg shadow-primary/25'
+                      : 'bg-white border border-purple-100 text-primary hover:bg-purple-50'
+                      }`}
+                    title="List View"
+                  >
+                    <List size={22} />
+                  </button>
+                </div>
+
+                {isAdmin && (
+                  <button
+                    onClick={() => setShowAddModal(true)}
+                    className="bg-primary text-white p-3 rounded-xl hover:bg-secondary transition-all shadow-lg shadow-primary/20 shrink-0"
+                  >
+                    <Plus size={20} />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -288,8 +329,8 @@ const ResourcesPage = () => {
           <motion.div
             layout
             className={viewMode === 'grid'
-              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-              : "flex flex-col gap-6 max-w-4xl mx-auto"
+              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8"
+              : "flex flex-col gap-4 sm:gap-6 max-w-4xl mx-auto"
             }
           >
             <AnimatePresence mode="popLayout">
@@ -300,10 +341,33 @@ const ResourcesPage = () => {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  onClick={() => handleMediaClick(item)}
-                  className={`group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer flex ${viewMode === 'grid' ? 'flex-col h-full' : 'flex-row items-center p-4 gap-6'}`}
+                  className={`group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 flex ${viewMode === 'grid' ? 'flex-col h-full' : 'flex-row items-center p-4 gap-6'} touch-manipulation select-none`}
+                  style={{ 
+                    WebkitTapHighlightColor: 'transparent',
+                    WebkitTouchCallout: 'none',
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none'
+                  }}
                 >
-                  <div className={`relative overflow-hidden bg-gray-50 ${viewMode === 'grid' ? 'aspect-video' : 'w-48 h-32 rounded-2xl shrink-0'}`}>
+                  <div 
+                    className={`relative overflow-hidden bg-gray-50 cursor-pointer ${viewMode === 'grid' ? 'aspect-video' : 'w-48 h-32 rounded-2xl shrink-0'}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleMediaClickUnified(item, 'click');
+                    }}
+                    onTouchEnd={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleMediaClickUnified(item, 'touch');
+                    }}
+                    style={{ 
+                      WebkitTapHighlightColor: 'transparent',
+                      WebkitTouchCallout: 'none',
+                      WebkitUserSelect: 'none',
+                      userSelect: 'none'
+                    }}
+                  >
                     {(item.type === 'video' || item.type === 'vlog') && item.fileUrl ? (
                       <InlineVideoPlayer
                         src={item.fileUrl}
@@ -332,7 +396,25 @@ const ResourcesPage = () => {
                   </div>
 
                   <div className={`p-6 flex flex-col grow ${viewMode === 'list' && 'py-2'}`}>
-                    <h3 className={`${viewMode === 'grid' ? 'text-lg' : 'text-xl'} font-bold text-slate-800 mb-3 line-clamp-2 leading-tight group-hover:text-primary transition-colors`}>
+                    <h3 
+                      className={`${viewMode === 'grid' ? 'text-lg' : 'text-xl'} font-bold text-slate-800 mb-3 line-clamp-2 leading-tight group-hover:text-primary transition-colors cursor-pointer`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        handleMediaClickUnified(item, 'click');
+                      }}
+                      onTouchEnd={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        handleMediaClickUnified(item, 'touch');
+                      }}
+                      style={{ 
+                        WebkitTapHighlightColor: 'transparent',
+                        WebkitTouchCallout: 'none',
+                        WebkitUserSelect: 'none',
+                        userSelect: 'none'
+                      }}
+                    >
                       {item.title}
                     </h3>
                     {viewMode === 'grid' && (
@@ -345,8 +427,12 @@ const ResourcesPage = () => {
                       <div className="flex items-center gap-4">
                         {isAuthenticated &&
                           <button
-                            onClick={(e) => handleLike(item._id, e)}
-                            className={`flex items-center gap-1.5 transition-colors ${item.hasLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleLike(item._id, e);
+                            }}
+                            className={`flex items-center gap-1.5 transition-colors touch-manipulation p-2 -m-2 ${item.hasLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}`}
                           >
                             <Heart size={16} className={item.hasLiked ? 'fill-rose-500' : ''} />
                             <span className="text-sm font-semibold tracking-tight">{item.likesCount || 0}</span>
@@ -357,7 +443,32 @@ const ResourcesPage = () => {
                           <span className="text-sm font-semibold tracking-tight">{item.views || 0}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-primary hover:gap-2 transition-all tracking-widest uppercase">
+                      
+                      
+                      {/* READ/WATCH button */}
+                      <div 
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleMediaClickUnified(item, 'click');
+                        }}
+                        onTouchEnd={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleMediaClickUnified(item, 'touch');
+                        }}
+                        className="flex items-center gap-1 text-[10px] font-bold text-primary transition-all tracking-widest uppercase cursor-pointer px-4 py-2 rounded-lg hover:bg-primary/5 active:bg-primary/10 touch-manipulation select-none relative z-10"
+                        style={{ 
+                          WebkitTapHighlightColor: 'rgba(63, 41, 101, 0.1)',
+                          WebkitTouchCallout: 'none',
+                          WebkitUserSelect: 'none',
+                          userSelect: 'none',
+                          minHeight: '44px',
+                          minWidth: '44px'
+                        }}
+                      >
                         {item.type === 'video' ? 'WATCH' : item.type === 'audio' ? 'LISTEN' : 'READ'}
                         <MoveRight size={14} />
                       </div>
@@ -396,7 +507,10 @@ const ResourcesPage = () => {
         <MediaPlayer
           media={selectedMedia}
           isOpen={showPlayer}
-          onClose={() => setShowPlayer(false)}
+          onClose={() => {
+            setShowPlayer(false);
+            setSelectedMedia(null);
+          }}
           onLike={(mediaId) => handleLike(mediaId)}
           onComment={handleComment}
         />

@@ -243,7 +243,9 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
     setCurrentImageIndex(index);
   };
 
-  if (!isOpen || !media) return null;
+  if (!isOpen || !media) {
+    return null;
+  }
 
   const isVideo = media.type === 'video' || media.type === 'vlog';
   const isAudio = media.type === 'audio';
