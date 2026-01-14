@@ -11,9 +11,7 @@ const SessionsTab = ({
   onNotesClick,
   onViewNotes,
   onTasksClick,
-  onAdminRemarksClick,
-  isAdminView = false,
-  userName = 'User'
+  onAdminRemarksClick
 }) => {
   const container = {
     hidden: { opacity: 0 },
@@ -34,9 +32,7 @@ const SessionsTab = ({
     return (
       <div className="text-center py-20">
         <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-gray-500 font-medium">
-          {isAdminView ? `Loading ${userName}'s sessions...` : 'Loading your sessions...'}
-        </p>
+        <p className="text-gray-500 font-medium">Loading your sessions...</p>
       </div>
     );
   }
@@ -79,9 +75,7 @@ const SessionsTab = ({
           </div>
           <h3 className="text-2xl font-bold text-gray-800 mb-3">No sessions found</h3>
           <p className="text-gray-500 mb-8 leading-relaxed">
-            {isAdminView
-              ? `${userName} hasn't booked any sessions yet.`
-              : 'Your wellness journey starts with a single step. Book your first session to begin transforming your life.'}
+            Your wellness journey starts with a single step. Book your first session to begin transforming your life.
           </p>
           <button
             onClick={() => window.location.href = '/booking'}
@@ -113,9 +107,14 @@ const SessionsTab = ({
               {categorizedSessions.upcoming.length}
             </span>
           </div>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {categorizedSessions.upcoming.map((session) => (
-              <motion.div key={session._id} variants={item}>
+              <motion.div
+                key={session._id}
+                variants={item}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                className="h-full"
+              >
                 <EnhancedSessionCard
                   session={session}
                   onNotesClick={onNotesClick}
@@ -141,9 +140,14 @@ const SessionsTab = ({
               {categorizedSessions.ongoing.length}
             </span>
           </div>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {categorizedSessions.ongoing.map((session) => (
-              <motion.div key={session._id} variants={item}>
+              <motion.div
+                key={session._id}
+                variants={item}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                className="h-full"
+              >
                 <EnhancedSessionCard
                   session={session}
                   onNotesClick={onNotesClick}
@@ -169,9 +173,14 @@ const SessionsTab = ({
               {categorizedSessions.past.length}
             </span>
           </div>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {categorizedSessions.past.map((session) => (
-              <motion.div key={session._id} variants={item}>
+              <motion.div
+                key={session._id}
+                variants={item}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                className="h-full"
+              >
                 <EnhancedSessionCard
                   session={session}
                   onNotesClick={onNotesClick}

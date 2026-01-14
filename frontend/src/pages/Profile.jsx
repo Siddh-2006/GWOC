@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
+  User, Plus, ChevronRight, Edit3, Camera, Mail, Phone, Map, Info, Save, X,
   Heart, Clock, MapPin, TrendingUp, FileText, Sparkles, Calendar, BookOpen,
-  User, Plus, ChevronRight
+  Shield, Globe, Languages, Quote, Layout, Lock, Upload
 } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
@@ -319,9 +320,10 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate, showError, success 
 
 const Profile = () => {
   const { userId } = useParams();
-  const { user: currentUser, isInitialized } = useAuthStore();
+  const { user: currentUser, isInitialized, updateUser } = useAuthStore();
   const [viewedUser, setViewedUser] = useState(null);
   const [isAdminView, setIsAdminView] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Default to 'journey' as requested ("Journey" (Default Active Tab))
   const [activeTab, setActiveTab] = useState('journey');
@@ -422,6 +424,13 @@ const Profile = () => {
     }
   };
 
+  const handleProfileUpdate = (updatedUser) => {
+    if (!isAdminView) {
+      updateUser(updatedUser);
+    }
+    setViewedUser(updatedUser);
+  };
+
   // Handlers for Modals
   const handleNotesClick = (session) => { setSelectedSession(session); setShowNotesModal(true); };
   const handleViewNotes = (session) => { setSelectedSession(session); setShowNotesViewer(true); };
@@ -451,7 +460,7 @@ const Profile = () => {
   const tabs = [
     {
       id: 'journey',
-      label: isAdminView ? `${user.firstName}'s Journey` : 'My Journey',
+      label: isAdminView ? `${user.firstName} 's Journey` : 'My Journey',
       icon: MapPin
     },
     {
@@ -471,7 +480,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen pb-20 pt-4 sm:pt-8" style={{ backgroundColor: '#FFF5F7' }}>
+    <div className="min-h-screen pb-20 pt-24 sm:pt-28" style={{ backgroundColor: '#FFF5F7' }}>
       <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
 
         {/* Hero Profile Header */}
@@ -479,174 +488,121 @@ const Profile = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative mb-6 sm:mb-8 lg:mb-12"
+          className="relative mb-6 sm:mb-8 lg:mb-10"
         >
-          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-6 md:p-8 lg:p-12">
-            <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
+          <div className="bg-white rounded-[2.5rem] shadow-xl p-6 sm:p-8 lg:p-10 border border-purple-50 relative">
+            {!isAdminView && (
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="absolute top-6 right-6 sm:top-8 sm:right-8 px-5 py-2 sm:px-6 sm:py-2.5 bg-[#Dd1764] text-white rounded-full text-xs sm:text-sm font-bold uppercase tracking-widest shadow-lg shadow-pink-200 hover:bg-pink-700 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 z-20"
+              >
+                <Edit3 size={14} className="sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Update Profile</span>
+                <span className="sm:hidden">Edit</span>
+              </button>
+            )}
+            <div className="flex flex-col lg:flex-row gap-10 lg:gap-14">
 
-              {/* Profile Avatar & Basic Info */}
-              <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
-                <div className="relative mb-4 sm:mb-6">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 bg-gradient-to-br from-[#3F2965] via-purple-600 to-[#Dd1764] rounded-2xl sm:rounded-3xl flex items-center justify-center text-white text-2xl sm:text-3xl md:text-4xl font-bold shadow-xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
-                    {user?.firstName?.[0]}{user?.lastName?.[0]}
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 bg-green-500 w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 sm:border-4 border-white flex items-center justify-center">
-                    <div className="w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full animate-pulse" />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#3F2965] to-[#Dd1764] bg-clip-text text-transparent">
-                    {user?.firstName} {user?.lastName}
-                  </h1>
-                  <p className="text-gray-600 font-medium text-sm sm:text-base">{user?.email}</p>
-                  <div className="flex flex-col sm:flex-row items-center gap-2 justify-center lg:justify-start">
-                    <span className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold ${user?.role === 'admin'
-                      ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-lg'
-                      : 'bg-gradient-to-r from-[#3F2965] to-purple-600 text-white shadow-lg'
-                      }`}>
-                      {user?.role === 'admin' ? '👑 Admin' : '🌟 Member'}
-                    </span>
-                    {isAdminView && (
-                      <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full text-xs sm:text-sm font-bold shadow-lg">
-                        👁️ Admin View
-                      </span>
+              {/* Left Column: Avatar & Quote */}
+              <div className="flex flex-col items-center shrink-0 w-full lg:w-48">
+                <div className="relative group">
+                  <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-[#3F2965] via-purple-600 to-[#Dd1764] flex items-center justify-center text-white text-5xl font-bold shadow-2xl relative overflow-hidden ring-8 ring-white group-hover:scale-105 transition-transform duration-500">
+                    {user?.avatar ? (
+                      <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="flex flex-col items-center">
+                        <span className="text-6xl mb-1">😊</span>
+                        <span className="text-[10px] opacity-60 font-medium tracking-widest uppercase">Member</span>
+                      </div>
                     )}
                   </div>
+
+                  {!isAdminView && (
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setShowEditModal(true)}
+                      className="absolute bottom-2 right-2 w-10 h-10 bg-white rounded-full shadow-lg border border-pink-100 flex items-center justify-center text-[#Dd1764] hover:text-pink-700 transition-all opacity-0 group-hover:opacity-100 z-10"
+                    >
+                      <Camera size={18} />
+                    </motion.button>
+                  )}
+                </div>
+
+                {/* User Quote */}
+                <div className="mt-6 text-center w-full">
+                  {user?.quote ? (
+                    <div className="flex flex-col items-center gap-1">
+                      <Quote size={12} className="text-[#Dd1764] opacity-40" />
+                      <p className="text-xs sm:text-sm font-serif italic text-gray-500 leading-relaxed max-w-[200px]">
+                        {user.quote}
+                      </p>
+                    </div>
+                  ) : !isAdminView && (
+                    <button onClick={() => setShowEditModal(true)} className="text-[10px] font-bold text-[#Dd1764] hover:text-pink-600 uppercase tracking-tighter transition-colors">
+                      + Add Inspiration
+                    </button>
+                  )}
                 </div>
               </div>
 
-              {/* Stats Dashboard */}
-              <div className="flex-1 w-full">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              {/* Main Content Column */}
+              <div className="flex-1 min-w-0 flex flex-col justify-between">
+                <div>
+                  <div className="flex flex-col sm:flex-col items-center sm:items-baseline gap-2 sm:gap-4 mb-6">
+                    <h1 className="text-3xl sm:text-5xl font-black text-gray-900 tracking-tight leading-none uppercase">
+                      {user?.firstName} {user?.lastName}
+                    </h1>
+                    <span className="text-sm sm:text-base font-medium text-gray-400 lowercase tracking-tight">
+                      {user?.email}
+                    </span>
+                  </div>
 
-                  {/* Sessions Stats */}
-                  <motion.div
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-blue-200/50 shadow-lg"
-                  >
-                    <div className="flex items-center gap-3 sm:gap-4">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg">
-                        <Calendar className="text-white" size={16} />
-                      </div>
-                      <div>
-                        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-700 mb-1">
-                          {userStats.totalSessions}
-                        </div>
-                        <div className="text-xs sm:text-sm font-semibold text-blue-600">
-                          Total Sessions
-                        </div>
-                      </div>
+                  {/* Profile Metadata Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <div className="space-y-1">
+                      <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                        <User size={12} /> Identity
+                      </h4>
+                      <p className="text-sm font-semibold capitalize text-gray-700">{user?.gender?.replace(/_/g, ' ') || 'Not specified'}</p>
                     </div>
-                  </motion.div>
+                    <div className="space-y-1">
+                      <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                        <Languages size={12} /> Language
+                      </h4>
+                      <p className="text-sm font-semibold text-gray-700">{user?.language || 'English'}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                        <Sparkles size={12} /> Personality
+                      </h4>
+                      <p className="text-sm font-semibold text-gray-700">{user?.personality || 'Discovering...'}</p>
+                    </div>
+                  </div>
 
-                  {/* Liked Content Stats */}
-                  <motion.div
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    className="bg-gradient-to-br from-pink-50 to-pink-100/50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-pink-200/50 shadow-lg"
-                  >
-                    <div className="flex items-center gap-3 sm:gap-4">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gradient-to-br from-[#Dd1764] to-pink-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg">
-                        <Heart className="text-white" size={16} />
+                  {/* Bio Section */}
+                  <div className="space-y-3">
+                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                      <BookOpen size={12} /> About Me
+                    </h4>
+                    {user?.bio ? (
+                      <p className="text-sm sm:text-base text-gray-600 leading-relaxed font-medium bg-gray-50/30 p-4 rounded-2xl border border-gray-100">
+                        {user.bio}
+                      </p>
+                    ) : !isAdminView && (
+                      <div className="p-4 rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 text-center">
+                        <p className="text-gray-400 text-xs italic mb-2">Share your story with the community...</p>
+                        <button onClick={() => setShowEditModal(true)} className="text-[#Dd1764] text-xs font-bold hover:underline">Write Bio</button>
                       </div>
-                      <div>
-                        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-pink-700 mb-1">
-                          {userStats.likedContent}
-                        </div>
-                        <div className="text-xs sm:text-sm font-semibold text-pink-600">
-                          Liked Content
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  {/* Journey Stats */}
-                  <motion.div
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    className="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-purple-200/50 shadow-lg sm:col-span-1 col-span-1"
-                  >
-                    <div className="flex items-center gap-3 sm:gap-4">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gradient-to-br from-[#3F2965] to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg">
-                        <MapPin className="text-white" size={16} />
-                      </div>
-                      <div>
-                        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-700 mb-1">
-                          {userStats.journeyEntries + 3}
-                        </div>
-                        <div className="text-xs sm:text-sm font-semibold text-purple-600">
-                          Journey Steps
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+                    )}
+                  </div>
                 </div>
+
               </div>
             </div>
           </div>
         </motion.div>
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mb-6 sm:mb-8"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            <motion.div
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              className="group bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg border border-gray-100 cursor-pointer hover:shadow-xl transition-all duration-300"
-              onClick={() => window.location.href = '/booking'}
-            >
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#3F2965] to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Plus className="text-white" size={16} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-gray-800 group-hover:text-[#3F2965] transition-colors text-sm sm:text-base truncate">Book New Session</h3>
-                  <p className="text-xs sm:text-sm text-gray-500 truncate">Schedule your next appointment</p>
-                </div>
-                <ChevronRight className="text-gray-400 group-hover:text-[#3F2965] group-hover:translate-x-1 transition-all flex-shrink-0" size={16} />
-              </div>
-            </motion.div>
 
-            <motion.div
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              className="group bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg border border-gray-100 cursor-pointer hover:shadow-xl transition-all duration-300"
-              onClick={() => window.location.href = '/resources'}
-            >
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <BookOpen className="text-white" size={16} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-gray-800 group-hover:text-blue-600 transition-colors text-sm sm:text-base truncate">Explore Resources</h3>
-                  <p className="text-xs sm:text-sm text-gray-500 truncate">Browse helpful content</p>
-                </div>
-                <ChevronRight className="text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all flex-shrink-0" size={16} />
-              </div>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              className="group bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg border border-gray-100 cursor-pointer hover:shadow-xl transition-all duration-300 sm:col-span-2 lg:col-span-1"
-              onClick={() => setActiveTab('journey')}
-            >
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#Dd1764] to-pink-600 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <TrendingUp className="text-white" size={16} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-gray-800 group-hover:text-[#Dd1764] transition-colors text-sm sm:text-base truncate">View Progress</h3>
-                  <p className="text-xs sm:text-sm text-gray-500 truncate">Track your journey</p>
-                </div>
-                <ChevronRight className="text-gray-400 group-hover:text-[#Dd1764] group-hover:translate-x-1 transition-all flex-shrink-0" size={16} />
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
 
         {/* Enhanced Navigation Tabs */}
         <motion.div
@@ -665,7 +621,7 @@ const Profile = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className={`relative px-3 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl flex items-center gap-1 sm:gap-2 font-semibold text-xs sm:text-sm transition-all duration-300 whitespace-nowrap flex-1 justify-center ${isActive
-                    ? 'text-white bg-gradient-to-r from-[#3F2965] to-purple-600 shadow-lg'
+                    ? 'text-white bg-[#Dd1764] shadow-lg shadow-pink-200'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
                     }`}
                 >
@@ -676,7 +632,7 @@ const Profile = () => {
                   {tab.id === 'sessions' && userStats.totalSessions > 0 && (
                     <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-bold ${isActive
                       ? 'bg-white/20 text-white'
-                      : 'bg-purple-100 text-purple-700'
+                      : 'bg-violet-100 text-violet-700'
                       }`}>
                       {userStats.totalSessions}
                     </span>
@@ -708,7 +664,7 @@ const Profile = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-6 md:p-8 lg:p-12 min-h-[400px] sm:min-h-[600px]"
+          className="min-h-[400px] sm:min-h-[600px]"
         >
           <AnimatePresence mode="wait">
             <motion.div
@@ -756,7 +712,7 @@ const Profile = () => {
               {activeTab === 'reflection' && (
                 <div className="space-y-8">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-purple-50 text-purple-900 rounded-xl">
+                    <div className="p-3 bg-violet-50 text-violet-900 rounded-xl">
                       <FileText size={24} />
                     </div>
                     <div>
@@ -769,7 +725,7 @@ const Profile = () => {
                     <button
                       onClick={handleRegenerateSummary}
                       disabled={regenerating}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-xl transition-colors font-semibold"
+                      className="flex items-center gap-2 px-5 py-2.5 bg-violet-50 text-violet-700 hover:bg-violet-100 rounded-xl transition-colors font-semibold"
                     >
                       {regenerating ? <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" /> : <Sparkles size={18} />}
                       Regenerate Summary
@@ -784,12 +740,12 @@ const Profile = () => {
                     </button>
                   </div>
 
-                  <div className="bg-purple-50/50 p-8 rounded-3xl border border-purple-100 mb-8">
-                    <h3 className="text-lg font-bold text-purple-900 mb-4 flex items-center gap-2">
+                  <div className="bg-violet-50/50 p-8 rounded-3xl border border-violet-100 mb-8">
+                    <h3 className="text-lg font-bold text-violet-900 mb-4 flex items-center gap-2">
                       <Sparkles size={20} className="text-pink-500" />
                       AI Insights
                     </h3>
-                    <div className="prose prose-purple max-w-none text-gray-700 leading-relaxed">
+                    <div className="prose prose-violet max-w-none text-gray-700 leading-relaxed">
                       {user.reflectionSummary ? (
                         user.reflectionSummary.split('\n').map((line, i) => {
                           // Check if line is a header (all caps, ends with colon)
@@ -798,7 +754,7 @@ const Profile = () => {
                           const isLabelLine = line.trim().startsWith('- ') && line.includes(':');
 
                           if (isHeader) {
-                            return <p key={i} className="font-black text-gray-900 mt-6 mb-2 tracking-tight uppercase text-sm border-b border-purple-100 pb-1">{line}</p>;
+                            return <p key={i} className="font-black text-gray-900 mt-6 mb-2 tracking-tight uppercase text-sm border-b border-violet-100 pb-1">{line}</p>;
                           }
 
                           if (isLabelLine) {
@@ -849,6 +805,14 @@ const Profile = () => {
         </motion.div>
 
         {/* Modals & Toasts */}
+        <EditProfileModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          user={user}
+          onUpdate={handleProfileUpdate}
+          showError={showError}
+          success={success}
+        />
         {showNotesModal && selectedSession && (
           <SessionNotesModal
             session={selectedSession}

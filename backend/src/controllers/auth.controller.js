@@ -464,9 +464,7 @@ export const updateProfile = async (req, res) => {
     }
 
     const userId = req.user.userId;
-    console.log('Update Profile Req Body:', req.body); // Debug log
     const { firstName, lastName, avatar, bio, location, interests, gender, address, quote, language, personality } = value;
-    console.log('Update Profile Validated Value:', value); // Debug log
 
     // Update Auth model
     const authUser = await Auth.findById(userId);
@@ -640,6 +638,9 @@ export const validateToken = async (req, res) => {
           gender: user.gender,
           address: user.address,
           interests: user.interests,
+          quote: user.quote,
+          language: user.language,
+          personality: user.personality,
           role: user.role,
           isActive: user.isActive,
           isEmailVerified: user.isEmailVerified,

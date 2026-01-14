@@ -42,9 +42,9 @@ const EnhancedSessionCard = ({ session, onNotesClick, onViewNotes, onTasksClick,
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2 }}
-      className="glass-premium hover:shadow-lg transition-all duration-300 overflow-hidden"
+      className="bg-white rounded-3xl border border-gray-100 hover:shadow-lg transition-all duration-300 overflow-hidden h-full flex flex-col"
     >
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-1 h-full">
         {/* Session Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
@@ -69,7 +69,7 @@ const EnhancedSessionCard = ({ session, onNotesClick, onViewNotes, onTasksClick,
         </div>
 
         {/* Session Details */}
-        <div className="space-y-2.5 mb-5 px-1">
+        <div className="space-y-2.5 mb-5 px-1 flex-1">
           {session.slotId && (
             <div className="flex items-center gap-2.5 text-xs text-gray-600 font-medium tracking-tight">
               <div className="flex items-center gap-1.5">
@@ -105,7 +105,7 @@ const EnhancedSessionCard = ({ session, onNotesClick, onViewNotes, onTasksClick,
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap gap-2 pt-2 border-t border-white/40">
+        <div className="flex flex-wrap gap-2 pt-2 border-t border-white/40 mt-auto">
           {/* Session Notes Button */}
           <button
             type="button"
