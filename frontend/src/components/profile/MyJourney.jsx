@@ -60,11 +60,10 @@ const FoundationNode = ({ entry, index, isLast, hasAdminEntries }) => {
           whileInView={{ scale: 1, opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ type: "spring", stiffness: 260, damping: 20, delay: index * 0.2 }}
-          className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center ${
-            isLast && !hasAdminEntries
+          className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center ${isLast && !hasAdminEntries
               ? 'bg-[#Dd1764] shadow-lg'
               : 'bg-[#3F2965]'
-          }`}
+            }`}
         >
           <Sprout className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-white" />
           {isLast && !hasAdminEntries && (
@@ -145,9 +144,8 @@ const AdminJourneyNode = ({ entry, sessionNumber, index, isLast }) => {
           whileInView={{ scale: 1, opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center ${
-            isLast ? 'bg-[#Dd1764] shadow-lg' : 'bg-[#3F2965]'
-          }`}
+          className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center ${isLast ? 'bg-[#Dd1764] shadow-lg' : 'bg-[#3F2965]'
+            }`}
         >
           {getTypeIcon(safeEntry.type)}
           {isLast && (

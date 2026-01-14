@@ -11,7 +11,8 @@ import {
   Check,
   X,
   Loader2,
-  Plus
+  Plus,
+  MessageSquare
 } from 'lucide-react';
 import { bookingApi } from '../../booking/booking.api';
 import { Link } from 'react-router-dom';
@@ -346,7 +347,7 @@ const AdminBookings = () => {
                                   confirmedTime: booking.slotId?.startTime || '',
                                   meetingLink: booking.sessionMode === 'online' ? 'https://meet.google.com/new' : '',
                                   notes: '',
-                                  transactionId: ''
+                                  transactionId: booking.payment?.paymentId || ''
                                 });
                               }}
                               className="p-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors shadow-sm shadow-green-200"
@@ -399,75 +400,164 @@ const AdminBookings = () => {
       {/* Booking Details Modal */}
       {selectedBooking && !showTaskModal && !isRejecting && (!isConfirming || selectedBooking.status !== 'awaiting_payment') && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl max-w-4xl w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+          <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-off-white/50">
               <h3 className="text-xl font-bold text-primary">Booking Details</h3>
               <button onClick={() => setSelectedBooking(null)} className="p-2 hover:bg-white rounded-xl transition-colors text-gray-400">
                 <X size={20} />
               </button>
             </div>
-            <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Left Column: Client Info & Meta */}
-                <div className="space-y-8">
-                  {/* Client Info Grid */}
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Client Information</p>
-                      <div className="space-y-1">
-                        <p className="font-bold text-primary">{selectedBooking.personalInfo?.name}</p>
-                        <p className="text-sm text-gray-500">{selectedBooking.personalInfo?.email}</p>
-                        <p className="text-sm text-gray-500">{selectedBooking.personalInfo?.phone}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Background</p>
-                      <div className="space-y-1">
-                        <p className="text-sm text-gray-600"><span className="font-bold">Status:</span> {selectedBooking.personalInfo?.relationshipStatus}</p>
-                        <p className="text-sm text-gray-600"><span className="font-bold">Gender:</span> {selectedBooking.personalInfo?.gender}</p>
-                        <p className="text-sm text-gray-600"><span className="font-bold">Age:</span> {selectedBooking.personalInfo?.age}</p>
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Bio/Reason */}
+            <div className="p-6 space-y-6">
+              {/* Client Information */}
+              <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                <h4 className="font-bold text-primary mb-4 flex items-center gap-2">
+                  <User size={18} /> Client Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-sm">
                   <div>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Reason for Session</p>
-                    <div className="p-4 rounded-2xl bg-off-white text-sm text-gray-600 leading-relaxed italic">
-                      "{selectedBooking.personalInfo?.bio || 'No reason provided.'}"
-                    </div>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">Name</span>
+                    <p className="font-semibold text-gray-900">{selectedBooking.personalInfo?.name}</p>
                   </div>
-
-                  {/* Session Meta */}
-                  <div className="flex gap-4">
-                    <div className="flex-1 p-4 rounded-2xl border border-gray-100">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Mode</p>
-                      <p className="text-sm font-bold text-primary uppercase tracking-wide">{selectedBooking.sessionMode}</p>
-                    </div>
-                    <div className="flex-1 p-4 rounded-2xl border border-gray-100">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Status</p>
-                      <p className="text-sm font-bold text-secondary uppercase tracking-wide">{selectedBooking.status.replace('_', ' ')}</p>
-                    </div>
+                  <div>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">Email</span>
+                    <p className="font-semibold text-gray-900">{selectedBooking.personalInfo?.email}</p>
                   </div>
-
-                  {/* Assigned Tasks */}
-                  <div className="border-t border-gray-100 pt-6">
-                    <BookingTasks
-                      bookingId={selectedBooking._id}
-                      onTasksChange={fetchBookings}
-                    />
+                  <div>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">Phone</span>
+                    <p className="font-semibold text-gray-900">{selectedBooking.personalInfo?.phone}</p>
                   </div>
-                </div>
-
-                {/* Right Column: Journey Entries */}
-                <div className="border-l border-gray-100 pl-4 lg:pl-8">
-                  <UserJourneyEntries
-                    userId={selectedBooking.userId?._id || selectedBooking.userId}
-                    userName={selectedBooking.personalInfo?.name}
-                  />
+                  <div>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">Status</span>
+                    <p className="font-semibold text-gray-900 capitalize">{selectedBooking.personalInfo?.relationshipStatus}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">Age</span>
+                    <p className="font-semibold text-gray-900">{selectedBooking.personalInfo?.age}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">Gender</span>
+                    <p className="font-semibold text-gray-900">{selectedBooking.personalInfo?.gender}</p>
+                  </div>
                 </div>
               </div>
+
+              {/* Reflection Summary (First Session Only) */}
+              {!selectedBooking.userId?.hasConfirmedSession && selectedBooking.userId?.reflectionSummary && (
+                <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100">
+                  <h4 className="font-bold text-blue-800 mb-3 flex items-center gap-2">
+                    <Heart size={18} />
+                    Reflection Summary (First Session)
+                  </h4>
+                  <div className="text-sm text-blue-900/80 leading-relaxed">
+                    <p className="mb-2">
+                      {selectedBooking.userId?.reflectionSummary}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Session Content */}
+              <div className="bg-purple-50 p-5 rounded-2xl border border-purple-100">
+                <h4 className="font-bold text-purple-900 mb-4 flex items-center gap-2">
+                  <MessageSquare size={18} /> Session Content
+                </h4>
+                <div className="space-y-4 text-sm">
+                  <div>
+                    <span className="text-xs font-bold text-purple-400 uppercase tracking-widest block mb-1">Topics</span>
+                    <p className="p-3 bg-white rounded-xl border border-purple-100 text-gray-700 leading-relaxed">
+                      {selectedBooking.sessionContent?.topics || 'No topics listed.'}
+                    </p>
+                  </div>
+                  {selectedBooking.personalInfo?.bio && (
+                    <div>
+                      <span className="text-xs font-bold text-purple-400 uppercase tracking-widest block mb-1">Bio / Reason</span>
+                      <p className="p-3 bg-white rounded-xl border border-purple-100 text-gray-700 leading-relaxed">
+                        {selectedBooking.personalInfo.bio}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Session Details */}
+              <div className="bg-orange-50 p-5 rounded-2xl border border-orange-100">
+                <h4 className="font-bold text-orange-900 mb-4 flex items-center gap-2">
+                  <Clock size={18} /> Session Details
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-sm">
+                  <div>
+                    <span className="text-xs font-bold text-orange-400/80 uppercase tracking-widest block mb-1">Date</span>
+                    <p className="font-semibold text-gray-900">{selectedBooking.slotId ? formatDate(selectedBooking.slotId.date) : 'Flexible'}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-orange-400/80 uppercase tracking-widest block mb-1">Time</span>
+                    <p className="font-semibold text-gray-900">
+                      {selectedBooking.slotId ? `${formatTime(selectedBooking.slotId.startTime)} - ${formatTime(selectedBooking.slotId.endTime)}` : 'Contact for timing'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-orange-400/80 uppercase tracking-widest block mb-1">Mode</span>
+                    <p className="font-semibold text-gray-900 capitalize">{selectedBooking.sessionMode}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-orange-400/80 uppercase tracking-widest block mb-1">Amount</span>
+                    <p className="font-semibold text-green-600">₹{selectedBooking.payment?.amount || '0'}</p>
+                  </div>
+
+                  {selectedBooking.payment?.paymentId && (
+                    <div className="md:col-span-2 mt-2 pt-3 border-t border-orange-100">
+                      <span className="text-xs font-bold text-green-600 uppercase tracking-widest block mb-1">Transaction ID / Reference</span>
+                      <p className="font-mono text-sm font-bold text-gray-900 bg-white px-3 py-2 rounded-lg border border-orange-100 inline-block">
+                        {selectedBooking.payment.paymentId}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Confirmed Details (if confirmed) */}
+              {selectedBooking.status === 'confirmed' && selectedBooking.adminResponse && (
+                <div className="bg-green-50 p-5 rounded-2xl border border-green-100">
+                  <h4 className="font-bold text-green-800 mb-3 flex items-center gap-2">
+                    <Check size={18} /> Confirmation Details
+                  </h4>
+                  <div className="space-y-3 text-sm">
+                    {selectedBooking.adminResponse.meetingLink && (
+                      <div>
+                        <span className="text-xs font-bold text-green-600 uppercase tracking-widest block mb-1">Meeting Link</span>
+                        <a href={selectedBooking.adminResponse.meetingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium break-all">
+                          {selectedBooking.adminResponse.meetingLink}
+                        </a>
+                      </div>
+                    )}
+                    {selectedBooking.adminResponse.notes && (
+                      <div>
+                        <span className="text-xs font-bold text-green-600 uppercase tracking-widest block mb-1">Admin Notes</span>
+                        <p className="text-gray-700">{selectedBooking.adminResponse.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Assigned Tasks */}
+              <div className="border-t border-gray-100 pt-6">
+                <BookingTasks
+                  bookingId={selectedBooking._id}
+                  onTasksChange={fetchBookings}
+                />
+              </div>
+
+              {/* Journey Entries */}
+              <div className="border-t border-gray-100 pt-6">
+                <UserJourneyEntries
+                  userId={selectedBooking.userId?._id || selectedBooking.userId}
+                  userName={selectedBooking.personalInfo?.name}
+                />
+              </div>
             </div>
+
             <div className="p-6 bg-off-white/50 border-t border-gray-100 flex justify-end">
               <button
                 onClick={() => setSelectedBooking(null)}
