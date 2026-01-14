@@ -360,7 +360,12 @@ export const getProfile = async (req, res) => {
           avatar: authUser.avatar,
           bio: authUser.bio,
           location: authUser.location,
+          address: authUser.address,
+          gender: authUser.gender,
           interests: authUser.interests,
+          quote: authUser.quote,
+          language: authUser.language,
+          personality: authUser.personality,
           name: userProfile?.name || `${authUser.firstName} ${authUser.lastName}`,
           phone: userProfile?.phone,
           role: authUser.role,
@@ -414,7 +419,12 @@ export const getUserProfile = async (req, res) => {
           avatar: authUser.avatar,
           bio: authUser.bio,
           location: authUser.location,
+          address: authUser.address,
+          gender: authUser.gender,
           interests: authUser.interests,
+          quote: authUser.quote,
+          language: authUser.language,
+          personality: authUser.personality,
           name: userProfile?.name || `${authUser.firstName} ${authUser.lastName}`,
           phone: userProfile?.phone,
           role: authUser.role,
@@ -454,7 +464,9 @@ export const updateProfile = async (req, res) => {
     }
 
     const userId = req.user.userId;
-    const { firstName, lastName, avatar, bio, location, interests } = value;
+    console.log('Update Profile Req Body:', req.body); // Debug log
+    const { firstName, lastName, avatar, bio, location, interests, gender, address, quote, language, personality } = value;
+    console.log('Update Profile Validated Value:', value); // Debug log
 
     // Update Auth model
     const authUser = await Auth.findById(userId);
@@ -472,6 +484,11 @@ export const updateProfile = async (req, res) => {
     if (bio !== undefined) authUser.bio = bio;
     if (location !== undefined) authUser.location = location;
     if (interests !== undefined) authUser.interests = interests;
+    if (gender !== undefined) authUser.gender = gender;
+    if (address !== undefined) authUser.address = address;
+    if (quote !== undefined) authUser.quote = quote;
+    if (language !== undefined) authUser.language = language;
+    if (personality !== undefined) authUser.personality = personality;
     
     await authUser.save();
 
@@ -487,7 +504,12 @@ export const updateProfile = async (req, res) => {
           avatar: authUser.avatar,
           bio: authUser.bio,
           location: authUser.location,
+          address: authUser.address,
+          gender: authUser.gender,
           interests: authUser.interests,
+          quote: authUser.quote,
+          language: authUser.language,
+          personality: authUser.personality,
           role: authUser.role,
           isActive: authUser.isActive,
           isEmailVerified: authUser.isEmailVerified,
@@ -615,6 +637,8 @@ export const validateToken = async (req, res) => {
           avatar: user.avatar,
           bio: user.bio,
           location: user.location,
+          gender: user.gender,
+          address: user.address,
           interests: user.interests,
           role: user.role,
           isActive: user.isActive,

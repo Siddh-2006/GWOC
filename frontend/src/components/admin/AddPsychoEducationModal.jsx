@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, BookOpen, Loader2, Plus, MessageCircle, FileText, Quote, Lightbulb, CheckCircle } from 'lucide-react';
+import { Upload, X, BookOpen, Loader2, Plus, MessageCircle, FileText, Quote, Lightbulb, CheckCircle } from 'lucide-react';
 import { psychoEducationApi } from '../../services/psychoEducation.api';
+import { uploadApi } from '../../services/upload.api';
 
 const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
   const [loading, setLoading] = useState(false);
@@ -12,6 +13,7 @@ const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
     contentType: 'qa',
     category: 'general',
     tags: '',
+    imageUrl: '', // Cover image
     content: {
       question: '',
       answer: '',
@@ -21,6 +23,69 @@ const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
       steps: []
     }
   });
+
+  const [uploading, setUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'copy';
+    setIsDragging(true);
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      // Create a fake event object
+      await handleFileUpload({ target: { files: [file] } });
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit for cover images
+      setError('Image size should be less than 5MB');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setError(null);
+      // Use generic upload route
+      const res = await uploadApi.uploadFile(file, 'resources');
+
+      setFormData(prev => ({ ...prev, imageUrl: res.data.url }));
+    } catch (err) {
+      console.error('Upload error:', err);
+      setError('Failed to upload image');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const contentTypes = [
     { value: 'qa', label: 'Q&A', icon: MessageCircle },
@@ -88,6 +153,7 @@ const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
           contentType: 'qa',
           category: 'general',
           tags: '',
+          imageUrl: '',
           content: {
             question: '',
             answer: '',
@@ -311,6 +377,64 @@ const AddPsychoEducationModal = ({ isOpen, onClose, onContentAdded }) => {
               {error}
             </div>
           )}
+
+          {/* Cover Image Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Cover Image (Optional)
+            </label>
+            <div
+              className={`relative border-2 border-dashed rounded-xl p-4 transition-colors text-center cursor-pointer ${isDragging
+                ? 'border-purple-500 bg-purple-50'
+                : 'border-gray-200 hover:border-purple-300'
+                }`}
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              onClick={() => document.getElementById('cover-upload').click()}
+            >
+              <input
+                type="file"
+                id="cover-upload"
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileUpload}
+                disabled={uploading}
+              />
+
+              {formData.imageUrl ? (
+                <div className="relative h-48 w-full rounded-lg overflow-hidden group">
+                  <img
+                    src={formData.imageUrl}
+                    alt="Cover"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="text-white font-medium flex items-center gap-2">
+                      <Upload size={20} /> Change Image
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="py-8 flex flex-col items-center gap-3 text-gray-400">
+                  {uploading ? (
+                    <Loader2 className="animate-spin text-purple-600" size={32} />
+                  ) : (
+                    <>
+                      <div className="p-3 bg-gray-50 rounded-full">
+                        <Upload size={24} className="text-gray-400" />
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-semibold text-purple-600">Click to upload</span> or drag and drop
+                      </div>
+                      <p className="text-xs text-gray-400">SVG, PNG, JPG or GIF (max. 5MB)</p>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Title */}
           <div>

@@ -11,7 +11,10 @@ import cloudinary from '../config/cloudinary.js'; // loads config from your clou
 const uploadToCloudinary = (buffer, folder) => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { folder }, // Cloudinary destination folder
+      { 
+        folder,
+        resource_type: 'auto' 
+      }, // Cloudinary destination folder
       (error, result) => {
         if (error) return reject(error); // send error to caller
         resolve(result.secure_url); // send uploaded image URL

@@ -26,12 +26,22 @@ const authSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    default: '😊',
-    maxlength: 10
+    default: 'https://cdn-icons-png.flaticon.com/512/1144/1144760.png',
+    maxlength: 1000
+  },
+  gender: {
+    type: String,
+    enum: ['male', 'female', 'other', 'prefer_not_to_say'],
+    default: 'prefer_not_to_say'
+  },
+  address: {
+    type: String,
+    maxlength: 300,
+    default: ''
   },
   bio: {
     type: String,
-    maxlength: 500,
+    maxlength: 150,
     default: ''
   },
   location: {
@@ -42,6 +52,21 @@ const authSchema = new mongoose.Schema({
   interests: {
     type: String,
     maxlength: 200,
+    default: ''
+  },
+  quote: {
+    type: String,
+    maxlength: 200,
+    default: ''
+  },
+  language: {
+    type: String,
+    maxlength: 50,
+    default: 'English'
+  },
+  personality: {
+    type: String,
+    maxlength: 100,
     default: ''
   },
   role: {

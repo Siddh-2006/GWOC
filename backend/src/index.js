@@ -25,6 +25,7 @@ import reflectionRoutes from './api/reflection.routes.js';
 import sessionsRoutes from './api/sessions.routes.js';
 import taskRoutes from './api/task.routes.js';
 import journeyRoutes from './api/journey.routes.js';
+import uploadRoutes from './api/upload.routes.js';
 
 // Import reminder service
 import { sessionReminderService } from './services/session-reminder.service.js';
@@ -137,7 +138,7 @@ app.use(cors({
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -167,6 +168,7 @@ app.use('/api/reflection', reflectionRoutes);
 app.use('/api/sessions', sessionsRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/journey', journeyRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Health check
 app.get('/health', async (req, res) => {

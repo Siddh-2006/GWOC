@@ -15,6 +15,7 @@ export const psychoEducationController = {
         difficulty,
         estimatedReadTime,
         mediaAttachments,
+        imageUrl,
         isPublished,
         publishedAt
       } = req.body;
@@ -77,6 +78,7 @@ export const psychoEducationController = {
         difficulty: difficulty || 'beginner',
         estimatedReadTime,
         mediaAttachments: mediaAttachments || [],
+        imageUrl,
         isPublished: isPublished !== undefined ? isPublished : true,
         publishedAt: publishedAt || (isPublished !== false ? new Date() : undefined),
         createdBy: req.user.userId
