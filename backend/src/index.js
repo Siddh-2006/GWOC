@@ -214,13 +214,12 @@ if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     
-    // Start the session reminder service
+    // Start the session reminder service only in development
     sessionReminderService.start();
   });
-} else {
-  // In production (serverless), just start the reminder service
-  sessionReminderService.start();
 }
+// Note: In serverless/production, cron jobs should be handled by Vercel Cron Jobs
+// or external services like GitHub Actions, not by the application itself
 
 // Export the Express app for Vercel serverless functions
 export default app;

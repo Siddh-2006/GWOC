@@ -4,37 +4,13 @@
   "builds": [
     {
       "src": "src/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "maxLambdaSize": "50mb"
-      }
+      "use": "@vercel/node"
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/src/index.js"
+      "src": "/(.*)",
+      "dest": "/src/index.js"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production",
-    "MONGODB_URI": "@mongodb_uri",
-    "JWT_ACCESS_SECRET": "@jwt_access_secret",
-    "JWT_REFRESH_SECRET": "@jwt_refresh_secret",
-    "EMAIL_SERVICE": "@email_service",
-    "EMAIL_USER": "@email_user",
-    "EMAIL_PASSWORD": "@email_password",
-    "FRONTEND_URL": "https://gwoc-f8d2.vercel.app",
-    "CORS_ORIGIN": "https://gwoc-f8d2.vercel.app",
-    "GEMINI_KEYS": "@gemini_keys",
-    "CLOUDINARY_CLOUD_NAME": "@cloudinary_cloud_name",
-    "CLOUDINARY_API_KEY": "@cloudinary_api_key",
-    "CLOUDINARY_API_SECRET": "@cloudinary_api_secret",
-    "CLOUDINARY_URL": "@cloudinary_url"
-  },
-  "functions": {
-    "src/index.js": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }
