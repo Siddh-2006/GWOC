@@ -258,22 +258,22 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/90 backdrop-blur-md z-200 flex items-center justify-center p-2 sm:p-4"
+        className="fixed inset-0 bg-black/90 backdrop-blur-md z-200 flex items-center justify-center p-0 sm:p-4"
         onClick={onClose}
       >
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}
-          className={`bg-white rounded-xl sm:rounded-2xl max-h-[95vh] lg:max-h-[90vh] overflow-hidden flex flex-col transition-all duration-300 w-full ${
+          className={`bg-white rounded-none sm:rounded-2xl h-full sm:max-h-[95vh] lg:max-h-[90vh] overflow-hidden flex flex-col transition-all duration-300 w-full ${
             showSidebar ? 'max-w-6xl' : 'max-w-4xl'
           } mx-auto relative`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-3 sm:p-4 border-b bg-white">
+          <div className="flex items-center justify-between p-2 sm:p-4 border-b bg-white shrink-0 z-20">
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-800 truncate">{media.title}</h2>
+              <h2 className="text-sm sm:text-lg lg:text-xl font-bold text-gray-800 truncate">{media.title}</h2>
               <p className="text-xs sm:text-sm text-gray-600 capitalize">{media.type}</p>
             </div>
             <div className="flex items-center gap-2">
@@ -306,10 +306,10 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
           </div>
 
           <div className="flex flex-1 overflow-hidden flex-col lg:flex-row">
-            {/* Media Content - Clean mobile view, sidebar on desktop */}
-            <div className={`shrink-0 flex items-center justify-center bg-black transition-all duration-300 relative ${
+            {/* Media Content - Full screen on mobile, sidebar on desktop */}
+            <div className={`flex items-center justify-center bg-black transition-all duration-300 relative ${
               showSidebar ? 'lg:w-2/3' : 'w-full'
-            } h-full lg:h-auto`}>
+            } w-full flex-1 lg:flex-initial`}>
               {/* Mobile info button - clean and minimal */}
               <button
                 onClick={() => {
@@ -327,13 +327,13 @@ const MediaPlayer = ({ media, isOpen, onClose, onLike, onComment }) => {
               </button>
               {isVideo && (
                 <div
-                  className="relative w-full h-full flex items-center justify-center"
+                  className="relative w-full h-full flex items-center justify-center p-0"
                   onMouseMove={handleMouseMove}
                 >
                   <video
                     ref={videoRef}
                     src={media.fileUrl}
-                    className="max-w-full max-h-full object-contain"
+                    className="w-full h-full object-contain"
                     onTimeUpdate={handleTimeUpdate}
                     onLoadedMetadata={handleLoadedMetadata}
                     onLoadStart={handleLoadStart}
