@@ -42,9 +42,9 @@ const EnhancedSessionCard = ({ session, onNotesClick, onViewNotes, onTasksClick,
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2 }}
-      className="glass-premium hover:shadow-lg transition-all duration-300 overflow-hidden"
+      className="bg-white rounded-3xl border border-gray-100 hover:shadow-lg transition-all duration-300 overflow-hidden h-full flex flex-col"
     >
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-1 h-full">
         {/* Session Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
@@ -69,7 +69,7 @@ const EnhancedSessionCard = ({ session, onNotesClick, onViewNotes, onTasksClick,
         </div>
 
         {/* Session Details */}
-        <div className="space-y-2.5 mb-5 px-1">
+        <div className="space-y-2.5 mb-5 px-1 flex-1">
           {session.slotId && (
             <div className="flex items-center gap-2.5 text-xs text-gray-600 font-medium tracking-tight">
               <div className="flex items-center gap-1.5">
@@ -104,77 +104,88 @@ const EnhancedSessionCard = ({ session, onNotesClick, onViewNotes, onTasksClick,
           )}
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-2 pt-2 border-t border-white/40">
-          {/* Session Notes Button */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (session.hasNotes) {
-                onViewNotes?.(session);
-              } else {
-                onNotesClick?.(session);
-              }
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors text-[10px] font-bold uppercase tracking-wider border border-purple-100/50"
-          >
-            {session.hasNotes ? (
-              <>
-                <Eye size={12} strokeWidth={2.5} />
-                View Notes
-              </>
-            ) : (
-              <>
-                <Plus size={12} strokeWidth={2.5} />
-                Add Insights
-              </>
+        {/* Action Buttons - Responsive Layout */}
+        <div className="pt-3 border-t border-gray-100 mt-auto space-y-2">
+          {/* Primary Actions Row */}
+          <div className="grid grid-cols-2 gap-2">
+            {/* Session Notes Button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (session.hasNotes) {
+                  onViewNotes?.(session);
+                } else {
+                  onNotesClick?.(session);
+                }
+              }}
+              className={`flex items-center justify-center gap-1.5 px-3 py-2.5 bg-purple-50 text-purple-700 rounded-xl hover:bg-purple-100 transition-colors text-xs font-bold uppercase tracking-wide border border-purple-200 ${session.hasNotes ? '' : 'col-span-1'}`}
+            >
+              {session.hasNotes ? (
+                <>
+                  <Eye size={14} strokeWidth={2.5} />
+                  <span className="hidden sm:inline">View Notes</span>
+                  <span className="sm:hidden">View</span>
+                </>
+              ) : (
+                <>
+                  <Plus size={14} strokeWidth={2.5} />
+                  <span className="hidden sm:inline">Add Notes</span>
+                  <span className="sm:hidden">Add</span>
+                </>
+              )}
+            </button>
+
+            {/* Edit Notes Button (if notes exist) */}
+            {session.hasNotes && (
+              <button
+                onClick={() => onNotesClick?.(session)}
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-gray-50 text-gray-600 rounded-xl hover:bg-gray-100 transition-colors text-xs font-bold uppercase tracking-wide border border-gray-200"
+              >
+                <Edit2 size={14} strokeWidth={2.5} />
+                <span>Edit</span>
+              </button>
             )}
-          </button>
 
-          {/* Edit Notes Button (if notes exist) */}
-          {session.hasNotes && (
+            {/* Assigned Tasks Button */}
             <button
-              onClick={() => onNotesClick?.(session)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors text-[10px] font-bold uppercase tracking-wider border border-gray-200/50"
+              onClick={() => onTasksClick?.(session)}
+              className={`flex items-center justify-center gap-1.5 px-3 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl hover:bg-indigo-100 transition-colors text-xs font-bold uppercase tracking-wide border border-indigo-200 ${session.hasNotes ? '' : 'col-span-1'}`}
             >
-              <Edit2 size={12} strokeWidth={2.5} />
-              Refine
+              <CheckCircle size={14} strokeWidth={2.5} />
+              <span>Tasks</span>
             </button>
-          )}
+          </div>
 
-          {/* Assigned Tasks Button */}
-          <button
-            onClick={() => onTasksClick?.(session)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors text-[10px] font-bold uppercase tracking-wider border border-indigo-100/50"
-          >
-            <CheckCircle size={12} strokeWidth={2.5} />
-            My Tasks
-          </button>
+          {/* Secondary Actions Row - Only for confirmed sessions */}
+          {session.status === 'confirmed' && (session.adminResponse || session.adminResponse?.meetingLink) && (
+            <div className="grid grid-cols-2 gap-2">
+              {/* Admin Remarks Button */}
+              {session.adminResponse && (
+                <button
+                  onClick={() => onAdminRemarksClick?.(session)}
+                  className={`flex items-center justify-center gap-1.5 px-3 py-2.5 bg-pink-50 text-pink-700 rounded-xl hover:bg-pink-100 transition-colors text-xs font-bold uppercase tracking-wide border border-pink-200 ${!session.adminResponse?.meetingLink ? 'col-span-2' : ''}`}
+                >
+                  <MessageSquare size={14} strokeWidth={2.5} />
+                  <span>Remarks</span>
+                </button>
+              )}
 
-          {/* Admin Remarks Button */}
-          {session.status === 'confirmed' && session.adminResponse && (
-            <button
-              onClick={() => onAdminRemarksClick?.(session)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-50 text-pink-700 rounded-lg hover:bg-pink-100 transition-colors text-[10px] font-bold uppercase tracking-wider border border-pink-100/50"
-            >
-              <MessageSquare size={12} strokeWidth={2.5} />
-              Feedback
-            </button>
-          )}
-
-          {/* Meeting Link Button */}
-          {session.status === 'confirmed' && session.adminResponse?.meetingLink && (
-            <a
-              href={session.adminResponse.meetingLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-[10px] font-bold uppercase tracking-wider border border-green-100/50 ml-auto"
-            >
-              <ExternalLink size={12} strokeWidth={2.5} />
-              Open Space
-            </a>
+              {/* Meeting Link Button */}
+              {session.adminResponse?.meetingLink && (
+                <a
+                  href={session.adminResponse.meetingLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`flex items-center justify-center gap-1.5 px-3 py-2.5 bg-green-50 text-green-700 rounded-xl hover:bg-green-100 transition-colors text-xs font-bold uppercase tracking-wide border border-green-200 ${!session.adminResponse ? 'col-span-2' : ''}`}
+                >
+                  <ExternalLink size={14} strokeWidth={2.5} />
+                  <span className="hidden sm:inline">Join Meeting</span>
+                  <span className="sm:hidden">Join</span>
+                </a>
+              )}
+            </div>
           )}
         </div>
       </div>

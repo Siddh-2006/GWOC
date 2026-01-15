@@ -54,10 +54,10 @@ const MediaCard = ({
   return (
     <motion.div
       whileHover={{ y: -4 }}
-      className={`group ${compact ? 'glass-premium' : 'bg-white shadow-md'} rounded-lg border border-gray-200 hover:shadow-lg overflow-hidden transition-all cursor-pointer flex flex-col h-full ${className}`}
+      className={`group bg-white rounded-3xl border border-gray-100 hover:shadow-lg overflow-hidden transition-all cursor-pointer flex flex-col h-full ${className}`}
       onClick={handleCardClick}
     >
-      <div className="relative aspect-[4/3] overflow-hidden">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-t-3xl">
         {media.thumbnailUrl ? (
           <img
             src={media.thumbnailUrl}

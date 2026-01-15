@@ -11,8 +11,22 @@ const authSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: function() {
+      // Password is required only if not using OAuth
+      return !this.googleId;
+    },
     minlength: 6
+  },
+  // OAuth fields
+  googleId: {
+    type: String,
+    sparse: true,
+    unique: true
+  },
+  authProvider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local'
   },
   firstName: {
     type: String,
@@ -21,17 +35,28 @@ const authSchema = new mongoose.Schema({
   },
   lastName: {
     type: String,
-    required: true,
-    trim: true
+    required: false,
+    trim: true,
+    default: ''
   },
   avatar: {
     type: String,
-    default: '😊',
-    maxlength: 10
+    default: 'https://cdn-icons-png.flaticon.com/512/1144/1144760.png',
+    maxlength: 1000
+  },
+  gender: {
+    type: String,
+    enum: ['male', 'female', 'other', 'prefer_not_to_say'],
+    default: 'prefer_not_to_say'
+  },
+  address: {
+    type: String,
+    maxlength: 300,
+    default: ''
   },
   bio: {
     type: String,
-    maxlength: 500,
+    maxlength: 150,
     default: ''
   },
   location: {
@@ -42,6 +67,21 @@ const authSchema = new mongoose.Schema({
   interests: {
     type: String,
     maxlength: 200,
+    default: ''
+  },
+  quote: {
+    type: String,
+    maxlength: 200,
+    default: ''
+  },
+  language: {
+    type: String,
+    maxlength: 50,
+    default: 'English'
+  },
+  personality: {
+    type: String,
+    maxlength: 100,
     default: ''
   },
   role: {
@@ -55,7 +95,10 @@ const authSchema = new mongoose.Schema({
   },
   isEmailVerified: {
     type: Boolean,
-    default: false
+    default: function() {
+      // Auto-verify if using OAuth
+      return this.authProvider === 'google';
+    }
   },
   lastLogin: {
     type: Date
@@ -74,7 +117,8 @@ const authSchema = new mongoose.Schema({
 
 // Hash password before saving
 authSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+  // Skip password hashing if using OAuth
+  if (!this.password || !this.isModified('password')) return next();
   
   try {
     const salt = await bcrypt.genSalt(12);
@@ -87,6 +131,8 @@ authSchema.pre('save', async function(next) {
 
 // Compare password method
 authSchema.methods.comparePassword = async function(candidatePassword) {
+  // OAuth users don't have passwords
+  if (!this.password) return false;
   return bcrypt.compare(candidatePassword, this.password);
 };
 

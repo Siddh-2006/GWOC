@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Heart, BookOpen, Play, Target } from 'lucide-react';
 import MediaCard from '../MediaCard';
 
-const LikedContentTab = ({ likedMedia, loading, error, onUnlike, isAdminView = false, userName = 'User' }) => {
+const LikedContentTab = ({ likedMedia, loading, error, onUnlike, onMediaClick, isAdminView = false, userName = 'User' }) => {
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -119,9 +119,10 @@ const LikedContentTab = ({ likedMedia, loading, error, onUnlike, isAdminView = f
             <MediaCard
               media={media}
               onUnlike={onUnlike}
+              onClick={onMediaClick}
               showLikeButton={false}
               showRemoveButton={true}
-              compact={true} // Assuming MediaCard supports a compact mode or fits well
+              compact={true}
             />
           </motion.div>
         ))}

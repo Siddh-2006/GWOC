@@ -5,6 +5,7 @@ import { User, Mail, Lock, CheckCircle, ArrowRight, Loader2, AlertCircle } from 
 import { authApi } from './auth.api';
 import useAuthStore from '../../store/useAuthStore';
 import Logo from '../../components/Logo';
+import GoogleSignInButton from '../../components/GoogleSignInButton';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -157,11 +158,10 @@ const Signup = () => {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-bold text-primary px-1">Last Name</label>
+                  <label className="text-sm font-bold text-primary px-1">Last Name (Optional)</label>
                   <div className="relative group">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={18} />
                     <input
-                      required
                       name="lastName"
                       type="text"
                       placeholder="Bakshi"
@@ -236,6 +236,19 @@ const Signup = () => {
                 )}
               </button>
             </form>
+
+            {/* Divider */}
+            <div className="relative my-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500 font-medium">Or continue with</span>
+              </div>
+            </div>
+
+            {/* Google Sign-In */}
+            <GoogleSignInButton text="Sign up with Google" />
 
             <div className="mt-10 text-center">
               <p className="text-gray-500 font-medium">

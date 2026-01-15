@@ -36,12 +36,12 @@ export const authValidation = {
       .min(2)
       .max(50)
       .pattern(/^[a-zA-Z\s]+$/)
-      .required()
+      .allow('', null)
+      .optional()
       .messages({
         'string.min': 'Last name must be at least 2 characters long',
         'string.max': 'Last name cannot exceed 50 characters',
-        'string.pattern.base': 'Last name can only contain letters and spaces',
-        'any.required': 'Last name is required'
+        'string.pattern.base': 'Last name can only contain letters and spaces'
       })
   }),
 
@@ -78,28 +78,27 @@ export const authValidation = {
       .min(1)
       .max(50)
       .trim()
-      .required()
+      .allow('', null)
+      .optional()
       .messages({
-        'string.min': 'Last name is required',
-        'string.max': 'Last name cannot exceed 50 characters',
-        'string.empty': 'Last name is required',
-        'any.required': 'Last name is required'
+        'string.min': 'Last name must be at least 1 character',
+        'string.max': 'Last name cannot exceed 50 characters'
       }),
 
     avatar: Joi.string()
-      .max(10)
+      .max(1000)
       .allow('', null)
       .optional()
       .messages({
-        'string.max': 'Avatar cannot exceed 10 characters'
+        'string.max': 'Avatar URL cannot exceed 1000 characters'
       }),
 
     bio: Joi.string()
-      .max(500)
+      .max(150)
       .allow('', null)
       .optional()
       .messages({
-        'string.max': 'Bio cannot exceed 500 characters'
+        'string.max': 'Bio cannot exceed 150 characters'
       }),
 
     location: Joi.string()
@@ -116,7 +115,35 @@ export const authValidation = {
       .optional()
       .messages({
         'string.max': 'Interests cannot exceed 200 characters'
-      })
+      }),
+
+    gender: Joi.string()
+      .valid('male', 'female', 'other', 'prefer_not_to_say')
+      .allow('', null)
+      .optional(),
+
+    address: Joi.string()
+      .max(300)
+      .allow('', null)
+      .optional()
+      .messages({
+        'string.max': 'Address cannot exceed 300 characters'
+      }),
+
+    quote: Joi.string()
+      .max(200)
+      .allow('', null)
+      .optional(),
+
+    language: Joi.string()
+      .max(50)
+      .allow('', null)
+      .optional(),
+
+    personality: Joi.string()
+      .max(100)
+      .allow('', null)
+      .optional()
   }),
 
   forgotPassword: Joi.object({

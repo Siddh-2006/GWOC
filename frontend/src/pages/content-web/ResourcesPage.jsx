@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Heart, Eye, Search, Plus, Grid, List, MoveRight } from 'lucide-react';
+import { Play, Heart, Eye, Search, Plus, Grid, List, MoveRight, Edit2, Trash2 } from 'lucide-react';
 import { mediaApi } from '../../services/media.api';
 import useAuthStore from '../../store/useAuthStore';
 import { useToast } from '../../hooks/useToast';
@@ -11,6 +11,7 @@ import MediaPlayer from '../../components/MediaPlayer';
 import PostViewer from '../../components/PostViewer';
 import ImageWithFallback from '../../components/ImageWithFallback';
 import AddMediaModal from '../../components/admin/AddMediaModal';
+import EditMediaModal from '../../components/admin/EditMediaModal';
 import InlineVideoPlayer from '../../components/InlineVideoPlayer';
 
 const ResourcesPage = () => {
@@ -29,6 +30,8 @@ const ResourcesPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingMedia, setEditingMedia] = useState(null);
 
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [showPlayer, setShowPlayer] = useState(false);
@@ -143,6 +146,37 @@ const ResourcesPage = () => {
     setShowAddModal(false);
   };
 
+  const handleEdit = (item, e) => {
+    e.stopPropagation();
+    setEditingMedia(item);
+    setShowEditModal(true);
+  };
+
+  const handleMediaUpdated = (updatedMedia) => {
+    setMedia(prev => prev.map(m => m._id === updatedMedia._id ? updatedMedia : m));
+    success('Media updated successfully!');
+    setShowEditModal(false);
+    setEditingMedia(null);
+  };
+
+  const handleDelete = async (mediaId, e) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to delete this content? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await mediaApi.deleteMedia(mediaId);
+      if (response.success) {
+        setMedia(prev => prev.filter(m => m._id !== mediaId));
+        success('Media deleted successfully!');
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+      showError('Failed to delete media');
+    }
+  };
+
   return (
     <ContentWebLayout>
       <div className="max-w-7xl mx-auto px-6 md:px-12 pb-24">
@@ -203,7 +237,7 @@ const ResourcesPage = () => {
                   onClick={() => handleMediaClick(item)}
                   className={`group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer flex ${viewMode === 'grid' ? 'flex-col h-full' : 'flex-row items-center p-4 gap-6'}`}
                 >
-                  <div className={`relative overflow-hidden bg-gray-50 ${viewMode === 'grid' ? 'aspect-video' : 'w-48 h-32 rounded-2xl flex-shrink-0'}`}>
+                  <div className={`relative overflow-hidden bg-gray-50 ${viewMode === 'grid' ? 'aspect-video' : 'w-48 h-32 rounded-2xl shrink-0'}`}>
                     {(item.type === 'video' || item.type === 'vlog') && item.fileUrl ? (
                       <InlineVideoPlayer
                         src={item.fileUrl}
@@ -229,9 +263,28 @@ const ResourcesPage = () => {
                         </span>
                       </div>
                     )}
+                    {/* Admin Controls */}
+                    {isAdmin && (
+                      <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => handleEdit(item, e)}
+                          className="p-2 bg-white/95 backdrop-blur-md rounded-full text-blue-600 hover:bg-blue-50 transition-colors shadow-sm"
+                          title="Edit"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={(e) => handleDelete(item._id, e)}
+                          className="p-2 bg-white/95 backdrop-blur-md rounded-full text-red-600 hover:bg-red-50 transition-colors shadow-sm"
+                          title="Delete"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    )}
                   </div>
 
-                  <div className={`p-6 flex flex-col flex-grow ${viewMode === 'list' && 'py-2'}`}>
+                  <div className={`p-6 flex flex-col grow ${viewMode === 'list' && 'py-2'}`}>
                     <h3 className={`${viewMode === 'grid' ? 'text-lg' : 'text-xl'} font-bold text-slate-800 mb-3 line-clamp-2 leading-tight group-hover:text-primary transition-colors`}>
                       {item.title}
                     </h3>
@@ -257,7 +310,7 @@ const ResourcesPage = () => {
                           <span className="text-sm font-semibold tracking-tight">{item.views || 0}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-primary hover:gap-2 transition-all tracking-[0.1em] uppercase">
+                      <div className="flex items-center gap-1 text-[10px] font-bold text-primary hover:gap-2 transition-all tracking-widest uppercase">
                         {item.type === 'video' ? 'WATCH' : item.type === 'audio' ? 'LISTEN' : 'READ'}
                         <MoveRight size={14} />
                       </div>
@@ -313,6 +366,17 @@ const ResourcesPage = () => {
           isOpen={showAddModal}
           onClose={() => setShowAddModal(false)}
           onMediaAdded={handleMediaAdded}
+        />
+      )}
+      {showEditModal && editingMedia && (
+        <EditMediaModal
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingMedia(null);
+          }}
+          media={editingMedia}
+          onMediaUpdated={handleMediaUpdated}
         />
       )}
     </ContentWebLayout>

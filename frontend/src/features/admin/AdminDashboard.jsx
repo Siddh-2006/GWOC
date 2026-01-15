@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Check, X, Clock, User, Filter, Plus, Calendar, Loader2, Building2, MessageSquare, Eye, Mail, Phone, Heart, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Check, X, Clock, User, Filter, Plus, Calendar, Loader2, Building2, MessageSquare, Eye, Mail, Phone, Heart, Trash2, FileText } from 'lucide-react';
 import { useBookingStore } from '../../store/useBookingStore';
 import { bookingApi } from '../booking/booking.api';
 import { slotApi } from '../../services/slot.api';
@@ -15,6 +16,7 @@ import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../../components/ToastContainer';
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const {
     availableSlots,
     setAvailableSlots,
@@ -314,6 +316,13 @@ const AdminDashboard = () => {
         >
           <Heart size={16} />
           Reflection Questions
+        </button>
+        <button
+          onClick={() => navigate('/resources')}
+          className="px-6 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 text-gray-500 hover:text-primary hover:bg-white/50"
+        >
+          <FileText size={16} />
+          Resources
         </button>
       </div>
 

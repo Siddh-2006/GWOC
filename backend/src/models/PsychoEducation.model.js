@@ -39,6 +39,9 @@ const psychoEducationSchema = new mongoose.Schema({
     enum: ['qa', 'theory', 'quote', 'article', 'tip', 'exercise', 'life-area'],
     required: true
   },
+  imageUrl: {
+    type: String, // Cover image
+  },
   content: {
     // For Q&A type
     question: {

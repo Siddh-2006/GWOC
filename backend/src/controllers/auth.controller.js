@@ -26,6 +26,34 @@ const generateTokens = async (userId) => {
   return { accessToken, refreshToken };
 };
 
+/**
+ * Google OAuth Callback Handler
+ * Called after successful Google authentication
+ */
+export const googleAuthCallback = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=auth_failed`);
+    }
+
+    // Generate tokens for the authenticated user
+    const { accessToken, refreshToken } = await generateTokens(req.user._id);
+
+    // Save refresh token
+    req.user.refreshTokens.push({ token: refreshToken });
+    req.user.lastLogin = new Date();
+    await req.user.save();
+
+    // Redirect to frontend with tokens
+    const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/callback?accessToken=${accessToken}&refreshToken=${refreshToken}`;
+    res.redirect(redirectUrl);
+
+  } catch (error) {
+    console.error('❌ Google callback error:', error);
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=server_error`);
+  }
+};
+
 // Sign up controller (now requires email verification)
 export const signUp = async (req, res) => {
   try {
@@ -360,7 +388,12 @@ export const getProfile = async (req, res) => {
           avatar: authUser.avatar,
           bio: authUser.bio,
           location: authUser.location,
+          address: authUser.address,
+          gender: authUser.gender,
           interests: authUser.interests,
+          quote: authUser.quote,
+          language: authUser.language,
+          personality: authUser.personality,
           name: userProfile?.name || `${authUser.firstName} ${authUser.lastName}`,
           phone: userProfile?.phone,
           role: authUser.role,
@@ -414,7 +447,12 @@ export const getUserProfile = async (req, res) => {
           avatar: authUser.avatar,
           bio: authUser.bio,
           location: authUser.location,
+          address: authUser.address,
+          gender: authUser.gender,
           interests: authUser.interests,
+          quote: authUser.quote,
+          language: authUser.language,
+          personality: authUser.personality,
           name: userProfile?.name || `${authUser.firstName} ${authUser.lastName}`,
           phone: userProfile?.phone,
           role: authUser.role,
@@ -454,7 +492,7 @@ export const updateProfile = async (req, res) => {
     }
 
     const userId = req.user.userId;
-    const { firstName, lastName, avatar, bio, location, interests } = value;
+    const { firstName, lastName, avatar, bio, location, interests, gender, address, quote, language, personality } = value;
 
     // Update Auth model
     const authUser = await Auth.findById(userId);
@@ -472,6 +510,11 @@ export const updateProfile = async (req, res) => {
     if (bio !== undefined) authUser.bio = bio;
     if (location !== undefined) authUser.location = location;
     if (interests !== undefined) authUser.interests = interests;
+    if (gender !== undefined) authUser.gender = gender;
+    if (address !== undefined) authUser.address = address;
+    if (quote !== undefined) authUser.quote = quote;
+    if (language !== undefined) authUser.language = language;
+    if (personality !== undefined) authUser.personality = personality;
     
     await authUser.save();
 
@@ -487,7 +530,12 @@ export const updateProfile = async (req, res) => {
           avatar: authUser.avatar,
           bio: authUser.bio,
           location: authUser.location,
+          address: authUser.address,
+          gender: authUser.gender,
           interests: authUser.interests,
+          quote: authUser.quote,
+          language: authUser.language,
+          personality: authUser.personality,
           role: authUser.role,
           isActive: authUser.isActive,
           isEmailVerified: authUser.isEmailVerified,
@@ -615,7 +663,12 @@ export const validateToken = async (req, res) => {
           avatar: user.avatar,
           bio: user.bio,
           location: user.location,
+          gender: user.gender,
+          address: user.address,
           interests: user.interests,
+          quote: user.quote,
+          language: user.language,
+          personality: user.personality,
           role: user.role,
           isActive: user.isActive,
           isEmailVerified: user.isEmailVerified,

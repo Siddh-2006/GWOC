@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, Upload, Loader2, Plus, Image, Video, FileText, Mic, Camera, Trash2 } from 'lucide-react';
 import { mediaApi } from '../../services/media.api';
+import { uploadApi } from '../../services/upload.api';
 
 const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -54,6 +56,74 @@ const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
   const removeAsset = (index) => {
     const newAssets = formData.assets.filter((_, i) => i !== index);
     setFormData({ ...formData, assets: newAssets });
+  };
+
+  // Generic upload handler
+  const handleFileUpload = async (e, field, index = null) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 100 * 1024 * 1024) { // 100MB limit
+      setError('File size should be less than 100MB');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setError(null);
+      // Use generic search upload for all types
+      const res = await uploadApi.uploadFile(file, 'resources');
+
+      if (res.success) {
+        if (field === 'asset' && index !== null) {
+          updateAsset(index, 'fileUrl', res.data.url);
+        } else {
+          setFormData(prev => ({ ...prev, [field]: res.data.url }));
+        }
+      } else {
+        setError('Upload failed');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Error uploading file');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const [draggedField, setDraggedField] = useState(null); // 'fileUrl', 'thumbnailUrl', 'asset-INDEX'
+
+  const handleDragEnter = (e, fieldId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDraggedField(fieldId);
+  };
+
+  const handleDragLeave = (e, fieldId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (draggedField === fieldId) {
+      setDraggedField(null);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+
+
+  const handleDrop = async (e, field, index = null) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDraggedField(null);
+
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      handleFileUpload({ target: { files: [file] } }, field, index);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -182,14 +252,42 @@ const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
                 </button>
               </div>
               <div className="space-y-2">
-                <input
-                  type="url"
-                  value={asset.fileUrl}
-                  onChange={(e) => updateAsset(index, 'fileUrl', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  placeholder="https://res.cloudinary.com/your-image-url.jpg"
-                  required
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={asset.fileUrl}
+                    onChange={(e) => updateAsset(index, 'fileUrl', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="https://..."
+                    required
+                  />
+                  <div
+                    className={`relative border border-dashed rounded-lg p-1 transition-colors ${draggedField === `asset-${index}`
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-gray-300 hover:border-purple-400'
+                      }`}
+                    onDragEnter={(e) => handleDragEnter(e, `asset-${index}`)}
+                    onDragLeave={(e) => handleDragLeave(e, `asset-${index}`)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, 'asset', index)}
+                  >
+                    <input
+                      type="file"
+                      id={`asset-upload-${index}`}
+                      className="hidden"
+                      onChange={(e) => handleFileUpload(e, 'asset', index)}
+                      disabled={uploading}
+                      accept="image/*"
+                    />
+                    <label
+                      htmlFor={`asset-upload-${index}`}
+                      className="p-1.5 rounded-md hover:bg-gray-50 cursor-pointer flex items-center justify-center text-gray-500 hover:text-purple-600 transition-colors"
+                      title="Upload or Drag & Drop"
+                    >
+                      {uploading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
+                    </label>
+                  </div>
+                </div>
                 {asset.fileUrl && (
                   <div className="mt-2">
                     <img
@@ -207,7 +305,7 @@ const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
           ))}
 
           <p className="text-xs text-gray-500 mt-2">
-            Upload images to Cloudinary and paste the URLs here. First image will be used as thumbnail.
+            Upload images or paste URLs. First image will be used as thumbnail.
           </p>
         </div>
       );
@@ -220,20 +318,47 @@ const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
               {formData.type === 'video' || formData.type === 'vlog' ? 'Video URL *' :
                 formData.type === 'audio' ? 'Audio URL *' : 'File URL *'}
             </label>
-            <input
-              type="url"
-              required
-              value={formData.fileUrl}
-              onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              placeholder={
-                formData.type === 'video' || formData.type === 'vlog'
-                  ? "https://res.cloudinary.com/your-video.mp4"
-                  : formData.type === 'audio'
-                    ? "https://res.cloudinary.com/your-audio.mp3"
-                    : "https://example.com/file"
-              }
-            />
+            <div className="flex gap-2">
+              <input
+                type="url"
+                required
+                value={formData.fileUrl}
+                onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                placeholder={
+                  formData.type === 'video' || formData.type === 'vlog'
+                    ? "https://res.cloudinary.com/your-video.mp4"
+                    : formData.type === 'audio'
+                      ? "https://res.cloudinary.com/your-audio.mp3"
+                      : "https://example.com/file"
+                }
+              />
+              <div
+                className={`relative border border-dashed rounded-lg p-1 transition-colors ${draggedField === 'fileUrl'
+                  ? 'border-purple-500 bg-purple-50'
+                  : 'border-gray-300 hover:border-purple-400'
+                  }`}
+                onDragEnter={(e) => handleDragEnter(e, 'fileUrl')}
+                onDragLeave={(e) => handleDragLeave(e, 'fileUrl')}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, 'fileUrl')}
+              >
+                <input
+                  type="file"
+                  id="main-file-upload"
+                  className="hidden"
+                  onChange={(e) => handleFileUpload(e, 'fileUrl')}
+                  disabled={uploading}
+                />
+                <label
+                  htmlFor="main-file-upload"
+                  className="p-1.5 rounded-md hover:bg-gray-50 cursor-pointer flex items-center justify-center text-gray-500 hover:text-purple-600 transition-colors"
+                  title="Upload or Drag & Drop"
+                >
+                  {uploading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
+                </label>
+              </div>
+            </div>
           </div>
 
           {/* Thumbnail URL */}
@@ -241,13 +366,41 @@ const AddMediaModal = ({ isOpen, onClose, onMediaAdded }) => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Thumbnail URL
             </label>
-            <input
-              type="url"
-              value={formData.thumbnailUrl}
-              onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              placeholder="https://res.cloudinary.com/thumbnail.jpg"
-            />
+            <div className="flex gap-2">
+              <input
+                type="url"
+                value={formData.thumbnailUrl}
+                onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                placeholder="https://res.cloudinary.com/thumbnail.jpg"
+              />
+              <div
+                className={`relative border border-dashed rounded-lg p-1 transition-colors ${draggedField === 'thumbnailUrl'
+                  ? 'border-purple-500 bg-purple-50'
+                  : 'border-gray-300 hover:border-purple-400'
+                  }`}
+                onDragEnter={(e) => handleDragEnter(e, 'thumbnailUrl')}
+                onDragLeave={(e) => handleDragLeave(e, 'thumbnailUrl')}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, 'thumbnailUrl')}
+              >
+                <input
+                  type="file"
+                  id="thumbnail-upload"
+                  className="hidden"
+                  onChange={(e) => handleFileUpload(e, 'thumbnailUrl')}
+                  disabled={uploading}
+                  accept="image/*"
+                />
+                <label
+                  htmlFor="thumbnail-upload"
+                  className="p-1.5 rounded-md hover:bg-gray-50 cursor-pointer flex items-center justify-center text-gray-500 hover:text-purple-600 transition-colors"
+                  title="Upload or Drag & Drop"
+                >
+                  {uploading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
+                </label>
+              </div>
+            </div>
             {formData.thumbnailUrl && (
               <div className="mt-2">
                 <img

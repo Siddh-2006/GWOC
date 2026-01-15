@@ -174,7 +174,7 @@ const AdminOverview = () => {
             <div className="p-1.5 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
               <BookOpen size={16} className="text-primary" />
             </div>
-            <span className="font-semibold text-sm">Add Resources</span>
+            <span className="font-semibold text-sm">Add Library Content</span>
           </button>
 
           <button
@@ -184,7 +184,7 @@ const AdminOverview = () => {
             <div className="p-1.5 bg-white/20 rounded-lg group-hover:bg-white/30 transition-colors">
               <Plus size={16} className="text-white" />
             </div>
-            <span className="font-semibold text-sm">Add Library Content</span>
+            <span className="font-semibold text-sm">Add Resources</span>
           </button>
         </div>
       </div>
