@@ -21,17 +21,23 @@ CORS(app)  # Enable CORS for all routes
 
 # Initialize DB
 # Initialize DB
-init_db()
+# init_db()  <-- Commented out to prevent startup crash if Env is missing. Lazy load instead.
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        return f"MindSettler Chatbot API is Running! (Template Error: {e})", 200
 
 @app.route('/test-chatbot/health', methods=['GET'])
+@app.route('/health', methods=['GET']) # Alias
 def health_check():
     return jsonify({"status": "healthy", "service": "MindSettler Chatbot"}), 200
 
 @app.route('/test-chatbot/chat', methods=['POST'])
+@app.route('/chat', methods=['POST']) # Alias
+@app.route('/api/chat', methods=['POST']) # Alias (Standard Vercel)
 def chat():
     data = request.json
     user_message = data.get('message', '')
