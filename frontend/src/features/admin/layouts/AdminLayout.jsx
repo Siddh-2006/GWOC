@@ -14,7 +14,8 @@ import {
   User,
   Settings,
   Menu,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useAuthStore from '../../../store/useAuthStore';
@@ -39,6 +40,7 @@ const AdminLayout = () => {
     { icon: <MessageSquare size={20} />, label: 'Messages', path: '/admin/messages' },
     { icon: <Heart size={20} />, label: 'UserReflections', path: '/admin/user-reflections' },
     { icon: <Settings size={20} />, label: 'Quiz Setup', path: '/admin/reflection' },
+    { icon: <FileText size={20} />, label: 'Resources', path: '/resources' },
   ];
 
   const handleLogout = () => {
