@@ -2,7 +2,7 @@ services:
   - type: web
     name: mindsettler-chatbot
     env: python
-    rootDir: GWOC/test-chatbot
+    rootDir: test-chatbot
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
