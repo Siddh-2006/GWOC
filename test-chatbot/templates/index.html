@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindSettler Chatbot Test</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f4f6f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .chat-container { width: 400px; height: 600px; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; }
+        .header { background: #2563eb; color: white; padding: 16px; font-weight: bold; text-align: center; }
+        .messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .message { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.4; }
+        .user { align-self: flex-end; background: #2563eb; color: white; border-bottom-right-radius: 2px; }
+        .bot { align-self: flex-start; background: #e5e7eb; color: #1f2937; border-bottom-left-radius: 2px; }
+        .input-area { padding: 16px; border-top: 1px solid #e5e7eb; display: flex; gap: 8px; }
+        input { flex: 1; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none; }
+        button { padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #1d4ed8; }
+        .loading { font-style: italic; color: #6b7280; font-size: 12px; margin-left: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="header">MindSettler Bot (OpenAI + Pinecone)</div>
+        <div class="messages" id="messages">
+            <div class="message bot">Hello! I'm the MindSettler assistant. How can I help you today?</div>
+        </div>
+        <div class="loading" id="loading">Thinking...</div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Type a message..." onkeypress="handleKey(event)">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const messages = document.getElementById('messages');
+            const loading = document.getElementById('loading');
+            const text = input.value.trim();
+            
+            if (!text) return;
+
+            // Add User Message
+            appendMessage(text, 'user');
+            input.value = '';
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch('/test-chatbot/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                const data = await response.json();
+                
+                loading.style.display = 'none';
+                
+                // Handle Response Types
+                if (data.type === 'text') {
+                    appendMessage(data.content, 'bot');
+                } else if (data.data) {
+                    appendMessage(data.content + "\n" + JSON.stringify(data.data, null, 2), 'bot');
+                } else {
+                    appendMessage("Received response", 'bot');
+                }
+
+            } catch (err) {
+                loading.style.display = 'none';
+                appendMessage("Error connecting to server.", 'bot');
+                console.error(err);
+            }
+        }
+
+        function appendMessage(text, sender) {
+            const messages = document.getElementById('messages');
+            const div = document.createElement('div');
+            div.className = `message ${sender}`;
+            div.innerText = text;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function handleKey(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+    </script>
+</body>
+</html>
