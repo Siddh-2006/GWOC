@@ -16,7 +16,9 @@ const Home = () => {
 
 
       {/* 2nd CTA: How It Works Sticky Scroll */}
-      <HowItWorks />
+      <div id="how-it-works">
+        <HowItWorks />
+      </div>
 
       {/* 3rd CTA: Scoped Mountains & Rivers Journey */}
       <Journey />

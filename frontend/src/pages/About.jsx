@@ -68,7 +68,7 @@ const About = () => {
     <div className="min-h-screen bg-white selection:bg-primary/10 selection:text-primary overflow-x-hidden">
 
       {/* 1. CINEMATIC HERO */}
-      <section className="relative bg-gradient-to-b from-bg via-white to-bg overflow-hidden py-28 border-b border-gray-50">
+      <section className="relative bg-bg overflow-hidden py-28 border-b border-gray-50">
         {/* Soft background accents */}
         <div className="absolute top-0 right-0 w-[420px] h-[420px] bg-pink-100/25 rounded-full blur-[120px] -mr-44 -mt-44" />
         <div className="absolute bottom-0 left-0 w-[420px] h-[420px] bg-purple-100/25 rounded-full blur-[120px] -ml-44 -mb-44" />
@@ -133,7 +133,7 @@ const About = () => {
             >
               <Stack
                 randomRotation={true}
-                sensitivity={180 }
+                sensitivity={180}
                 sendToBackOnClick={true}
                 cards={[
                   // Approach Card
@@ -259,17 +259,17 @@ const About = () => {
                 <p className="text-base text-gray-600 leading-relaxed font-medium">
                   MindSettler is a psycho-education and mental well-being platform that focuses on understanding before action.
 
-We support awareness and human-led guidance through both online and offline sessions, creating space for reflection without pressure.
+                  We support awareness and human-led guidance through both online and offline sessions, creating space for reflection without pressure.
                 </p>
 
                 <div className="grid grid-cols-2 gap-6 pt-4">
                   {/* <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100"> */}
-                    {/* <div className="text-primary font-bold text-xl mb-1">98%</div> */}
-                    {/* <div className="text-[8px] uppercase tracking-[0.3em] text-gray-400 font-bold">Client Comfort</div> */}
+                  {/* <div className="text-primary font-bold text-xl mb-1">98%</div> */}
+                  {/* <div className="text-[8px] uppercase tracking-[0.3em] text-gray-400 font-bold">Client Comfort</div> */}
                   {/* </div> */}
                   {/* <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100"> */}
-                    {/* <div className="text-secondary font-bold text-xl mb-1">Human</div> */}
-                    {/* <div className="text-[8px] uppercase tracking-[0.3em] text-gray-400 font-bold">Led Approach</div> */}
+                  {/* <div className="text-secondary font-bold text-xl mb-1">Human</div> */}
+                  {/* <div className="text-[8px] uppercase tracking-[0.3em] text-gray-400 font-bold">Led Approach</div> */}
                   {/* </div> */}
                 </div>
               </div>

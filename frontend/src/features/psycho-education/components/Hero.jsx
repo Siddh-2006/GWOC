@@ -5,7 +5,7 @@ const heroVisual = '/assets/psycho_ed_hero_visual.png';
 
 const Hero = () => {
   return (
-    <section className="relative bg-gradient-to-b from-bg via-white to-bg overflow-hidden py-28">
+    <section className="relative bg-bg overflow-hidden py-28">
       {/* Soft background accents */}
       <div className="absolute top-0 right-0 w-[420px] h-[420px] bg-pink-100/25 rounded-full blur-[120px] -mr-44 -mt-44" />
       <div className="absolute bottom-0 left-0 w-[420px] h-[420px] bg-purple-100/25 rounded-full blur-[120px] -ml-44 -mb-44" />

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const slides = [
   {
@@ -22,14 +23,14 @@ const slides = [
     subtitle: "Personalized Sessions",
     desc: "Each 60-minute session is designed around your needs—offering clarity, awareness, and emotional grounding.",
     image: "/assets/landing3.jpg",
-   gradient: "from-indigo-900/50 via-purple-900/30 to-transparent",
+    gradient: "from-indigo-900/50 via-purple-900/30 to-transparent",
   },
   {
     title: "Start With a Conversation",
     subtitle: "No Pressure. No Judgment.",
     desc: "You don’t need to have everything figured out. We’re here to listen and guide you gently forward.",
     image: "/assets/landing4.jpg",
-   gradient: "from-indigo-900/50 via-purple-900/30 to-transparent",
+    gradient: "from-indigo-900/50 via-purple-900/30 to-transparent",
   },
 ];
 
@@ -143,12 +144,15 @@ const HeroSlider = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <button className="group bg-white text-gray-900 px-6 py-3 sm:px-8 sm:py-4 rounded-full font-bold text-sm sm:text-base md:text-lg flex items-center justify-center gap-2 hover:bg-blue-50 transition-all active:scale-95 shadow-lg">
+            <Link to="/booking" className="group bg-white text-gray-900 px-6 py-3 sm:px-8 sm:py-4 rounded-full font-bold text-sm sm:text-base md:text-lg flex items-center justify-center gap-2 hover:bg-blue-50 transition-all active:scale-95 shadow-lg">
               Book Your First Session
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition" />
-            </button>
+            </Link>
 
-            <button className="border-2 border-white/80 text-white px-6 py-3 sm:px-8 sm:py-4 rounded-full font-bold text-sm sm:text-base md:text-lg hover:bg-white hover:text-gray-900 transition-all active:scale-95">
+            <button
+              onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
+              className="border-2 border-white/80 text-white px-6 py-3 sm:px-8 sm:py-4 rounded-full font-bold text-sm sm:text-base md:text-lg hover:bg-white hover:text-gray-900 transition-all active:scale-95"
+            >
               Learn How It Works
             </button>
           </div>
@@ -162,8 +166,7 @@ const HeroSlider = () => {
             <button
               key={idx}
               onClick={() => { setCurrent(idx); resetTimer(); }}
-              className={`h-1 sm:h-1.5 transition-all duration-500 rounded-full ${
-                idx === current ? "w-8 sm:w-10 md:w-12 bg-white" : "w-3 sm:w-4 bg-white/30 hover:bg-white/50"
+              className={`h-1 sm:h-1.5 transition-all duration-500 rounded-full ${idx === current ? "w-8 sm:w-10 md:w-12 bg-white" : "w-3 sm:w-4 bg-white/30 hover:bg-white/50"
                 }`}
               aria-label={`Go to slide ${idx + 1}`}
             />
