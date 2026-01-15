@@ -1,0 +1,15 @@
+flask
+flask-cors
+pymongo
+python-dotenv
+langchain
+langchain-community
+langchain-core
+langchain-openai
+langchain-pinecone
+pydantic
+requests
+PyJWT
+cryptography
+# gunicorn (Not needed for Vercel Python runtime usually, but harmless)
+# Removed: chromadb, sentence-transformers, langchain-huggingface (Too big for Vercel)
