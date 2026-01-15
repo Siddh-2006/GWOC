@@ -6,6 +6,9 @@ from langchain_huggingface import HuggingFaceEmbeddings
 _cached_embeddings = None
 
 def get_embeddings():
+    # VERCEL FIX: Force HuggingFace to use /tmp because the file system is read-only
+    os.environ['HF_HOME'] = '/tmp'
+    
     global _cached_embeddings
     if _cached_embeddings is None:
         print("⚡ Loading Embedding Model (One-time setup)...")

@@ -23,6 +23,20 @@ CORS(app)  # Enable CORS for all routes
 # Initialize DB
 # init_db()  <-- Commented out to prevent startup crash if Env is missing. Lazy load instead.
 
+# Debug Route for Vercel 404s
+@app.route('/debug-paths', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    return jsonify({
+        "status": "Flask Running - 404 Not Found",
+        "requested_path": path,
+        "base_url": request.base_url,
+        "env_check": {
+            "HF_HOME": os.environ.get("HF_HOME", "Not Set"),
+            "OPENAI_KEY": "Set" if os.environ.get("OPENAI_API_KEY") else "Missing"
+        }
+    }), 404
+
 @app.route('/')
 def home():
     try:
