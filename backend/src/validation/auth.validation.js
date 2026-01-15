@@ -36,12 +36,12 @@ export const authValidation = {
       .min(2)
       .max(50)
       .pattern(/^[a-zA-Z\s]+$/)
-      .required()
+      .allow('', null)
+      .optional()
       .messages({
         'string.min': 'Last name must be at least 2 characters long',
         'string.max': 'Last name cannot exceed 50 characters',
-        'string.pattern.base': 'Last name can only contain letters and spaces',
-        'any.required': 'Last name is required'
+        'string.pattern.base': 'Last name can only contain letters and spaces'
       })
   }),
 
@@ -78,12 +78,11 @@ export const authValidation = {
       .min(1)
       .max(50)
       .trim()
-      .required()
+      .allow('', null)
+      .optional()
       .messages({
-        'string.min': 'Last name is required',
-        'string.max': 'Last name cannot exceed 50 characters',
-        'string.empty': 'Last name is required',
-        'any.required': 'Last name is required'
+        'string.min': 'Last name must be at least 1 character',
+        'string.max': 'Last name cannot exceed 50 characters'
       }),
 
     avatar: Joi.string()

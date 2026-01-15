@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import passport from 'passport';
+import { configurePassport } from './config/passport.js';
 
 // Configure environment variables first
 // In serverless, environment variables are provided by the platform
@@ -144,6 +146,10 @@ app.use(cors({
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Initialize Passport
+app.use(passport.initialize());
+configurePassport();
 
 // Routes
 app.get('/', (req, res) => {

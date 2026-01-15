@@ -31,8 +31,11 @@ export const authApi = {
     return response.data;
   },
 
-  getProfile: async () => {
-    const response = await apiClient.get('/auth/profile');
+  getProfile: async (accessToken = null) => {
+    const config = accessToken ? {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    } : {};
+    const response = await apiClient.get('/auth/profile', config);
     return response.data;
   },
 

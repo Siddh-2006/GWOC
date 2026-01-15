@@ -26,6 +26,34 @@ const generateTokens = async (userId) => {
   return { accessToken, refreshToken };
 };
 
+/**
+ * Google OAuth Callback Handler
+ * Called after successful Google authentication
+ */
+export const googleAuthCallback = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=auth_failed`);
+    }
+
+    // Generate tokens for the authenticated user
+    const { accessToken, refreshToken } = await generateTokens(req.user._id);
+
+    // Save refresh token
+    req.user.refreshTokens.push({ token: refreshToken });
+    req.user.lastLogin = new Date();
+    await req.user.save();
+
+    // Redirect to frontend with tokens
+    const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/callback?accessToken=${accessToken}&refreshToken=${refreshToken}`;
+    res.redirect(redirectUrl);
+
+  } catch (error) {
+    console.error('❌ Google callback error:', error);
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=server_error`);
+  }
+};
+
 // Sign up controller (now requires email verification)
 export const signUp = async (req, res) => {
   try {

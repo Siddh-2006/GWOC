@@ -32,6 +32,7 @@ import Login from './features/auth/Login';
 import VerifyEmail from './features/auth/VerifyEmail';
 import ForgotPassword from './features/auth/ForgotPassword';
 import ResetPassword from './features/auth/ResetPassword';
+import AuthCallback from './pages/AuthCallback';
 import PaymentPage from './pages/PaymentPage';
 
 import useAuthStore from './store/useAuthStore';
@@ -133,6 +134,7 @@ function App() {
                 <Route path="/verify-email" element={<AuthRoute><VerifyEmail /></AuthRoute>} />
                 <Route path="/forgot-password" element={<AuthRoute><ForgotPassword /></AuthRoute>} />
                 <Route path="/reset-password" element={<AuthRoute><ResetPassword /></AuthRoute>} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/pay" element={<PaymentPage />} />
                 <Route path="/oldadmin" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
 

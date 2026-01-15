@@ -11,8 +11,22 @@ const authSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: function() {
+      // Password is required only if not using OAuth
+      return !this.googleId;
+    },
     minlength: 6
+  },
+  // OAuth fields
+  googleId: {
+    type: String,
+    sparse: true,
+    unique: true
+  },
+  authProvider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local'
   },
   firstName: {
     type: String,
@@ -21,8 +35,9 @@ const authSchema = new mongoose.Schema({
   },
   lastName: {
     type: String,
-    required: true,
-    trim: true
+    required: false,
+    trim: true,
+    default: ''
   },
   avatar: {
     type: String,
@@ -80,7 +95,10 @@ const authSchema = new mongoose.Schema({
   },
   isEmailVerified: {
     type: Boolean,
-    default: false
+    default: function() {
+      // Auto-verify if using OAuth
+      return this.authProvider === 'google';
+    }
   },
   lastLogin: {
     type: Date
@@ -99,7 +117,8 @@ const authSchema = new mongoose.Schema({
 
 // Hash password before saving
 authSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+  // Skip password hashing if using OAuth
+  if (!this.password || !this.isModified('password')) return next();
   
   try {
     const salt = await bcrypt.genSalt(12);
@@ -112,6 +131,8 @@ authSchema.pre('save', async function(next) {
 
 // Compare password method
 authSchema.methods.comparePassword = async function(candidatePassword) {
+  // OAuth users don't have passwords
+  if (!this.password) return false;
   return bcrypt.compare(candidatePassword, this.password);
 };
 

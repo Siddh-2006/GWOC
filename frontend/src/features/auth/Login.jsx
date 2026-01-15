@@ -5,6 +5,7 @@ import { Mail, Lock, ArrowRight, Loader2, AlertCircle, Headphones } from 'lucide
 import { authApi } from './auth.api';
 import useAuthStore from '../../store/useAuthStore';
 import Logo from '../../components/Logo';
+import GoogleSignInButton from '../../components/GoogleSignInButton';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -169,6 +170,19 @@ const Login = () => {
                 )}
               </button>
             </form>
+
+            {/* Divider */}
+            <div className="relative my-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500 font-medium">Or continue with</span>
+              </div>
+            </div>
+
+            {/* Google Sign-In */}
+            <GoogleSignInButton text="Sign in with Google" />
 
             <div className="mt-12 text-center">
               <p className="text-gray-500 font-medium">
