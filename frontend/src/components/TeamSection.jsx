@@ -55,7 +55,7 @@ const TeamCard = ({ member }) => {
 
   return (
     <div
-      className="relative flex-shrink-0 w-72 h-[450px] cursor-pointer perspective-1000 mx-4"
+      className="relative flex-shrink-0 w-60 h-[380px] cursor-pointer perspective-1000 mx-3"
       onMouseEnter={() => setIsFlipped(true)}
       onMouseLeave={() => setIsFlipped(false)}
       onClick={() => setIsFlipped(!isFlipped)}

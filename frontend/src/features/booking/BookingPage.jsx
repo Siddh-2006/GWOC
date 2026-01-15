@@ -659,7 +659,9 @@ const BookingPage = () => {
                           ...formData,
                           personalInfo: { ...formData.personalInfo, phone: e.target.value }
                         })}
-                        placeholder="+91 9876543210"
+                        placeholder="9876543210"
+                        min={10}
+                        max={10}
                       />
                     </div>
                     <div>
@@ -1219,8 +1221,7 @@ const BookingPage = () => {
                   <p className="font-medium mb-2">What happens next?</p>
                   <ul className="text-left space-y-1">
                     <li>• Our team will review your request within 24 hours</li>
-                    <li>• You'll receive a confirmation email with payment details</li>
-                    <li>• After payment, you'll get the final session confirmation</li>
+                    <li>• You'll receive a confirmation email </li>
                     <li>• You'll receive a reminder 10 minutes before your session</li>
                   </ul>
                 </div>
