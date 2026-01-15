@@ -61,7 +61,7 @@ export const CorporateAudience = () => {
   ];
 
   return (
-    <section className="py-24 px-8 max-w-7xl mx-auto bg-bg relative overflow-hidden" ref={sectionRef}>
+    <section className="py-24 w-full bg-bg relative overflow-hidden" ref={sectionRef}>
       {/* Premium Background Asset */}
       <div
         className="absolute inset-0 z-0 opacity-40 pointer-events-none"
@@ -73,7 +73,7 @@ export const CorporateAudience = () => {
         }}
       ></div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4">
+      <div className="relative z-10 max-w-7xl mx-auto px-8">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

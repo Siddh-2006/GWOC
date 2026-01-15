@@ -15,7 +15,7 @@ export const CorporateIntro = () => {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7 }}
+            transition={{ duration: 1.2 }}
             className="flex items-center gap-4"
           >
             <div className="w-10 h-[2px] bg-pink-500" />
@@ -27,7 +27,7 @@ export const CorporateIntro = () => {
           <motion.h1
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 1.4 }}
             className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-primary"
           >
             Nurturing well-being <br />
@@ -37,7 +37,7 @@ export const CorporateIntro = () => {
           <motion.p
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.7 }}
+            transition={{ delay: 0.15, duration: 1.2 }}
             className="text-lg md:text-xl text-primary/80 leading-relaxed max-w-xl border-l border-primary/20 pl-6"
           >
             We partner with organizations and communities to foster meaningful
@@ -51,7 +51,7 @@ export const CorporateIntro = () => {
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.9 }}
+            transition={{ duration: 1.5 }}
             className="w-full h-full relative"
           >
             <div className="absolute inset-0 [clip-path:polygon(12%_0%,100%_0%,100%_100%,0%_100%)] overflow-hidden rounded-r-[3.5rem] shadow-2xl">

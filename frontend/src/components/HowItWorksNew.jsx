@@ -48,19 +48,29 @@ const HowItWorks = () => {
   });
 
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
+    stiffness: 70,
+    damping: 40,
     restDelta: 0.001
   });
 
   return (
     <div ref={containerRef} className="relative h-[400vh] bg-white">
       {/* 
-         1. Increased top padding to pt-32 to clear navbar.
-         2. Added px-4 to prevent edge touching.
-         3. Reduced max-w to 7xl to constrain resizing.
+         Restored height to 400vh and larger padding/width as requested
       */}
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-center pt-32 pb-12 px-4 md:px-8">
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col px-4 md:px-8">
+
+        {/* SECTION TITLE - Absolute positioning, Left Aligned */}
+        <div className="absolute top-16 left-0 w-full z-20 px-8">
+          <div className="w-full max-w-7xl mx-auto">
+            <h2 className="text-4xl md:text-6xl font-black relative mb-4 inline-block">
+              <span className="bg-gradient-to-r from-primary via-purple-light to-primary bg-clip-text text-transparent pb-2">
+                How It Works
+              </span>
+              <div className="absolute -bottom-4 left-0 w-24 h-1.5 bg-gradient-to-r from-secondary to-pink-400 rounded-full"></div>
+            </h2>
+          </div>
+        </div>
 
         {/* DYNAMIC BACKGROUND LAYER */}
         <div className="absolute inset-0 z-0">
@@ -69,11 +79,21 @@ const HowItWorks = () => {
             const start = i * stepSize;
             const end = (i + 1) * stepSize;
 
-            const opacity = useTransform(
-              smoothProgress,
-              [start, start + 0.1, end - 0.1, end],
-              [0, 1, 1, 0]
-            );
+            // Custom Opacity Logic to prevent white space at start/end
+            let outputRange = [0, 1, 1, 0];
+            let inputRange = [start, start + 0.1, end - 0.1, end];
+
+            if (i === 0) {
+              // First item: Visible from the very start
+              inputRange = [0, end - 0.1, end];
+              outputRange = [1, 1, 0];
+            } else if (i === stages.length - 1) {
+              // Last item: Stays visible until the very end
+              inputRange = [start, start + 0.1, 1];
+              outputRange = [0, 1, 1];
+            }
+
+            const opacity = useTransform(smoothProgress, inputRange, outputRange);
 
             return (
               <motion.div
@@ -81,32 +101,21 @@ const HowItWorks = () => {
                 style={{ opacity }}
                 className="absolute inset-0 w-full h-full"
               >
-                {/* Background Image - Blurred but more visible now */}
-                {/* Reduced blur slightly (3xl -> 2xl) and increased opacity (50 -> 70) */}
                 <img
                   src={stage.image}
                   alt=""
-                  className="w-full h-full object-cover blur-2xl scale-110 opacity-70"
+                  className="w-full h-full object-cover blur-2xl scale-105 opacity-60"
                 />
-
-                {/* Layering: Pinkish but TRANSLUCENT enough to see the image forms */}
-                {/* Changed from 95% opacity to ~70-80% gradient to reveal the bg image */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-pink-50/60 to-purple-50/80"></div>
-
-                {/* Subtle texture layer */}
-                <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px]"></div>
-
-                {/* Decorative gradient orbs for "ETHEREAL" feel */}
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-pink-300/20 rounded-full blur-[100px]"></div>
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-300/20 rounded-full blur-[100px]"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-pink-50/70 to-purple-50/80"></div>
+                <div className="absolute inset-0 bg-white/30 backdrop-blur-[1px]"></div>
               </motion.div>
             );
           })}
         </div>
 
 
-        {/* CONTENT CONTAINER - Reduced max-width and internal sizing */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto h-full flex items-center justify-center">
+        {/* CONTENT CONTAINER - Shifted down */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto flex-1 flex items-center justify-center pt-24">
           <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
 
             {/* LEFT SIDE: CONTENT */}
@@ -116,7 +125,19 @@ const HowItWorks = () => {
                 const start = i * stepSize;
                 const end = (i + 1) * stepSize;
 
-                const opacity = useTransform(smoothProgress, [start, start + 0.05, end - 0.05, end], [0, 1, 1, 0]);
+                // Sync Content Opacity with Background Logic
+                let outputRange = [0, 1, 1, 0];
+                let inputRange = [start, start + 0.05, end - 0.05, end];
+
+                if (i === 0) {
+                  inputRange = [0, end - 0.05, end];
+                  outputRange = [1, 1, 0];
+                } else if (i === stages.length - 1) {
+                  inputRange = [start, start + 0.05, 1];
+                  outputRange = [0, 1, 1];
+                }
+
+                const opacity = useTransform(smoothProgress, inputRange, outputRange);
                 const x = useTransform(smoothProgress, [start, start + 0.1, end - 0.1, end], [-30, 0, 0, -30]);
                 const pointerEvents = useTransform(opacity, value => value > 0.5 ? 'auto' : 'none');
 
@@ -141,7 +162,7 @@ const HowItWorks = () => {
                         </span>
                       </div>
 
-                      {/* Headings - Reduced sizes */}
+                      {/* Headings - Restored sizes */}
                       <div className="space-y-1">
                         <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-[1.1] tracking-tight">
                           {stage.title}
@@ -151,8 +172,8 @@ const HowItWorks = () => {
                         </h3>
                       </div>
 
-                      {/* Description Box - More compact */}
-                      <div className="p-5 md:p-6 bg-white/40 backdrop-blur-xl rounded-[1.5rem] border border-white/60 shadow-lg shadow-purple-500/5">
+                      {/* Description Box - Restored sizes */}
+                      <div className="p-5 md:p-6 bg-white/50 backdrop-blur-xl rounded-[1.5rem] border border-white/60 shadow-lg shadow-purple-500/5">
                         <p className="text-base md:text-lg text-gray-700 leading-relaxed font-medium">
                           {stage.description}
                         </p>
@@ -174,16 +195,27 @@ const HowItWorks = () => {
               })}
             </div>
 
-            {/* RIGHT SIDE: IMAGES - Hidden on Mobile to prevent overlap, visible on Large screens */}
-            {/* On mobile, we rely on the blurred background layer for visual context */}
+            {/* RIGHT SIDE: IMAGES - Restored Sizes */}
             <div className="hidden lg:flex relative h-[35vh] md:h-[45vh] lg:h-[60vh] items-center justify-center order-1 lg:order-2">
               {stages.map((stage, i) => {
                 const stepSize = 1 / stages.length;
                 const start = i * stepSize;
                 const end = (i + 1) * stepSize;
 
-                const opacity = useTransform(smoothProgress, [start, start + 0.05, end - 0.05, end], [0, 1, 1, 0]);
-                const scale = useTransform(smoothProgress, [start, end], [1.05, 0.95]); // Subtle scaling
+                // Sync Image Opacity with Background Logic
+                let outputRange = [0, 1, 1, 0];
+                let inputRange = [start, start + 0.05, end - 0.05, end];
+
+                if (i === 0) {
+                  inputRange = [0, end - 0.05, end];
+                  outputRange = [1, 1, 0];
+                } else if (i === stages.length - 1) {
+                  inputRange = [start, start + 0.05, 1];
+                  outputRange = [0, 1, 1];
+                }
+
+                const opacity = useTransform(smoothProgress, inputRange, outputRange);
+                const scale = useTransform(smoothProgress, [start, end], [1.05, 0.95]);
                 const rotate = useTransform(smoothProgress, [start, end], [2, -1]);
                 const y = useTransform(smoothProgress, [start, end], [30, 0]);
 
@@ -194,7 +226,7 @@ const HowItWorks = () => {
                     style={{ opacity, scale, rotate, y }}
                     className="absolute inset-0 flex items-center justify-center"
                   >
-                    {/* Smaller max-width for image container */}
+                    {/* Compact Image Container */}
                     <div className="relative w-full max-w-sm md:max-w-md aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl border-[8px] border-white/80 bg-white">
                       <img
                         src={stage.image}
