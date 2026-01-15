@@ -20,6 +20,7 @@ import SessionNotesViewer from '../components/SessionNotesViewer';
 import SessionTasksModal from '../components/user/SessionTasksModal';
 import AdminRemarksModal from '../components/user/AdminRemarksModal';
 import ToastContainer from '../components/ToastContainer';
+import MediaPlayer from '../components/MediaPlayer';
 
 // New Components
 import MyJourney from '../components/profile/MyJourney';
@@ -342,6 +343,10 @@ const Profile = () => {
   const [resetting, setResetting] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
 
+  // Media Player States
+  const [selectedMedia, setSelectedMedia] = useState(null);
+  const [showPlayer, setShowPlayer] = useState(false);
+
   useEffect(() => {
     const fetchUserDetails = async () => {
       if (userId && currentUser?.role === 'admin') {
@@ -382,6 +387,25 @@ const Profile = () => {
       console.error('Error removing from liked:', error);
       showError(error.message || 'Failed to remove from liked content');
     }
+  };
+
+  const handleMediaClick = (media) => {
+    setSelectedMedia(media);
+    setShowPlayer(true);
+  };
+
+  const handleLike = async (mediaId) => {
+    try {
+      await toggleLike(mediaId);
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      showError(error.message || 'Failed to update like');
+    }
+  };
+
+  const handleComment = async (mediaId, content) => {
+    // Implement comment functionality if needed
+    console.log('Comment:', mediaId, content);
   };
 
   const handleRegenerateSummary = async () => {
@@ -704,6 +728,7 @@ const Profile = () => {
                   loading={likedLoading}
                   error={likedError}
                   onUnlike={handleRemoveFromLiked}
+                  onMediaClick={handleMediaClick}
                   isAdminView={isAdminView}
                   userName={user.firstName}
                 />
@@ -844,6 +869,20 @@ const Profile = () => {
           />
         )}
         <ToastContainer toasts={toasts} onRemove={removeToast} />
+
+        {/* Media Player */}
+        {showPlayer && selectedMedia && (
+          <MediaPlayer
+            media={selectedMedia}
+            isOpen={showPlayer}
+            onClose={() => {
+              setShowPlayer(false);
+              setSelectedMedia(null);
+            }}
+            onLike={handleLike}
+            onComment={handleComment}
+          />
+        )}
       </div>
     </div>
   );
