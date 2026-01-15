@@ -1,18 +1,15 @@
 import os
-import os
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_openai import OpenAIEmbeddings
 
 # Global cache
 _cached_embeddings = None
 
 def get_embeddings():
-    # VERCEL FIX: Force HuggingFace to use /tmp because the file system is read-only
-    os.environ['HF_HOME'] = '/tmp'
-    
     global _cached_embeddings
     if _cached_embeddings is None:
-        print("⚡ Loading Embedding Model (One-time setup)...")
-        # Use a standard, efficient local model
-        _cached_embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-        print("✅ Embedding Model Loaded.")
+        # Use OpenAI Embeddings (Lightweight, No PyTorch needed)
+        # Defaults to 'text-embedding-3-small' (1536 dimensions)
+        print("⚡ Loading OpenAI Embeddings...")
+        _cached_embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+        print("✅ OpenAI Embedding Model Loaded.")
     return _cached_embeddings

@@ -24,8 +24,10 @@ def ingest_docs():
         with open(os.path.join(DATA_PATH, "mindsettler_info.md"), "w") as f:
             f.write("# MindSettler\nMindSettler is a mental health platform...\n(Placeholder)")
     
+    print(f"Reading files from: {DATA_PATH}")
     for filename in os.listdir(DATA_PATH):
         if filename.endswith(".txt") or filename.endswith(".md"):
+            print(f" - Loading {filename}...")
             path = os.path.join(DATA_PATH, filename)
             with open(path, "r", encoding="utf-8") as f:
                 content = f.read()
@@ -34,33 +36,31 @@ def ingest_docs():
     if not docs:
         print("No documents to ingest.")
         return
+    print(f"Loaded {len(docs)} documents.")
 
     # 2. Chunking
+    print("Chunking documents...")
     try:
         from langchain.text_splitter import CharacterTextSplitter
     except ImportError:
         from langchain_text_splitters import CharacterTextSplitter
     splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
     chunks = splitter.split_documents(docs)
+    print(f"Created {len(chunks)} chunks.")
 
     # 3. Store in Pinecone
     from langchain_pinecone import PineconeVectorStore
     import time
     
     index_name = os.getenv("PINECONE_INDEX_NAME")
+    print(f"Index Name: {index_name}")
     if not index_name:
         print("❌ PINECONE_INDEX_NAME not set in .env")
         return
 
-    print(f"Total chunks to ingest: {len(chunks)}")
-    print(f"Target Pinecone Index: {index_name}")
-    
-    # We use the class method to initialize/add
-    # PineconeVectorStore.from_documents(chunks, embeddings, index_name=index_name)
-    # But to prevent timeout on large batches, let's keep the manual batch loop 
-    # and use from_existing_index + add_documents
-    
+    print("Initializing PineconeVectorStore...")
     vectorstore = PineconeVectorStore(index_name=index_name, embedding=embeddings)
+    print("Pinecone initialized.")
     
     batch_size = 5
     for i in range(0, len(chunks), batch_size):

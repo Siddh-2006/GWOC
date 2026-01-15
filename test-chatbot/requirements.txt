@@ -4,15 +4,12 @@ pymongo
 python-dotenv
 langchain
 langchain-community
-langchain-google-genai
-chromadb
+langchain-core
+langchain-openai
+langchain-pinecone
 pydantic
 requests
 PyJWT
 cryptography
-gunicorn
-sentence-transformers
-langchain-huggingface
-langchain-huggingface
-langchain-pinecone
-langchain-openai
+# gunicorn (Not needed for Vercel Python runtime usually, but harmless)
+# Removed: chromadb, sentence-transformers, langchain-huggingface (Too big for Vercel)
