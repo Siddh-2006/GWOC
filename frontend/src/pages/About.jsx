@@ -13,7 +13,7 @@ const About = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+      transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1] }
     }
   };
 
@@ -79,7 +79,7 @@ const About = () => {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7 }}
+              transition={{ duration: 1.2 }}
               className="flex items-center gap-4"
             >
               <div className="w-10 h-[2px] bg-pink-500" />
@@ -91,7 +91,7 @@ const About = () => {
             <motion.h1
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 1.3 }}
               className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-primary"
             >
               Understanding is the first form of care<br />
@@ -101,7 +101,7 @@ const About = () => {
             <motion.p
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.7 }}
+              transition={{ delay: 0.2, duration: 1.2 }}
               className="text-lg md:text-xl text-primary/80 leading-relaxed max-w-xl border-l border-primary/20 pl-6"
             >
               Healing happens in circles, not lines. We provide the map to return to old places with new eyes, honoring the landscape of your internal world.
@@ -110,7 +110,7 @@ const About = () => {
             <motion.div
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.7 }}
+              transition={{ delay: 0.4, duration: 1.2 }}
             >
               <button
                 onClick={() => window.location.href = '/booking'}
@@ -128,7 +128,7 @@ const About = () => {
               initial={{ opacity: 0, scale: 0.98 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 2.0, ease: [0.16, 1, 0.3, 1] }}
               className="relative flex justify-center items-end w-full h-full overflow-visible"
             >
               <Stack
@@ -136,86 +136,37 @@ const About = () => {
                 sensitivity={180}
                 sendToBackOnClick={true}
                 cards={[
-                  // Approach Card
-                  <div key="appr" className="relative w-[420px] h-[460px] border-none shadow-2xl rounded-[3rem] bg-white overflow-visible">
-                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-50">
-                      <div className="flex items-center gap-2 px-6 py-2.5 bg-gray-900 shadow-xl rounded-full border border-gray-800 whitespace-nowrap">
-                        <Sparkles size={10} className="text-indigo-400" />
-                        <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">Our Approach</span>
-                      </div>
-                    </div>
-                    <div className="relative w-full h-full rounded-[3rem] overflow-hidden border border-gray-100">
-                      <img
-                        src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1200&auto=format"
-                        className="absolute inset-0 w-full h-full object-cover opacity-20"
-                        alt="Approach"
-                      />
-                      <div className="relative z-10 w-full h-full p-14 flex flex-col justify-center text-center">
-                        <div className="mx-auto w-12 h-12 bg-indigo-400/5 rounded-2xl flex items-center justify-center text-indigo-400 mb-8 border border-indigo-400/10">
-                          <Quote size={24} />
-                        </div>
-                        <h4 className="text-lg md:text-xl font-bold mb-4 tracking-tight text-gray-900 leading-tight">A unique methodology rooted in clinical depth and human heart.</h4>
-                        <div className="space-y-2 text-[12px] text-gray-600 leading-relaxed font-medium px-4">
-                          <p>Guide individuals toward informed, human support while normalizing the process of seeking guidance.</p>
-                          <p>Provide safe, confidential pathways to sessions that honor each person's unique journey.</p>
-                          <p>We walk alongside, we don't push forward.</p>
-                        </div>
-                      </div>
-                    </div>
+                  // Card 4
+                  <div key="c4" className="relative w-[420px] h-[460px] border-[10px] border-white shadow-2xl rounded-[3rem] bg-white overflow-hidden">
+                    <img
+                      src="/assets/about_stack_4.jpg"
+                      className="w-full h-full object-cover brightness-110"
+                      alt="Therapy Insight 4"
+                    />
                   </div>,
-                  // Mission Card
-                  <div key="miss" className="relative w-[420px] h-[460px] border-none shadow-2xl rounded-[3rem] bg-white overflow-visible">
-                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-50">
-                      <div className="flex items-center gap-2 px-6 py-2.5 bg-gray-900 shadow-xl rounded-full border border-gray-800 whitespace-nowrap">
-                        <Target size={10} className="text-primary" />
-                        <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">Our Mission</span>
-                      </div>
-                    </div>
-                    <div className="relative w-full h-full rounded-[3rem] overflow-hidden border border-gray-100">
-                      <img
-                        src="/assets/mountain2.jpg"
-                        className="absolute inset-0 w-full h-full object-cover opacity-20"
-                        alt="Mission"
-                      />
-                      <div className="relative z-10 w-full h-full p-14 flex flex-col justify-center text-center">
-                        <div className="mx-auto w-12 h-12 bg-secondary/5 rounded-2xl flex items-center justify-center text-secondary mb-8 border border-secondary/10">
-                          <Quote size={24} />
-                        </div>
-                        <h4 className="text-lg md:text-xl font-bold mb-4 tracking-tight text-gray-900 leading-tight">Accessible excellence for every inner world.</h4>
-                        <div className="space-y-2 text-[12px] text-gray-600 leading-relaxed font-medium px-4">
-                          <p>To make mental health understanding less intimidating.</p>
-                          <p>To create space for reflection without pressure, prioritizing clarity over urgency.</p>
-                          <p>Understanding comes first.</p>
-                        </div>
-                      </div>
-                    </div>
+                  // Card 3
+                  <div key="c3" className="relative w-[420px] h-[460px] border-[10px] border-white shadow-2xl rounded-[3rem] bg-white overflow-hidden">
+                    <img
+                      src="/assets/about_stack_3.jpg"
+                      className="w-full h-full object-cover brightness-110"
+                      alt="Therapy Insight 3"
+                    />
                   </div>,
-                  // Philosophy Card
-                  <div key="phil" className="relative w-[420px] h-[460px] border-none shadow-2xl rounded-[3rem] bg-white overflow-visible">
-                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-50">
-                      <div className="flex items-center gap-2 px-6 py-2.5 bg-gray-900 shadow-xl rounded-full border border-gray-800 whitespace-nowrap">
-                        <Quote size={10} className="text-secondary" />
-                        <span className="text-[8px] font-bold text-white uppercase tracking-[0.4em]">Our Philosophy</span>
-                      </div>
-                    </div>
-                    <div className="relative w-full h-full rounded-[3rem] overflow-hidden border border-gray-100">
-                      <img
-                        src="/assets/river1.jpg"
-                        className="absolute inset-0 w-full h-full object-cover opacity-20"
-                        alt="Philosophy"
-                      />
-                      <div className="relative z-10 w-full h-full p-14 flex flex-col justify-center text-center">
-                        <div className="mx-auto w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center text-primary mb-8 border border-primary/10">
-                          <Quote size={24} />
-                        </div>
-                        <h4 className="text-lg md:text-xl font-bold mb-6 tracking-tight text-gray-900 leading-tight">Our Philosophy of Care</h4>
-                        <div className="space-y-2 text-[12px] text-gray-600 leading-relaxed font-medium">
-                          <p>Psycho-education: Not diagnosis</p>
-                          <p>Understanding: Not fixing</p>
-                          <p>Reflection: Not reaction</p>
-                        </div>
-                      </div>
-                    </div>
+                  // Card 2
+                  <div key="c2" className="relative w-[420px] h-[460px] border-[10px] border-white shadow-2xl rounded-[3rem] bg-white overflow-hidden">
+                    <img
+                      src="/assets/about_stack_2.jpg"
+                      className="w-full h-full object-cover brightness-110"
+                      alt="Therapy Insight 2"
+                    />
+                  </div>,
+                  // Card 1
+                  <div key="c1" className="relative w-[420px] h-[460px] border-[10px] border-white shadow-2xl rounded-[3rem] bg-white overflow-hidden">
+                    <img
+                      src="/assets/about_stack_1.jpg"
+                      className="w-full h-full object-cover brightness-110"
+                      alt="Therapy Insight 1"
+                    />
                   </div>
                 ]}
               />
@@ -233,7 +184,7 @@ const About = () => {
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 1, ease: "easeOut" }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
               className="relative aspect-[3/4] max-w-xs mx-auto rounded-[3rem] overflow-hidden shadow-2xl border-8 border-gray-50 group"
             >
               <video
@@ -262,20 +213,67 @@ const About = () => {
                   We support awareness and human-led guidance through both online and offline sessions, creating space for reflection without pressure.
                 </p>
 
-                <div className="grid grid-cols-2 gap-6 pt-4">
-                  {/* <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100"> */}
-                  {/* <div className="text-primary font-bold text-xl mb-1">98%</div> */}
-                  {/* <div className="text-[8px] uppercase tracking-[0.3em] text-gray-400 font-bold">Client Comfort</div> */}
-                  {/* </div> */}
-                  {/* <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100"> */}
-                  {/* <div className="text-secondary font-bold text-xl mb-1">Human</div> */}
-                  {/* <div className="text-[8px] uppercase tracking-[0.3em] text-gray-400 font-bold">Led Approach</div> */}
-                  {/* </div> */}
-                </div>
+
               </div>
             </AnimatedSection>
           </div>
         </div>
+      </section>
+
+      {/* 4. MEET THE FOUNDER (Interactive Display) */}
+      <section className="py-32 px-6 relative bg-gray-50/80 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            {/* Left: Founder Content */}
+            <AnimatedSection>
+              <div className="space-y-10">
+                <div>
+                  <span className="text-primary font-bold text-[8px] uppercase tracking-[0.4em] mb-4 block underline decoration-primary/20 underline-offset-8">Our Goal</span>
+
+                  <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-[1.1] mb-8 font-serif">
+                    Our Vision <br />
+                    <span className="text-secondary italic">& Mission</span>
+                  </h2>
+                </div>
+                <div className="space-y-8">
+                  <div>
+                    <h3 className="text-xl font-bold text-primary mb-3 font-serif">Our Mission</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed font-medium">
+                      To replace silence with understanding and isolation with connection. We aim to create a safe harbor where mental health is not just treated, but deeply understood.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-secondary mb-3 font-serif">Our Vision</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed font-medium">
+                      A world where seeking help is as natural as seeking shade. We envision a society where emotional well-being is prioritized and accessible to everyone, without stigma or judgment.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </AnimatedSection>
+
+            {/* Right: Founder Image Stack */}
+            <div className="relative w-full max-w-[320px] mx-auto hidden lg:block bg-white p-3 rounded-2xl shadow-xl border border-gray-100 rotate-1 hover:rotate-0 transition-transform duration-500">
+              {/* PORTRAIT CARD (FRONT) */}
+              <div className="relative w-full aspect-[4/5] rounded-xl bg-gray-50 overflow-hidden mb-4">
+                <img src="/assets/pranika.jpg" className="w-full h-full object-cover" alt="Founder" />
+              </div>
+
+              <div className="text-center space-y-1.5 pb-2">
+                <h3 className="text-xl font-bold tracking-tight text-primary font-serif">Parnika Bajaj</h3>
+                <p className="text-[10px] font-bold tracking-widest uppercase text-secondary">Counseling Psychologist</p>
+                <div className="w-6 h-px bg-gray-200 mx-auto my-2" />
+                <div className="flex flex-col items-center gap-0.5 text-gray-500 text-[9px] font-medium">
+                  <span className="flex items-center gap-1">
+                    Master of Arts, Counseling Psychology
+                  </span>
+                  <span className="opacity-60">GGU (2022)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <WavyDivider top color="fill-gray-50/80" />
       </section>
 
       {/* 3. PREMIUM DIFFERENTIATION (MAGIC BENTO) */}
@@ -299,185 +297,7 @@ const About = () => {
         <WavyDivider color="fill-gray-50/80" />
       </section>
 
-      {/* 3. IS / IS NOT SECTION (Aura Immersive) */}
-      <section className="py-32 bg-gradient-to-br from-pink-50 via-white to-gray-100 overflow-hidden relative">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[160px] opacity-40" />
-          <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-secondary/5 rounded-full blur-[160px] opacity-30" />
-        </div>
 
-        <div className="max-w-6xl mx-auto px-4 lg:px-8 relative z-10">
-          <div className="grid md:grid-cols-2 gap-12">
-            <motion.div
-              whileHover={{ scale: 1.01 }}
-              className="p-12 rounded-[3rem] bg-indigo-50/50 backdrop-blur-2xl border border-white shadow-2xl relative overflow-hidden group"
-            >
-              <div className="absolute top-0 right-0 p-10 text-green-500/5 group-hover:scale-110 transition-transform duration-700">
-                <CheckCircle2 size={140} />
-              </div>
-              <h3 className="text-2xl font-bold mb-10 flex items-center gap-5 text-green-600">
-                <CheckCircle2 size={32} /> MindSettler Is
-              </h3>
-              <ul className="space-y-6 relative z-10">
-                {[
-                  "A psycho-education space",
-                  "A guided well-being platform",
-                  "A human-led support system"
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-5 text-[17px] font-bold text-gray-700">
-                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_12px_rgba(34,197,94,0.4)]" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.01 }}
-              className="p-12 rounded-[3rem] bg-gray-50/50 backdrop-blur-2xl border border-gray-100 shadow-xl relative overflow-hidden group"
-            >
-              <div className="absolute top-0 right-0 p-10 text-gray-200/5 group-hover:scale-110 transition-transform duration-700">
-                <AlertCircle size={140} />
-              </div>
-              <h3 className="text-2xl font-bold mb-10 flex items-center gap-5 text-gray-400">
-                <AlertCircle size={32} /> MindSettler Is Not
-              </h3>
-              <ul className="space-y-6 relative z-10">
-                {[
-                  "An emergency service",
-                  "An AI therapy tool",
-                  "An instant solution platform"
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-5 text-[17px] font-bold text-gray-400">
-                    <div className="w-1.5 h-1.5 bg-gray-300 rounded-full" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          </div>
-        </div>
-        <WavyDivider color="fill-gray-50/80" />
-      </section>
-
-      {/* 4. MEET THE FOUNDER (Interactive Display) */}
-      <section className="py-32 px-6 relative bg-gray-50/80 overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-            {/* Left: Founder Content */}
-            <AnimatedSection>
-              <div className="space-y-10">
-                <div>
-                  <span className="text-primary font-bold text-[8px] uppercase tracking-[0.4em] mb-4 block underline decoration-primary/20 underline-offset-8">Voices of Vision</span>
-
-                  <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-[1.1] mb-8 font-serif">
-                    Parnika's <br />
-                    <span className="text-secondary italic">Story</span>
-                  </h2>
-                </div>
-                <div className="space-y-6">
-                  <p className="text-sm text-gray-500 leading-relaxed font-medium max-w-lg">
-                    MindSettler was born from observation, not crisis. Parnika recognized the lack of safe spaces for reflection and the need for calm, human-centered mental health support.
-                  </p>
-                  <p className="text-sm text-gray-500 leading-relaxed font-medium max-w-lg">
-                    The intention was always to create a platform built with care, not speed—a place where understanding unfolds naturally.
-                  </p>
-                  <p className="text-base text-gray-700 leading-relaxed font-medium max-w-lg italic">
-                    MindSettler was built with care, not speed.
-                  </p>
-                </div>
-
-                <div className="grid gap-8">
-                  {[
-                    { icon: Eye, title: "Master of Arts", detail: "Counseling Psychology, GGU (2022)", color: "primary" },
-                    { icon: Sparkles, title: "Human-Led", detail: "Rooted in clinical research & radical empathy.", color: "secondary" }
-                  ].map((item, i) => (
-                    <motion.div
-                      key={i}
-                      whileHover={{ x: 10 }}
-                      className="flex gap-8 items-center p-8 bg-white/60 backdrop-blur-md rounded-[2.5rem] border border-white shadow-xl shadow-indigo-100/30 group hover:border-primary/20 transition-all duration-500"
-                    >
-                      <div className={`w-14 h-14 bg-${item.color}/10 rounded-2xl flex items-center justify-center text-${item.color} group-hover:bg-${item.color} group-hover:text-white transition-all duration-500`}>
-                        <item.icon size={26} />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-gray-900 text-sm mb-1 uppercase tracking-widest">{item.title}</h4>
-                        <p className="text-sm text-gray-500 font-medium">{item.detail}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            </AnimatedSection>
-
-            {/* Right: Founder Image Stack */}
-            <div className="relative h-[500px] w-full max-w-[440px] mx-auto hidden lg:block">
-              <CardSwap
-                width={440}
-                height={500}
-                cardDistance={20}
-                verticalDistance={30}
-                delay={6000}
-              >
-                {/* PORTRAIT CARD (FRONT) */}
-                <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white">
-                  <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden border-[10px] border-white/60">
-                    <img src="/assets/pranika.jpg" className="w-full h-full object-cover" alt="Founder" />
-                    <div className="absolute inset-0 bg-linear-to-t from-primary/80 via-transparent to-transparent" />
-                    <div className="absolute bottom-10 left-0 right-0 text-center text-white px-8">
-                      <h3 className="text-2xl font-bold tracking-tight mb-1">Parnika Bajaj</h3>
-                      <p className="text-[9px] uppercase tracking-[0.3em] opacity-90 font-bold">Counseling Psychologist</p>
-                    </div>
-                  </div>
-                </Card>
-              </CardSwap>
-            </div>
-          </div>
-        </div>
-        <WavyDivider top color="fill-gray-50/80" />
-      </section>
-
-      {/* 5. FINAL CTA (Soft & Emotional) */}
-      <section className="py-48 px-6 relative bg-aurora-light overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=2000&auto=format" className="absolute inset-0 w-full h-full object-cover opacity-[0.05] grayscale" alt="Relaxation" />
-        </div>
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <AnimatedSection>
-            <motion.div
-              variants={float}
-              animate="animate"
-              className="inline-flex items-center justify-center w-20 h-20 bg-white/80 backdrop-blur-xl rounded-full mb-12 shadow-2xl border border-white/50"
-            >
-              <Heart size={36} className="text-primary" fill="currentColor" />
-            </motion.div>
-
-            <ScrollFloat
-              containerClassName="mb-16"
-              textClassName="text-3xl md:text-4xl font-serif italic text-gray-900 leading-[1.3] tracking-tight"
-              scrollStart="top 110%"
-              scrollEnd="top 30%"
-            >
-              Understanding unfolds differently for everyone. Take your time.
-            </ScrollFloat>
-
-            <div className="flex flex-col sm:flex-row gap-8 justify-center items-center">
-              <motion.button
-                whileHover={{ scale: 1.05, y: -4 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => window.location.href = '/booking'}
-                className="px-14 py-5 bg-linear-to-r from-primary to-secondary text-white font-black rounded-[2rem] shadow-[0_20px_50px_rgba(var(--primary-rgb),0.3)] hover:opacity-90 transition-all font-title uppercase tracking-widest text-[11px]"
-              >
-                Book Your First Session
-              </motion.button>
-              <div className="text-left border-l-2 border-gray-200 pl-6 py-1">
-                <p className="text-[10px] text-gray-400 font-bold tracking-[0.4em] uppercase leading-relaxed mb-1">Status</p>
-                <p className="text-xs text-gray-900 font-bold uppercase tracking-tight">Spaces Available</p>
-              </div>
-            </div>
-          </AnimatedSection>
-        </div>
-      </section>
     </div>
   );
 };
