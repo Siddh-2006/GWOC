@@ -55,7 +55,6 @@ const About = () => {
       </motion.div>
     );
   };
-
   const WavyDivider = ({ top = false, color = "fill-white/80" }) => (
     <div className={`absolute left-0 w-full overflow-hidden leading-0 ${top ? 'top-0 rotate-180' : 'bottom-0'} -z-1`}>
       <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className={`relative block w-full h-[80px] md:h-[120px] ${color}`}>
@@ -63,6 +62,31 @@ const About = () => {
       </svg>
     </div>
   );
+
+  const VideoPlayer = ({ src }) => {
+    const videoRef = useRef(null);
+    const isInView = useInView(videoRef, { amount: 0.5 });
+
+    useEffect(() => {
+      if (isInView) {
+        videoRef.current?.play().catch(err => console.log("Autoplay prevented:", err));
+      } else {
+        videoRef.current?.pause();
+      }
+    }, [isInView]);
+
+    return (
+      <video
+        ref={videoRef}
+        src={src}
+        muted
+        playsInline
+        loop
+        className="w-full h-full object-cover"
+      />
+    );
+  };
+
 
   return (
     <div className="min-h-screen bg-white selection:bg-primary/10 selection:text-primary overflow-x-hidden">
@@ -176,46 +200,84 @@ const About = () => {
       </section>
 
       {/* 2. WHAT MINDSETTLER IS (Video & Ethos) */}
-      <section className="py-24 px-6 bg-white relative overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-            {/* Left: Video Player - Order 2 on mobile, Order 1 on desktop */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1.5, ease: "easeOut" }}
-              className="relative aspect-[3/4] max-w-xs mx-auto rounded-[3rem] overflow-hidden shadow-2xl border-8 border-gray-50 group order-2 lg:order-1"
-            >
-              <video
-                src="/assets/pranika1.mp4"
-                controls
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 pointer-events-none border border-white/20 rounded-[2.5rem]" />
-            </motion.div>
+      <section className="py-24 md:py-32 px-6 bg-white relative overflow-hidden">
+        {/* Soft background glow - perfectly aligned with brand theme */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-secondary/5 rounded-full blur-[180px] pointer-events-none" />
 
-            {/* Right: Ethos Content - Order 1 on mobile, Order 2 on desktop */}
-            <AnimatedSection className="order-1 lg:order-2">
-              <div className="space-y-8">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gray-50 border border-gray-100 rounded-full">
-                  <span className="text-[8px] font-bold text-gray-400 uppercase tracking-[0.4em]">The Core Vision</span>
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="flex flex-col lg:flex-row items-start gap-16 lg:gap-24">
+
+            {/* Left: Video Player - Grounded & Large */}
+            <div className="w-full lg:w-[48%] relative group lg:sticky lg:top-32">
+              <motion.div
+                initial={{ opacity: 0, x: -40 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+                className="relative z-10 aspect-[4/5] w-full max-w-lg mx-auto rounded-[3.5rem] md:rounded-[5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.12)] border-[12px] md:border-[20px] border-white bg-white hover:shadow-secondary/20 transition-all duration-1000"
+              >
+                <VideoPlayer src="/assets/pranika1.mp4" />
+
+                {/* Visual accents inside frame */}
+                <div className="absolute inset-0 pointer-events-none ring-1 ring-black/5 rounded-[2.8rem] md:rounded-[4rem]" />
+
+                {/* Subtle Breathing Overlay */}
+                <div className="absolute bottom-8 right-8 w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 animate-pulse">
+                  <div className="w-3 h-3 bg-secondary rounded-full" />
                 </div>
+              </motion.div>
 
-                <h2 className="text-3xl md:text-5xl font-bold text-primary leading-[1.1] mb-8 font-serif">
-                  What Is <br />
-                  <span className="text-primary italic">MindSettler?</span>
-                </h2>
+              {/* Floating decorative elements */}
+              <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-secondary/10 rounded-[4rem] -z-0 blur-3xl group-hover:blur-2xl transition-all duration-1000" />
+              <div className="absolute top-1/2 -right-12 w-40 h-40 bg-primary/5 rounded-full -z-0 blur-3xl" />
+            </div>
 
-                <p className="text-base text-gray-600 leading-relaxed font-medium">
-                  MindSettler is a psycho-education and mental well-being platform that focuses on understanding before action.
+            {/* Right: Ethos Content */}
+            <div className="w-full lg:w-[52%] space-y-12">
+              <AnimatedSection>
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4">
+                    <span className="w-12 h-px bg-secondary/40" />
+                    <span className="text-[11px] font-bold text-secondary uppercase tracking-[0.4em]">The Core Philosophy</span>
+                  </div>
 
-                  We support awareness and human-led guidance through both online and offline sessions, creating space for reflection without pressure.
-                </p>
+                  <h2 className="text-4xl md:text-5xl lg:text-7xl font-bold text-primary leading-[1] font-serif italic">
+                    What Is <br />
+                    <span className="text-primary not-italic">MindSettler?</span>
+                  </h2>
 
+                  <p className="text-lg md:text-xl text-primary/70 leading-relaxed font-light max-w-2xl">
+                    MindSettler is a sanctuary for those who seek to understand the <span className="text-secondary font-semibold border-b-2 border-secondary/10">why</span> before the <span className="text-secondary font-semibold border-b-2 border-secondary/10">how</span>. We believe true healing begins with quiet awareness and human-led clarity.
+                  </p>
+                </div>
+              </AnimatedSection>
 
+              {/* Pillars Grid - Modern blocks with hover effects */}
+              <div className="grid sm:grid-cols-2 gap-6 md:gap-8">
+                {[
+                  { title: "Awareness", desc: "Understanding the patterns that shape your inner world.", icon: <Eye size={22} />, color: "bg-pink-50 text-pink-500" },
+                  { title: "Guidance", desc: "Human-led support designed for your unique journey.", icon: <Heart size={22} />, color: "bg-blue-50 text-secondary" },
+                  { title: "Reflection", desc: "Creating safe spaces to speak without being judged.", icon: <Sparkles size={22} />, color: "bg-purple-50 text-purple-500" },
+                  { title: "Growth", desc: "Sustainable change rooted in self-compassion.", icon: <Target size={22} />, color: "bg-indigo-50 text-primary" }
+                ].map((pillar, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.1 * i, duration: 0.8 }}
+                    whileHover={{ y: -10, scale: 1.02 }}
+                    className="group flex flex-col p-8 rounded-3xl bg-white border border-gray-100/60 shadow-sm hover:shadow-2xl hover:shadow-secondary/10 hover:border-secondary/30 transition-all duration-500 cursor-default"
+                  >
+                    <div className={`w-14 h-14 rounded-2xl ${pillar.color} flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500`}>
+                      {pillar.icon}
+                    </div>
+                    <h3 className="text-2xl font-bold text-primary font-serif italic mb-3 tracking-tight">{pillar.title}</h3>
+                    <p className="text-primary/50 text-sm leading-relaxed font-medium">{pillar.desc}</p>
+                  </motion.div>
+                ))}
               </div>
-            </AnimatedSection>
+            </div>
           </div>
         </div>
       </section>
