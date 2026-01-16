@@ -150,7 +150,6 @@ const Signup = () => {
                       required
                       name="firstName"
                       type="text"
-                      placeholder="Parnika"
                       value={formData.firstName}
                       onChange={handleChange}
                       className="w-full bg-purple-50/50 border border-purple-100 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white focus:border-primary/50 transition-all font-medium"
@@ -158,13 +157,12 @@ const Signup = () => {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-bold text-primary px-1">Last Name (Optional)</label>
+                  <label className="text-sm font-bold text-primary px-1">Last Name</label>
                   <div className="relative group">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={18} />
                     <input
                       name="lastName"
                       type="text"
-                      placeholder="Bakshi"
                       value={formData.lastName}
                       onChange={handleChange}
                       className="w-full bg-purple-50/50 border border-purple-100 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white focus:border-primary/50 transition-all font-medium"
@@ -181,7 +179,6 @@ const Signup = () => {
                     required
                     name="email"
                     type="email"
-                    placeholder="name@example.com"
                     value={formData.email}
                     onChange={handleChange}
                     className="w-full bg-purple-50/50 border border-purple-100 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white focus:border-primary/50 transition-all font-medium"
@@ -197,7 +194,6 @@ const Signup = () => {
                     required
                     name="password"
                     type="password"
-                    placeholder="••••••••"
                     value={formData.password}
                     onChange={handleChange}
                     className="w-full bg-purple-50/50 border border-purple-100 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white focus:border-primary/50 transition-all font-medium"
@@ -213,7 +209,6 @@ const Signup = () => {
                     required
                     name="confirmPassword"
                     type="password"
-                    placeholder="••••••••"
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     className="w-full bg-purple-50/50 border border-purple-100 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white focus:border-primary/50 transition-all font-medium"

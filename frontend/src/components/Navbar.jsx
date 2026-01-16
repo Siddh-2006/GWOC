@@ -52,7 +52,7 @@ const Navbar = () => {
     // Allow transparent navbar on Home AND Resources
     const isTransparentPage = isHomePage || isResourcesPage;
     const isWhite = isTransparentPage && !scrolled;
-    
+
     // Hide main navbar on Resources and Library pages (they have ContentWebHeader)
     const shouldHideNavbar = isResourcesPage || isLibraryPage;
 
@@ -168,8 +168,8 @@ const Navbar = () => {
 
                         {/* Mobile Menu Button */}
                         <div className="lg:hidden flex items-center gap-3">
-                            <Link 
-                                to="/booking" 
+                            <Link
+                                to="/booking"
                                 className="bg-secondary text-white p-2.5 rounded-full shadow-lg hover:scale-105 transition-all"
                                 title="Book Session"
                             >
@@ -199,7 +199,7 @@ const Navbar = () => {
                             onClick={() => setIsOpen(false)}
                             className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998]"
                         />
-                        
+
                         {/* Menu Panel */}
                         <motion.div
                             initial={{ x: '100%' }}
@@ -247,11 +247,10 @@ const Navbar = () => {
                                             key={link.name}
                                             to={link.path}
                                             onClick={() => setIsOpen(false)}
-                                            className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${
-                                                location.pathname === link.path
+                                            className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${location.pathname === link.path
                                                     ? 'bg-primary text-white'
                                                     : 'text-gray-700 hover:bg-gray-100'
-                                            }`}
+                                                }`}
                                         >
                                             {link.name}
                                         </Link>
