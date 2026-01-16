@@ -109,9 +109,18 @@ def chat():
 
     # 3. Route & Execute Logic
     response_data = route_request(intent, user_message, user_context)
+    try:
+        print(f"[DEBUG] app.py - response_data: {response_data}", flush=True)
+    except:
+        pass
 
     # 4. Build Final Response
-    return jsonify(build_response(response_data))
+    final_response = build_response(response_data)
+    try:
+        print(f"[DEBUG] app.py - final_response: {final_response}", flush=True)
+    except:
+        pass
+    return jsonify(final_response)
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
