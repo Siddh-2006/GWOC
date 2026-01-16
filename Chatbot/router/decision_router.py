@@ -19,55 +19,42 @@ def route_request(intent, message, user_context):
     if intent == "AUTH_REQUIRED":
          return {"type": "text", "content": "Please log in to your MindSettler account to view your profile."}
 
-    # 3. Handle Session/Booking (STATIC NOW)
-    if intent == "SESSION_AVAILABILITY":
-        return {
-            "type": "text", 
-            "content": "To check availability or book a session, please visit our Booking Page or contact Parnika directly."
-        }
-
-
-    # 4. Handle Website Info / Founder / Content
+    # 3. Handle Website Info / Founder / Content / Booking Process / Availability
     import time
-    if intent in ["WEBSITE_INFO", "CONTENT_DISCOVERY", "FOUNDER_QUERY", "BOOKING_PROCESS"]:
+    if intent in ["WEBSITE_INFO", "CONTENT_DISCOVERY", "FOUNDER_QUERY", "BOOKING_PROCESS", "SESSION_AVAILABILITY"]:
         
         t0 = time.time()
         context = retrieve_context(message)
         t1 = time.time()
         print(f"[TIMING] RAG Retrieval took: {t1 - t0:.2f}s")
         
-        # Here we would ideally pass context + message to the LLM to generate a natural answer.
-        # For this implementation, I will just return the context or a simple generated answer.
-        # Let's do a simple generation if possible, else return context.
-        # (Generating answer requires another LLM call - I will add that to response_builder or here)
-        
         from utils.llm_factory import get_chat_model
         
         llm = get_chat_model()
         if llm:
-            # RAG Prompt
-            # RAG Prompt (Migrated from Old Backend)
+            # RAG Prompt (Updated for enhanced detail and process focus)
             rag_prompt = f"""
             SYSTEM INSTRUCTION:
             You are a caring, human-like member of the MindSettler Care Team. You are the first touchpoint for users seeking mental health support.
 
             ### 1. CORE PERSONA & TONE
             - **Vibe:** Warm, patient, and grounded—like a receptionist at a quiet studio.
-            - **Natural Language:** AVOID robotic phrases like "As an AI." Say "My role is to connect you..." instead.
+            - **Natural Language:** AVOID robotic phrases like "As an AI." Use phrases like "Our team," "We help you," and "I can guide you through..."
             - **The "Human" Boundary:** Never claim to be a human, but never apologize for being an AI. Just be helpful.
 
             ### 2. STRICT RULES (CRITICAL)
-            - **BREVITY IS KEY:** **Keep answers under 3 sentences.** Only go longer if explaining the specific booking steps.
+            - **PROCESS TRANSPARENCY:** When asked about booking, payments, or how things work, PROVIDE FULL DETAIL. Do not be brief with processes. Use numbered steps.
+            - **REDIRECT LINKS:** Always provide a relevant markdown link (e.g., `[Book Now](/booking)`) when mentioning a feature or page so the user can navigate easily.
             - **Directness:** Answer the question first, then offer help. Don't fluff.
-            - **No Diagnosis:** If a user expresses distress, validate them briefly ("I hear you..."), then pivot to booking.
+            - **No Diagnosis:** If a user expresses distress, validate them briefly ("I hear you..."), then pivot to booking or relevant platform features.
 
             ### 3. SAFETY PROTOCOL
             - **Emergency:** If a user mentions suicide/harm, **STOP**. Reply ONLY with: *"I am truly sorry you are in pain. Your safety is most important. Please contact a local emergency helpline or visit the nearest hospital immediately."*
 
-            ### 4. PAYMENT & BOOKING LOGIC
-            - **Online Sessions:** Payment is **MANDATORY** via UPI/Link before the session to confirm the slot.
+            ### 4. KEY KNOWLEDGE (In case RAG is sparse)
+            - **Online Sessions:** Payment is **MANDATORY** via UPI/Link before the session.
             - **Offline (In-Person):** You can pay via UPI in advance OR pay **Cash/UPI at the clinic**.
-            - **Process:** Book Slot -> Fill Info -> Pay (Online=Now, Offline=Now/Later) -> Confirmation Email.
+            - **Booking Flow:** 1. Select Slot -> 2. Fill Details -> 3. Admin Reviews -> 4. Payment Link Sent -> 5. Admin Confirms -> 6. Session Link/Address Sent.
 
             ### 5. CONTEXT USAGE
             Use the context below to answer. If the answer is not there, say you don't have that specific info but can help book a session.
@@ -90,5 +77,5 @@ def route_request(intent, message, user_context):
         else:
             return {"type": "text", "content": "I couldn't find specific information on that. I can help you book a session though."}
 
-    # 5. Default / Ambiguous
+    # 4. Handle Ambiguous
     return {"type": "text", "content": "I'm not sure I understand. I can help you navigate the website or book a session."}
