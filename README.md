@@ -137,5 +137,5 @@ Proudly built for **GWOC**. We're a team of dreamers, builders, and mental healt
   <img src="https://img.shields.io/badge/Status-Live%20&%20Vibing-success?style=for-the-badge" alt="Live Status" />
   <img src="https://img.shields.io/badge/Made%20with%20Love-❤️-pink?style=for-the-badge" alt="Created with Love" />
   <br />
-  <sub>© 2026 MindSettler | Team BrightWeb. Build for the curious mind.</sub>
+  <sub>©2026 MindSettler | Team BrightWeb. Build for the curious mind.</sub>
 </div>
