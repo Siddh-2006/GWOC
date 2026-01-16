@@ -12,9 +12,8 @@
     "test": "jest",
     "create-admin": "node scripts/create-admin.js",
     "make-admin": "node scripts/make-user-admin.js",
-    "seed:all": "node scripts/seed-all-content.js",
-    "seed:questions": "node scripts/seed-reflection-questions.js",
     "cleanup:slots": "node scripts/cleanup-slots.js",
+    "sync:users": "node scripts/sync-users.js",
     "health": "curl -f http://localhost:3001/health || exit 1"
   },
   "dependencies": {
