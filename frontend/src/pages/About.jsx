@@ -82,6 +82,7 @@ const About = () => {
         muted
         playsInline
         loop
+        controls
         className="w-full h-full object-cover"
       />
     );
@@ -200,65 +201,75 @@ const About = () => {
       </section>
 
       {/* 2. WHAT MINDSETTLER IS (Video & Ethos) */}
-      <section className="py-24 md:py-32 px-6 bg-white relative overflow-hidden">
+      <section className="py-16 md:py-24 px-6 bg-white relative overflow-hidden">
         {/* Soft background glow - perfectly aligned with brand theme */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-secondary/5 rounded-full blur-[180px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-secondary/5 rounded-full blur-[120px] pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="flex flex-col lg:flex-row items-start gap-16 lg:gap-24">
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
 
             {/* Left: Video Player - Grounded & Large */}
-            <div className="w-full lg:w-[48%] relative group lg:sticky lg:top-32">
+            <div className="w-full lg:w-[45%] relative group">
               <motion.div
-                initial={{ opacity: 0, x: -40 }}
+                initial={{ opacity: 0, x: -30 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-                className="relative z-10 aspect-[4/5] w-full max-w-lg mx-auto rounded-[3.5rem] md:rounded-[5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.12)] border-[12px] md:border-[20px] border-white bg-white hover:shadow-secondary/20 transition-all duration-1000"
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                className="relative z-10 aspect-[3/4] w-full max-w-sm mx-auto rounded-[2.5rem] md:rounded-[3rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] border-[8px] md:border-[12px] border-white bg-white hover:shadow-secondary/20 transition-all duration-1000"
               >
                 <VideoPlayer src="/assets/pranika1.mp4" />
 
                 {/* Visual accents inside frame */}
-                <div className="absolute inset-0 pointer-events-none ring-1 ring-black/5 rounded-[2.8rem] md:rounded-[4rem]" />
+                <div className="absolute inset-0 pointer-events-none ring-1 ring-black/5 rounded-[2rem] md:rounded-[2.5rem]" />
 
                 {/* Subtle Breathing Overlay */}
-                <div className="absolute bottom-8 right-8 w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 animate-pulse">
-                  <div className="w-3 h-3 bg-secondary rounded-full" />
+                <div className="absolute bottom-6 right-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 animate-pulse">
+                  <div className="w-2.5 h-2.5 bg-secondary rounded-full" />
                 </div>
               </motion.div>
 
               {/* Floating decorative elements */}
-              <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-secondary/10 rounded-[4rem] -z-0 blur-3xl group-hover:blur-2xl transition-all duration-1000" />
-              <div className="absolute top-1/2 -right-12 w-40 h-40 bg-primary/5 rounded-full -z-0 blur-3xl" />
+              <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-secondary/10 rounded-[3rem] -z-0 blur-2xl group-hover:blur-xl transition-all duration-1000" />
+              <div className="absolute top-1/2 -right-8 w-32 h-32 bg-primary/5 rounded-full -z-0 blur-2xl" />
             </div>
 
             {/* Right: Ethos Content */}
-            <div className="w-full lg:w-[52%] space-y-12">
+            <div className="w-full lg:w-[55%] space-y-10">
               <AnimatedSection>
                 <div className="space-y-6">
-                  <div className="flex items-center gap-4">
-                    <span className="w-12 h-px bg-secondary/40" />
-                    <span className="text-[11px] font-bold text-secondary uppercase tracking-[0.4em]">The Core Philosophy</span>
+                  <div className="flex items-center gap-3">
+                    <span className="w-8 h-px bg-secondary/40" />
+                    <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.3em]">The Core Philosophy</span>
                   </div>
 
-                  <h2 className="text-4xl md:text-5xl lg:text-7xl font-bold text-primary leading-[1] font-serif italic">
+                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary leading-[1.1] font-serif italic">
                     What Is <br />
                     <span className="text-primary not-italic">MindSettler?</span>
                   </h2>
 
-                  <p className="text-lg md:text-xl text-primary/70 leading-relaxed font-light max-w-2xl">
+                  <p className="text-base md:text-lg text-primary/70 leading-relaxed font-light max-w-xl">
                     MindSettler is a sanctuary for those who seek to understand the <span className="text-secondary font-semibold border-b-2 border-secondary/10">why</span> before the <span className="text-secondary font-semibold border-b-2 border-secondary/10">how</span>. We believe true healing begins with quiet awareness and human-led clarity.
                   </p>
                 </div>
               </AnimatedSection>
 
-              {/* Pillars Grid - Modern blocks with hover effects */}
-              <div className="grid sm:grid-cols-2 gap-6 md:gap-8">
+              {/* Pillars Grid - Modern blocks with premium flip effect */}
+              <div className="grid sm:grid-cols-2 gap-5">
                 {[
-                  { title: "Awareness", desc: "Understanding the patterns that shape your inner world.", icon: <Eye size={22} />, color: "bg-pink-50 text-pink-500" },
-                  { title: "Guidance", desc: "Human-led support designed for your unique journey.", icon: <Heart size={22} />, color: "bg-blue-50 text-secondary" },
-                  { title: "Reflection", desc: "Creating safe spaces to speak without being judged.", icon: <Sparkles size={22} />, color: "bg-purple-50 text-purple-500" },
-                  { title: "Growth", desc: "Sustainable change rooted in self-compassion.", icon: <Target size={22} />, color: "bg-indigo-50 text-primary" }
+                  {
+                    title: "Awareness",
+                    desc: "Understanding the patterns that shape your inner world.",
+                    color: "from-purple-50 to-white border-purple-100",
+                    text: "text-purple-900",
+                    frontColor: "bg-gradient-to-br from-[#3F2965]/10 to-[#Dd1764]/10"
+                  },
+                  {
+                    title: "Reflection",
+                    desc: "Creating safe spaces to speak without being judged.",
+                    color: "from-purple-50 to-white border-purple-100",
+                    text: "text-purple-900",
+                    frontColor: "bg-gradient-to-br from-[#3F2965]/10 to-[#Dd1764]/10"
+                  }
                 ].map((pillar, i) => (
                   <motion.div
                     key={i}
@@ -266,14 +277,22 @@ const About = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.1 * i, duration: 0.8 }}
-                    whileHover={{ y: -10, scale: 1.02 }}
-                    className="group flex flex-col p-8 rounded-3xl bg-white border border-gray-100/60 shadow-sm hover:shadow-2xl hover:shadow-secondary/10 hover:border-secondary/30 transition-all duration-500 cursor-default"
+                    className="group h-40 [perspective:1000px] cursor-pointer"
                   >
-                    <div className={`w-14 h-14 rounded-2xl ${pillar.color} flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500`}>
-                      {pillar.icon}
+                    <div className="relative h-full w-full transition-all duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] rounded-2xl">
+                      {/* Front Face */}
+                      <div className={`absolute inset-0 h-full w-full rounded-2xl ${pillar.frontColor} border border-gray-100/80 flex items-center justify-center p-6 [backface-visibility:hidden]`}>
+                        <div className="text-center">
+                          <h3 className="text-2xl font-bold text-primary font-serif italic tracking-tight mb-2">{pillar.title}</h3>
+                          <div className="h-0.5 w-8 bg-primary/10 mx-auto rounded-full group-hover:w-16 group-hover:bg-primary/30 transition-all duration-500" />
+                        </div>
+                      </div>
+
+                      {/* Back Face */}
+                      <div className={`absolute inset-0 h-full w-full rounded-2xl bg-gradient-to-br ${pillar.color} border flex items-center justify-center p-6 text-center [transform:rotateY(180deg)] [backface-visibility:hidden]`}>
+                        <p className={`${pillar.text} text-sm leading-relaxed font-medium tracking-wide`}>{pillar.desc}</p>
+                      </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-primary font-serif italic mb-3 tracking-tight">{pillar.title}</h3>
-                    <p className="text-primary/50 text-sm leading-relaxed font-medium">{pillar.desc}</p>
                   </motion.div>
                 ))}
               </div>
