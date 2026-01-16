@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, X, Clock, User, Filter, Plus, Calendar, Loader2, Building2, MessageSquare, Eye, Mail, Phone, Heart, Trash2, FileText } from 'lucide-react';
+import { Check, X, Clock, User, Filter, Plus, Calendar, Loader2, Building2, MessageSquare, Eye, Mail, Phone, Heart, Trash2, FileText, Brain } from 'lucide-react';
 import { useBookingStore } from '../../store/useBookingStore';
 import { bookingApi } from '../booking/booking.api';
 import { slotApi } from '../../services/slot.api';
@@ -14,6 +14,7 @@ import JourneyEntryButton from '../../components/admin/JourneyEntryButton';
 import UserJourneyEntries from '../../components/admin/UserJourneyEntries';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../../components/ToastContainer';
+import RAGUploadModal from '../../components/admin/RAGUploadModal';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ const AdminDashboard = () => {
   });
   const [showAddSlotModal, setShowAddSlotModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showRagModal, setShowRagModal] = useState(false);
   const [taskBooking, setTaskBooking] = useState(null);
   const { toasts, success, error: showToast, removeToast } = useToast();
   const [statusFilter, setStatusFilter] = useState('all');
@@ -265,6 +267,13 @@ const AdminDashboard = () => {
           >
             {loading ? <Loader2 className="animate-spin" size={16} /> : '🔄'}
             Refresh
+          </button>
+          <button
+            onClick={() => setShowRagModal(true)}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 shadow-lg shadow-purple-200"
+          >
+            <Brain size={16} />
+            Feed Brain
           </button>
           <div className="flex gap-4">
             {stats.map((stat, i) => (
@@ -1178,6 +1187,8 @@ const AdminDashboard = () => {
         }}
         onTaskCreated={handleTaskCreated}
       />
+
+      <RAGUploadModal isOpen={showRagModal} onClose={() => setShowRagModal(false)} />
     </div>
   );
 };

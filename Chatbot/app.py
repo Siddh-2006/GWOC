@@ -49,6 +49,33 @@ def home():
 def health_check():
     return jsonify({"status": "healthy", "service": "MindSettler Chatbot"}), 200
 
+from rag.ingest import ingest_text
+@app.route('/admin/ingest', methods=['POST'])
+def admin_ingest():
+    # Basic Security Check (Optional: Add a SECRET_KEY header check here if needed)
+    # auth_header = request.headers.get('x-admin-key')
+    # if auth_header != os.getenv('ADMIN_SECRET', '12345'):
+    #    return jsonify({"error": "Unauthorized"}), 401
+
+    if 'file' in request.files:
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({"error": "No filename"}), 400
+        content = file.read().decode('utf-8', errors='ignore')
+        filename = file.filename
+    else:
+        content = request.form.get('text') or request.json.get('text')
+        filename = request.form.get('filename') or request.json.get('filename') or "manual_entry.txt"
+    
+    if not content:
+        return jsonify({"error": "No content provided"}), 400
+
+    result = ingest_text(content, filename)
+    if result['success']:
+        return jsonify(result), 200
+    else:
+        return jsonify(result), 500
+
 @app.route('/test-chatbot/chat', methods=['POST'])
 @app.route('/chat', methods=['POST']) # Alias
 @app.route('/api/chat', methods=['POST']) # Alias (Standard Vercel)

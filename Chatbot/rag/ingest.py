@@ -81,6 +81,41 @@ def ingest_docs():
 
     print(f"Ingestion process finished. Data uploaded to Pinecone Index '{index_name}'.")
 
+def ingest_text(text, source_name="manual_upload"):
+    """
+    Ingest a single piece of text into the vector store.
+    """
+    embeddings = get_embeddings()
+    if not embeddings:
+        return {"success": False, "error": "Embeddings not configured"}
+
+    # 1. Create Document
+    doc = Document(page_content=text, metadata={"source": source_name})
+
+    # 2. Chunking
+    try:
+        from langchain.text_splitter import CharacterTextSplitter
+    except ImportError:
+        from langchain_text_splitters import CharacterTextSplitter
+    
+    splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+    chunks = splitter.split_documents([doc])
+    print(f"Created {len(chunks)} chunks from {source_name}.")
+
+    # 3. Store in Pinecone
+    from langchain_pinecone import PineconeVectorStore
+    index_name = os.getenv("PINECONE_INDEX_NAME")
+    if not index_name:
+        return {"success": False, "error": "PINECONE_INDEX_NAME not set"}
+
+    try:
+        vectorstore = PineconeVectorStore(index_name=index_name, embedding=embeddings)
+        vectorstore.add_documents(chunks)
+        return {"success": True, "chunks": len(chunks), "index": index_name}
+    except Exception as e:
+        print(f"Ingest Error: {e}")
+        return {"success": False, "error": str(e)}
+
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()

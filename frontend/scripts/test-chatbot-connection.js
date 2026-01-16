@@ -1,90 +1,68 @@
-// scripts/test-chatbot-connection.js
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 
-// Mimic Vite's behavior: Load .env
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const envPath = path.resolve(__dirname, '../.env');
+// --- CONFIGURATION ---
+const PROD_URL = "https://gwoc-t7pn.onrender.com";
+const LOCAL_URL = "http://127.0.0.1:5001"; // Standard Flask Port
 
-dotenv.config({ path: envPath });
+async function testEndpoint(envName, baseUrl) {
+    console.log(`\n---------------------------------------------------`);
+    console.log(`🔍 Testing ${envName}: [${baseUrl}]`);
 
-const PROD_URL = "https://mindsettler-chatbot.vercel.app";
-const LOCAL_URL = process.env.VITE_CHATBOT_API_URL || "NOT_SET";
+    // We only test the standard endpoint now, as Render configuration is fixed
+    const endpoint = `${baseUrl}/chat`;
+    const payload = { message: "Hello! checking connection." };
 
-async function testConnection(name, baseUrl) {
-    console.log(`\nTesting ${name}: [${baseUrl}]...`);
-
-    if (baseUrl === "NOT_SET" || !baseUrl.startsWith("http")) {
-        console.log(`❌ Skipped: Invalid URL`);
-        return;
-    }
-
-    // LIST OF PATHS TO PROBE
-    const probes = [
-        { path: "/", method: "GET" },
-        { path: "/api/chat", method: "POST", body: '{}' },
-        { path: "/chat", method: "POST", body: '{}' },
-        { path: "/test-chatbot/", method: "GET" },
-        { path: "/test-chatbot/api/chat", method: "POST", body: '{}' },
-        { path: "/test-chatbot/chat", method: "POST", body: '{}' }
-    ];
-
-    for (const p of probes) {
-        try {
-            const opts = { method: p.method };
-            if (p.body) {
-                opts.headers = { 'Content-Type': 'application/json' };
-                opts.body = p.body;
-            }
-            const res = await fetch(`${baseUrl}${p.path}`, opts);
-            console.log(`   Probe ${p.path.padEnd(25)} : ${res.status} ${res.statusText}`);
-        } catch (e) {
-            // console.log(`   Probe ${p.path} Error: ${e.message}`);
-        }
-    }
-
-    // ACTUAL SUCCESS CHECK (Original Logic)
     try {
         const start = Date.now();
-        // Try the standard path first, but if probes found something else, use that?
-        // Let's stick to the config path for the "Official" test
-        const response = await fetch(`${baseUrl}/test-chatbot/chat`, {
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: "Hello, are you online?" })
+            body: JSON.stringify(payload)
         });
+        const duration = ((Date.now() - start) / 1000).toFixed(2);
 
-        // Read raw text first to avoid JSON parse errors
+        // Handle response
         const text = await response.text();
-        const duration = (Date.now() - start) / 1000;
 
         if (response.ok) {
             try {
                 const data = JSON.parse(text);
-                console.log(`✅ Success (${duration.toFixed(2)}s)`);
-                console.log(`   Response: "${data.text?.substring(0, 50)}..."`);
-            } catch (e) {
-                console.log(`❌ Success (200 OK) but Invalid JSON.`);
-                console.log(`   Raw Output: ${text.substring(0, 150)}...`);
+                console.log(`✅ STATUS: ONLINE (${duration}s)`);
+                console.log(`   Response Received: YES`);
+                console.log(`   🤖 Bot Says: "${data.text}"`);
+            } catch (jsonErr) {
+                console.log(`⚠️ STATUS: 200 OK (But Invalid JSON)`);
+                console.log(`   Raw Output: ${text.substring(0, 200)}...`);
             }
         } else {
-            console.log(`❌ Failed: HTTP ${response.status}`);
-            console.log(`   Raw Output: ${text.substring(0, 150)}...`);
+            console.log(`❌ STATUS: FAILED (HTTP ${response.status})`);
+            console.log(`   Error Message: ${text.substring(0, 200)}`);
         }
-    } catch (error) {
-        console.log(`❌ Error: ${error.message}`);
-        if (error.cause) console.log(error.cause);
+
+    } catch (err) {
+        console.log(`❌ STATUS: UNREACHABLE`);
+        if (err.cause) {
+            console.log(`   Cause: Connection Refused (Is the server running?)`);
+        } else {
+            console.log(`   Error: ${err.message}`);
+        }
     }
 }
 
-console.log("=== 🤖 Chatbot Connection Tester ===");
+console.log("\n🚀 STARTING CONNECTION REPORT");
+console.log("=============================");
 
-// 1. Test What's in .env (Skip Local to save time if verified)
-// console.log("1️⃣  Checking Local Config (VITE_CHATBOT_API_URL)...");
-// await testConnection("Local/Env Config", LOCAL_URL);
+// Run Tests Sequentially
+(async () => {
+    // 1. Test Local
+    await testEndpoint("LOCAL (Development)", LOCAL_URL);
 
-// 2. Test Production
-console.log("2️⃣  Checking Production (Default Fallback)...");
-await testConnection("Production (Vercel)", PROD_URL);
+    // 2. Test Render
+    await testEndpoint("RENDER (Production)", PROD_URL);
+
+    console.log(`\n---------------------------------------------------`);
+    console.log("🏁 REPORT COMPLETE");
+})();
