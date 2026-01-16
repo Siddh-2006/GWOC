@@ -4,12 +4,11 @@ services:
     env: python
     rootDir: test-chatbot
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
-      - key: PORT
-        value: 10000
+
       - key: OPENAI_API_KEY
         sync: false
       - key: PINECONE_API_KEY
