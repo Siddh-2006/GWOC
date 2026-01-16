@@ -54,20 +54,18 @@ const HowItWorks = () => {
   });
 
   return (
-    <div ref={containerRef} className="relative h-[400vh] bg-white">
-      {/* 
-         Restored height to 400vh and larger padding/width as requested
-      */}
+    <div ref={containerRef} className="relative h-[300vh] md:h-[400vh] bg-white">
+      {/* Reduced height on mobile for better scrolling */}
       <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col px-4 md:px-8">
 
         {/* SECTION TITLE - Absolute positioning, Left Aligned */}
-        <div className="absolute top-16 left-0 w-full z-20 px-8">
+        <div className="absolute top-20 md:top-24 lg:top-28 left-0 w-full z-20 px-4 md:px-8">
           <div className="w-full max-w-7xl mx-auto">
-            <h2 className="text-4xl md:text-6xl font-black relative mb-4 inline-block">
+            <h2 className="text-3xl md:text-4xl lg:text-6xl font-black relative mb-4 inline-block">
               <span className="bg-gradient-to-r from-primary via-purple-light to-primary bg-clip-text text-transparent pb-2">
                 How It Works
               </span>
-              <div className="absolute -bottom-4 left-0 w-24 h-1.5 bg-gradient-to-r from-secondary to-pink-400 rounded-full"></div>
+              <div className="absolute -bottom-2 md:-bottom-4 left-0 w-16 md:w-24 h-1 md:h-1.5 bg-gradient-to-r from-secondary to-pink-400 rounded-full"></div>
             </h2>
           </div>
         </div>
@@ -115,11 +113,11 @@ const HowItWorks = () => {
 
 
         {/* CONTENT CONTAINER - Shifted down */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto flex-1 flex items-center justify-center pt-24">
-          <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+        <div className="relative z-10 w-full max-w-7xl mx-auto flex-1 flex items-center justify-center pt-24 md:pt-28 lg:pt-32">
+          <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 lg:gap-16 items-center">
 
             {/* LEFT SIDE: CONTENT */}
-            <div className="relative h-[40vh] md:h-[50vh] flex flex-col justify-center order-2 lg:order-1">
+            <div className="relative h-[50vh] md:h-[50vh] flex flex-col justify-center order-2 lg:order-1">
               {stages.map((stage, i) => {
                 const stepSize = 1 / stages.length;
                 const start = i * stepSize;
@@ -162,31 +160,31 @@ const HowItWorks = () => {
                         </span>
                       </div>
 
-                      {/* Headings - Restored sizes */}
+                      {/* Headings - Responsive sizes */}
                       <div className="space-y-1">
-                        <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-[1.1] tracking-tight">
+                        <h2 className="text-2xl md:text-3xl lg:text-5xl font-bold text-gray-900 leading-[1.1] tracking-tight">
                           {stage.title}
                         </h2>
-                        <h3 className="text-lg md:text-2xl font-medium text-gray-500/90">
+                        <h3 className="text-base md:text-lg lg:text-2xl font-medium text-gray-500/90">
                           {stage.subtitle}
                         </h3>
                       </div>
 
-                      {/* Description Box - Restored sizes */}
-                      <div className="p-5 md:p-6 bg-white/50 backdrop-blur-xl rounded-[1.5rem] border border-white/60 shadow-lg shadow-purple-500/5">
-                        <p className="text-base md:text-lg text-gray-700 leading-relaxed font-medium">
+                      {/* Description Box - Responsive sizes */}
+                      <div className="p-4 md:p-5 lg:p-6 bg-white/50 backdrop-blur-xl rounded-2xl md:rounded-[1.5rem] border border-white/60 shadow-lg shadow-purple-500/5">
+                        <p className="text-sm md:text-base lg:text-lg text-gray-700 leading-relaxed font-medium">
                           {stage.description}
                         </p>
                       </div>
 
                       {/* Objective Pill */}
-                      <div className="inline-flex items-center gap-3 pt-2">
-                        <div className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full text-white shadow-xl shadow-purple-900/10 transform hover:scale-110 transition-transform duration-300" style={{ backgroundColor: stage.accent }}>
-                          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                      <div className="inline-flex items-center gap-2 md:gap-3 pt-2">
+                        <div className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full text-white shadow-xl shadow-purple-900/10 transform hover:scale-110 transition-transform duration-300" style={{ backgroundColor: stage.accent }}>
+                          <svg className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
                         </div>
                         <div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Key Objective</p>
-                          <p className="text-base md:text-lg font-bold text-gray-800">{stage.goal}</p>
+                          <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Key Objective</p>
+                          <p className="text-sm md:text-base lg:text-lg font-bold text-gray-800">{stage.goal}</p>
                         </div>
                       </div>
                     </div>
