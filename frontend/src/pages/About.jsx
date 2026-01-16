@@ -68,22 +68,22 @@ const About = () => {
     <div className="min-h-screen bg-white selection:bg-primary/10 selection:text-primary overflow-x-hidden">
 
       {/* 1. CINEMATIC HERO */}
-      <section className="relative bg-bg overflow-hidden py-28 border-b border-gray-50">
+      <section className="relative bg-bg overflow-hidden py-16 md:py-20 lg:py-28 border-b border-gray-50">
         {/* Soft background accents */}
         <div className="absolute top-0 right-0 w-[420px] h-[420px] bg-pink-100/25 rounded-full blur-[120px] -mr-44 -mt-44" />
         <div className="absolute bottom-0 left-0 w-[420px] h-[420px] bg-purple-100/25 rounded-full blur-[120px] -ml-44 -mb-44" />
 
-        <div className="container mx-auto px-6 lg:px-20 flex flex-col lg:flex-row items-center gap-20 relative z-10">
+        <div className="container mx-auto px-6 lg:px-20 flex flex-col lg:flex-row items-center gap-12 md:gap-16 lg:gap-20 relative z-10">
           {/* LEFT CONTENT */}
-          <div className="w-full lg:w-1/2 space-y-10">
+          <div className="w-full lg:w-1/2 space-y-6 md:space-y-8 lg:space-y-10">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 1.2 }}
-              className="flex items-center gap-4"
+              className="flex items-center gap-3 md:gap-4"
             >
-              <div className="w-10 h-[2px] bg-pink-500" />
-              <span className="text-secondary font-semibold tracking-[0.35em] uppercase text-xs">
+              <div className="w-8 md:w-10 h-[2px] bg-pink-500" />
+              <span className="text-secondary font-semibold tracking-[0.25em] md:tracking-[0.35em] uppercase text-[10px] md:text-xs">
                 About MindSettler
               </span>
             </motion.div>
@@ -92,7 +92,7 @@ const About = () => {
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.3 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-primary"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-primary"
             >
               Understanding is the first form of care<br />
               {/* <span className="text-secondary">you with</span> */}
@@ -102,7 +102,7 @@ const About = () => {
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 1.2 }}
-              className="text-lg md:text-xl text-primary/80 leading-relaxed max-w-xl border-l border-primary/20 pl-6"
+              className="text-base md:text-lg lg:text-xl text-primary/80 leading-relaxed max-w-xl border-l border-primary/20 pl-4 md:pl-6"
             >
               Healing happens in circles, not lines. We provide the map to return to old places with new eyes, honoring the landscape of your internal world.
             </motion.p>
@@ -114,7 +114,7 @@ const About = () => {
             >
               <button
                 onClick={() => window.location.href = '/booking'}
-                className="px-9 py-4 bg-secondary text-white font-bold rounded-2xl shadow-xl shadow-pink-100 hover:bg-primary transition-all flex items-center gap-4 group text-[10px] tracking-[0.3em] uppercase"
+                className="px-6 md:px-9 py-3 md:py-4 bg-secondary text-white font-bold rounded-2xl shadow-xl shadow-pink-100 hover:bg-primary transition-all flex items-center gap-3 md:gap-4 group text-[9px] md:text-[10px] tracking-[0.25em] md:tracking-[0.3em] uppercase"
               >
                 START YOUR JOURNEY
                 <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
@@ -123,13 +123,13 @@ const About = () => {
           </div>
 
           {/* RIGHT COLUMN: Stack Animation */}
-          <div className="w-full lg:w-1/2 flex justify-center items-end h-[600px] pb-20 overflow-visible relative">
+          <div className="w-full lg:w-1/2 flex justify-center items-center lg:items-end h-[400px] md:h-[500px] lg:h-[600px] pb-10 md:pb-16 lg:pb-20 overflow-visible relative">
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 2.0, ease: [0.16, 1, 0.3, 1] }}
-              className="relative flex justify-center items-end w-full h-full overflow-visible"
+              className="relative flex justify-center items-center lg:items-end w-full max-w-[300px] sm:max-w-[360px] md:max-w-[400px] lg:max-w-none h-full overflow-visible mx-auto"
             >
               <Stack
                 randomRotation={true}
@@ -137,7 +137,7 @@ const About = () => {
                 sendToBackOnClick={true}
                 cards={[
                   // Card 4
-                  <div key="c4" className="relative w-[420px] h-[460px] border-[10px] border-white shadow-2xl rounded-[3rem] bg-white overflow-hidden">
+                  <div key="c4" className="relative w-[280px] sm:w-[340px] md:w-[380px] lg:w-[420px] h-[320px] sm:h-[380px] md:h-[420px] lg:h-[460px] border-[6px] md:border-[8px] lg:border-[10px] border-white shadow-2xl rounded-[2rem] md:rounded-[2.5rem] lg:rounded-[3rem] bg-white overflow-hidden">
                     <img
                       src="/assets/about_stack_4.jpg"
                       className="w-full h-full object-cover brightness-110"
@@ -145,7 +145,7 @@ const About = () => {
                     />
                   </div>,
                   // Card 3
-                  <div key="c3" className="relative w-[420px] h-[460px] border-[10px] border-white shadow-2xl rounded-[3rem] bg-white overflow-hidden">
+                  <div key="c3" className="relative w-[280px] sm:w-[340px] md:w-[380px] lg:w-[420px] h-[320px] sm:h-[380px] md:h-[420px] lg:h-[460px] border-[6px] md:border-[8px] lg:border-[10px] border-white shadow-2xl rounded-[2rem] md:rounded-[2.5rem] lg:rounded-[3rem] bg-white overflow-hidden">
                     <img
                       src="/assets/about_stack_3.jpg"
                       className="w-full h-full object-cover brightness-110"
@@ -153,7 +153,7 @@ const About = () => {
                     />
                   </div>,
                   // Card 2
-                  <div key="c2" className="relative w-[420px] h-[460px] border-[10px] border-white shadow-2xl rounded-[3rem] bg-white overflow-hidden">
+                  <div key="c2" className="relative w-[280px] sm:w-[340px] md:w-[380px] lg:w-[420px] h-[320px] sm:h-[380px] md:h-[420px] lg:h-[460px] border-[6px] md:border-[8px] lg:border-[10px] border-white shadow-2xl rounded-[2rem] md:rounded-[2.5rem] lg:rounded-[3rem] bg-white overflow-hidden">
                     <img
                       src="/assets/about_stack_2.jpg"
                       className="w-full h-full object-cover brightness-110"
@@ -161,7 +161,7 @@ const About = () => {
                     />
                   </div>,
                   // Card 1
-                  <div key="c1" className="relative w-[420px] h-[460px] border-[10px] border-white shadow-2xl rounded-[3rem] bg-white overflow-hidden">
+                  <div key="c1" className="relative w-[280px] sm:w-[340px] md:w-[380px] lg:w-[420px] h-[320px] sm:h-[380px] md:h-[420px] lg:h-[460px] border-[6px] md:border-[8px] lg:border-[10px] border-white shadow-2xl rounded-[2rem] md:rounded-[2.5rem] lg:rounded-[3rem] bg-white overflow-hidden">
                     <img
                       src="/assets/about_stack_1.jpg"
                       className="w-full h-full object-cover brightness-110"
@@ -179,13 +179,13 @@ const About = () => {
       <section className="py-24 px-6 bg-white relative overflow-hidden">
         <div className="max-w-6xl mx-auto px-4 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-            {/* Left: Video Player */}
+            {/* Left: Video Player - Order 2 on mobile, Order 1 on desktop */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 1.5, ease: "easeOut" }}
-              className="relative aspect-[3/4] max-w-xs mx-auto rounded-[3rem] overflow-hidden shadow-2xl border-8 border-gray-50 group"
+              className="relative aspect-[3/4] max-w-xs mx-auto rounded-[3rem] overflow-hidden shadow-2xl border-8 border-gray-50 group order-2 lg:order-1"
             >
               <video
                 src="/assets/pranika1.mp4"
@@ -195,8 +195,8 @@ const About = () => {
               <div className="absolute inset-0 pointer-events-none border border-white/20 rounded-[2.5rem]" />
             </motion.div>
 
-            {/* Right: Ethos Content */}
-            <AnimatedSection>
+            {/* Right: Ethos Content - Order 1 on mobile, Order 2 on desktop */}
+            <AnimatedSection className="order-1 lg:order-2">
               <div className="space-y-8">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gray-50 border border-gray-100 rounded-full">
                   <span className="text-[8px] font-bold text-gray-400 uppercase tracking-[0.4em]">The Core Vision</span>
@@ -253,7 +253,7 @@ const About = () => {
             </AnimatedSection>
 
             {/* Right: Founder Image Stack */}
-            <div className="relative w-full max-w-[320px] mx-auto hidden lg:block bg-white p-3 rounded-2xl shadow-xl border border-gray-100 rotate-1 hover:rotate-0 transition-transform duration-500">
+            <div className="relative w-full max-w-[320px] mx-auto bg-white p-3 rounded-2xl shadow-xl border border-gray-100 rotate-1 hover:rotate-0 transition-transform duration-500">
               {/* PORTRAIT CARD (FRONT) */}
               <div className="relative w-full aspect-[4/5] rounded-xl bg-gray-50 overflow-hidden mb-4">
                 <img src="/assets/pranika.jpg" className="w-full h-full object-cover" alt="Founder" />

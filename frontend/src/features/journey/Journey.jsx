@@ -293,7 +293,7 @@ const StageCard = ({ stage, state }) => {
       variants={cardVariants}
       initial="hidden"
       animate={state}
-      className={`relative p-6 rounded-3xl border border-white/60 backdrop-blur-md overflow-hidden max-w-sm w-full ${stage.color}`}
+      className={`relative p-4 md:p-6 rounded-2xl md:rounded-3xl border border-white/60 backdrop-blur-md overflow-hidden max-w-sm w-full ${stage.color}`}
     >
       {state === 'active' && (
         <motion.div
@@ -304,14 +304,14 @@ const StageCard = ({ stage, state }) => {
         />
       )}
 
-      <div className="flex items-center gap-3 mb-3">
-        <div className="p-2 bg-white/70 rounded-full shadow-sm">
+      <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+        <div className="p-1.5 md:p-2 bg-white/70 rounded-full shadow-sm">
           {stage.icon}
         </div>
-        <h3 className="text-xl font-display font-bold text-pink-950">{stage.title}</h3>
+        <h3 className="text-lg md:text-xl font-display font-bold text-pink-950">{stage.title}</h3>
       </div>
 
-      <p className="text-pink-900/80 leading-relaxed font-sans font-medium">{stage.description}</p>
+      <p className="text-sm md:text-base text-pink-900/80 leading-relaxed font-sans font-medium">{stage.description}</p>
     </motion.div>
   );
 };
@@ -343,15 +343,15 @@ export const Journey = () => {
   });
 
   return (
-    // The container is very tall to allow scrolling space - 800vh for slower animation
-    <div ref={containerRef} className="relative h-[800vh] bg-gradient-to-b from-purple-50 to-pink-50">
+    // Reduced height on mobile for better scrolling
+    <div ref={containerRef} className="relative h-[500vh] md:h-[800vh] bg-gradient-to-b from-purple-50 to-pink-50">
 
       {/* Sticky Viewport: This stays fixed while we scroll */}
       <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col md:flex-row px-4 sm:px-6 md:px-0">
 
-        {/* Heading - Top Left Corner */}
+        {/* Heading - Top Center - Higher z-index and better positioning */}
         <motion.div
-          className="absolute top-24 left-1/2 -translate-x-1/2 z-40 pointer-events-none text-center"
+          className="absolute top-20 md:top-24 left-1/2 -translate-x-1/2 z-50 pointer-events-none text-center"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
@@ -360,7 +360,7 @@ export const Journey = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-4xl md:text-6xl font-bold text-primary"
+            className="text-3xl md:text-4xl lg:text-6xl font-bold text-primary drop-shadow-lg"
           >
             Your Wellness
           </motion.h2>
@@ -368,7 +368,7 @@ export const Journey = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-2xl md:text-4xl font-bold text-secondary mt-2"
+            className="text-xl md:text-2xl lg:text-4xl font-bold text-secondary mt-1 md:mt-2 drop-shadow-lg"
           >
             Journey
           </motion.p>
@@ -406,6 +406,8 @@ export const Journey = () => {
               cardState = 'completed';
             }
 
+            // Adjust positioning for mobile to avoid title overlap
+            const isFirstCard = idx === 0;
             const isLastTwo = idx >= 2;
 
             return (
@@ -418,11 +420,11 @@ export const Journey = () => {
                   left: `${pt.x}%`,
                   top: `${pt.y}%`,
                   transform: isLastTwo ? 'translate(-50%, 0)' : 'translate(-50%, -100%)',
-                  paddingTop: isLastTwo ? '40px' : '0',
-                  paddingBottom: isLastTwo ? '0' : '40px',
+                  paddingTop: isLastTwo ? (isFirstCard ? '60px' : '50px') : '0',
+                  paddingBottom: isLastTwo ? '0' : (isFirstCard ? '60px' : '50px'),
                 }}
               >
-                <div className="w-[240px] max-w-[70vw] md:w-[320px] md:max-w-[85vw]">
+                <div className="w-[200px] sm:w-[240px] md:w-[280px] lg:w-[320px] max-w-[85vw]">
                   <StageCard
                     stage={stage}
                     state={cardState}
