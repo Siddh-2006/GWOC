@@ -203,9 +203,10 @@ const Chatbot = () => {
                           ? 'bg-orange-50 text-orange-800 border border-orange-200 rounded-tl-none'
                           : 'bg-white text-primary shadow-sm border border-purple-100 rounded-tl-none'
                       }`}>
-                      <p className="leading-relaxed whitespace-pre-wrap">
-                        {message.content}
-                      </p>
+                      <div
+                        className="leading-relaxed [&>b]:font-bold [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mt-2 [&>li]:mb-1 [&>p]:mb-2"
+                        dangerouslySetInnerHTML={{ __html: message.content }}
+                      ></div>
 
                       {/* Emergency contact info */}
                       {message.isEmergency && (

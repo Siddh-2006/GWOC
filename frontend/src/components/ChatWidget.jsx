@@ -130,8 +130,8 @@ const ChatWidget = () => {
             <motion.button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`fixed bottom-6 right-6 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center z-50 transition-all duration-300 ${isOpen
-                        ? 'bg-red-500 hover:bg-red-600'
-                        : 'bg-primary hover:bg-primary/90'
+                    ? 'bg-red-500 hover:bg-red-600'
+                    : 'bg-primary hover:bg-primary/90'
                     }`}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
@@ -208,12 +208,12 @@ const ChatWidget = () => {
                                     <div className={`flex items-start gap-2 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
                                         {/* Avatar */}
                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${message.role === 'user'
-                                                ? 'bg-primary text-white'
-                                                : message.isEmergency
-                                                    ? 'bg-red-500 text-white'
-                                                    : message.isError
-                                                        ? 'bg-orange-500 text-white'
-                                                        : 'bg-gray-200 text-gray-600'
+                                            ? 'bg-primary text-white'
+                                            : message.isEmergency
+                                                ? 'bg-red-500 text-white'
+                                                : message.isError
+                                                    ? 'bg-orange-500 text-white'
+                                                    : 'bg-gray-200 text-gray-600'
                                             }`}>
                                             {message.role === 'user' ? (
                                                 <User size={16} />
@@ -226,16 +226,17 @@ const ChatWidget = () => {
 
                                         {/* Message Bubble */}
                                         <div className={`rounded-2xl px-4 py-3 ${message.role === 'user'
-                                                ? 'bg-primary text-white'
-                                                : message.isEmergency
-                                                    ? 'bg-red-50 text-red-800 border border-red-200'
-                                                    : message.isError
-                                                        ? 'bg-orange-50 text-orange-800 border border-orange-200'
-                                                        : 'bg-white text-gray-800 border border-gray-200'
+                                            ? 'bg-primary text-white'
+                                            : message.isEmergency
+                                                ? 'bg-red-50 text-red-800 border border-red-200'
+                                                : message.isError
+                                                    ? 'bg-orange-50 text-orange-800 border border-orange-200'
+                                                    : 'bg-white text-gray-800 border border-gray-200'
                                             }`}>
-                                            <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                                                {message.content}
-                                            </p>
+                                            <div
+                                                className="text-sm leading-relaxed [&>b]:font-bold [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mt-2 [&>li]:mb-1 [&>p]:mb-2"
+                                                dangerouslySetInnerHTML={{ __html: message.content }}
+                                            ></div>
 
                                             <p className="text-xs opacity-60 mt-2">
                                                 {new Date(message.timestamp).toLocaleTimeString([], {
