@@ -6,7 +6,7 @@ The Retrieval-Augmented Generation (RAG) system is the "Brain" of MindSettler. I
 
 - **Language**: Python 3.9+
 - **Framework**: FastAPI (Asynchronous API endpoints)
-- **Vector DB**: ChromaDB (High-performance local vector store)
+- **Vector DB**: **Pinecone** (Cloud-native vector database)
 - **Embeddings**: Google Gemini Embedding API
 - **Document Processing**: LangChain / Custom Markdown Parsers
 
@@ -21,8 +21,8 @@ graph TD
     A[Admin Uploads .md/.txt] --> B{Text Splitter}
     B -->|Chunking| C[Recursive Character Splitter]
     C -->|~1000 chars| D[Gemini Embedding API]
-    D -->|Vectors| E[ChromaDB Collection]
-    E -->|Persistent Storage| F[(Vector Index)]
+    D -->|Vectors| E[Pinecone Index]
+    E -->|Persistent Storage| F[(Cloud Vector Store)]
     
     style A fill:#f9f,stroke:#333,stroke-width:2px
     style F fill:#6cf,stroke:#333,stroke-width:4px
@@ -30,7 +30,7 @@ graph TD
 
 ### Key Technical Details:
 - **Chunking Strategy**: We use a `RecursiveCharacterTextSplitter` with an overlap (e.g., 100-200 chars) to ensure context isn't lost at the boundaries of chunks.
-- **Persistence**: ChromaDB stores the vectors on disk, allowing the microservice to be restarted without losing the brain's knowledge.
+- **Persistence**: Pinecone handles infrastructure and persistence in the cloud, ensuring high availability and global scalability.
 
 ---
 
@@ -41,7 +41,7 @@ When a user asks a question, the system performs a semantic search to find the m
 ```mermaid
 graph LR
     UserMsg[User Query] --> Embed[Embed Query]
-    Embed --> Search[(ChromaDB)]
+    Embed --> Search[(Pinecone)]
     Search --> Context[Relevant Snippets]
     Context --> Prompt[System Prompt + Context]
     Prompt --> LLM[Gemini Pro/Flash]

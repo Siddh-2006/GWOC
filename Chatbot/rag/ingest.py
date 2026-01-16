@@ -1,12 +1,9 @@
 import os
-from langchain_chroma import Chroma
-# fix import for embeddings
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from rag.embeddings import get_embeddings
 from langchain_core.documents import Document
 
-VECTOR_DB_PATH = os.path.join(os.path.dirname(__file__), "chroma_db")
 DATA_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
 def ingest_docs():

@@ -38,7 +38,7 @@ def run_debug_flow(user_query):
         print("✅ Intent matches RAG category. Proceeding...")
 
     # 2. Retrieval
-    print_step("STEP 2: RETRIEVING CONTEXT (RAG)", "Searching ChromaDB for relevant chunks...")
+    print_step("STEP 2: RETRIEVING CONTEXT (RAG)", "Searching Pinecone for relevant chunks...")
     context = retrieve_context(user_query)
     
     if not context:

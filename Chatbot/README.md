@@ -41,5 +41,5 @@ A standalone Python-based chatbot service for MindSettler using RAG and MongoDB.
 
 -   **Auth**: JWT verification sharing secret with main backend.
 -   **Database**: Direct MongoDB connection for live slot/availability checks.
--   **RAG**: ChromaDB + Google Gemini Embeddings for static content.
+-   **RAG**: Pinecone + Google Gemini Embeddings for static content.
 -   **Router**: LLM-based intent classification + Decision Router.

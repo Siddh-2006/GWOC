@@ -22,7 +22,7 @@ MindSettler is built on a modern, decoupled architecture designed for high respo
 
 3.  **External RAG Microservice (Python & FastAPI)**:
     - **Intelligence**: An isolated service dedicated to Retrieval-Augmented Generation.
-    - **Vector Storage**: Uses ChromaDB for high-dimensional semantic search.
+    - **Vector Storage**: Uses **Pinecone** for cloud-native, high-dimensional semantic search.
     - **Processing**: Python-based ingestion pipeline for .md and .txt knowledge files.
 
 ---

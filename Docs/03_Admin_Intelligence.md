@@ -22,7 +22,7 @@ journey
     section Processing
       API Request to RAG Service: 3: Backend
       Chunking & Embedding: 3: RAG Service
-      ChromaDB Update: 4: RAG Service
+      Pinecone Update: 4: RAG Service
     section Completion
       Success Message: 5: Admin
       Chatbot updated: 5: User
