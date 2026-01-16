@@ -125,7 +125,7 @@ const Chatbot = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100]">
+    <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end">
       {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
@@ -270,7 +270,7 @@ const Chatbot = () => {
                   onKeyPress={handleKeyPress}
                   placeholder="Ask me anything about MindSettler..."
                   disabled={isLoading}
-                  className="flex-grow bg-transparent border-none focus:ring-0 text-sm py-2 text-primary placeholder-primary/60 disabled:opacity-50"
+                  className="flex-grow bg-transparent border-none outline-none focus:ring-0 text-sm py-2 text-primary placeholder-primary/60 disabled:opacity-50"
                 />
                 <button
                   onClick={sendMessage}
@@ -285,7 +285,7 @@ const Chatbot = () => {
                 </button>
               </div>
               <p className="text-xs text-primary/60 mt-2 text-center">
-                AI-powered assistant • For emergencies, call 112
+                AI-powered assistant
               </p>
             </div>
           </motion.div>
@@ -293,36 +293,22 @@ const Chatbot = () => {
       </AnimatePresence>
 
       {/* Floating Trigger Button */}
-      <motion.button
-        onClick={() => setChatOpen(!isOpen)}
-        className="w-14 h-14 bg-secondary text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform duration-300 ring-4 ring-white"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <AnimatePresence mode="wait">
-          {isOpen ? (
-            <motion.div
-              key="close"
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <X size={24} />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="chat"
-              initial={{ rotate: 90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: -90, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <MessageCircle size={24} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.button>
+      <AnimatePresence>
+        {!isOpen && (
+          <motion.button
+            key="chat-toggle-btn"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            onClick={() => setChatOpen(true)}
+            className="w-14 h-14 bg-secondary text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform duration-300 ring-4 ring-white"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <MessageCircle size={24} />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

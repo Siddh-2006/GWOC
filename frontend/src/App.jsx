@@ -103,6 +103,9 @@ function App() {
         {/* Stand-alone NotFound page (Outside Layout) */}
         <Route path="/404" element={<NotFound />} />
 
+        <Route path="/library" element={<LibraryPage />} />
+        <Route path="/resources" element={<Resources />} />
+
         <Route
           path="/*"
           element={
@@ -112,10 +115,11 @@ function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/psycho-education" element={<PsychoEducationHub />} />
                 <Route path="/psycho-education/read/:slug" element={<ResourceReader />} />
-                <Route path="/library" element={<LibraryPage />} />
+                {/* Library moved outside Layout */}
+                {/* Resources moved outside Layout */}
                 <Route path="/psycho-education/oldlibrary" element={<PsychoEducation />} />
                 <Route path="/how-it-works" element={<Placeholder title="How It Works" />} />
-                <Route path="/resources" element={<Resources />} />
+                {/* <Route path="/resources" element={<Resources />} /> */}
                 <Route path="/blog" element={<BlogPage />} />
                 <Route path="/faqs" element={<FAQ />} />
                 <Route path="/contact" element={<Contact />} />
