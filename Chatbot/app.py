@@ -49,6 +49,20 @@ def home():
 def health_check():
     return jsonify({"status": "healthy", "service": "MindSettler Chatbot"}), 200
 
+from db.mongo_client import get_db
+@app.route('/health/db', methods=['GET'])
+def db_health_check():
+    try:
+        db = get_db()
+        if db is not None:
+             # Try a ping command
+            db.command('ping')
+            return jsonify({"status": "connected", "database": db.name}), 200
+        else:
+            return jsonify({"status": "disconnected", "error": "Init failed"}), 500
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 from rag.ingest import ingest_text
 @app.route('/admin/ingest', methods=['POST'])
 def admin_ingest():

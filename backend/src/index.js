@@ -56,16 +56,12 @@ if (process.env.NODE_ENV === 'production') {
 
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mindsettler', mongoOptions)
   .then(() => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('✅ Connected to MongoDB');
-    }
+    console.log('✅ Connected to MongoDB'); // Log in production too for Vercel logs
   })
   .catch(err => {
-    console.error('❌ MongoDB connection error:', err);
-    // In serverless, we don't want to exit the process
-    if (process.env.NODE_ENV !== 'production') {
-      process.exit(1);
-    }
+    console.error('❌ MongoDB connection error:', err.message); // Log exact error
+    // In serverless, we generally don't exit, but we should log clearly
+    console.error('Check MONGODB_URI environment variable and IP Whitelist in Atlas.');
   });
 
 // Handle connection events for better serverless performance
@@ -113,7 +109,7 @@ app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
+
     const allowedOrigins = [
       'http://localhost:3000',
       'https://gwoc-f8d2.vercel.app',
@@ -121,16 +117,16 @@ app.use(cors({
       process.env.FRONTEND_URL,
       process.env.CORS_ORIGIN
     ].filter(Boolean);
-    
+
     // Also handle comma-separated CORS_ORIGIN
     if (process.env.CORS_ORIGIN) {
       const corsOrigins = process.env.CORS_ORIGIN.split(',').map(o => o.trim());
       allowedOrigins.push(...corsOrigins);
     }
-    
+
     // Remove duplicates
     const uniqueOrigins = [...new Set(allowedOrigins)];
-    
+
     if (uniqueOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -153,7 +149,7 @@ configurePassport();
 
 // Routes
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     message: 'MindSettler API is running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
@@ -199,8 +195,8 @@ app.get('/health', async (req, res) => {
       }
     }
 
-    res.json({ 
-      status: 'OK', 
+    res.json({
+      status: 'OK',
       timestamp: new Date().toISOString(),
       database: {
         status: dbStatusText,
@@ -221,7 +217,7 @@ app.get('/health', async (req, res) => {
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
-    
+
     // Start the session reminder service only in development
     sessionReminderService.start();
   });
