@@ -1,17 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  MessageCircle, 
-  X, 
-  Send, 
-  Bot, 
-  User, 
+import {
+  MessageCircle,
+  X,
+  Send,
+  Bot,
+  User,
   AlertTriangle,
   Phone,
   Loader2
 } from 'lucide-react';
 import { useChatStore } from '../../store/useChatStore';
-import apiClient from '../../api/apiClient';
+const CHATBOT_API_URL = import.meta.env.VITE_CHATBOT_API_URL || "https://gwoc-t7pn.onrender.com";
 
 const Chatbot = () => {
   const { isOpen, setChatOpen } = useChatStore();
@@ -60,36 +60,38 @@ const Chatbot = () => {
     setIsLoading(true);
 
     try {
-      // Prepare chat history for API (exclude IDs and timestamps)
-      const chatHistory = messages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
-
-      const response = await apiClient.post('/chatbot/chat', {
-        message: userMessage.content,
-        chatHistory: chatHistory
+      const response = await fetch(`${CHATBOT_API_URL}/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: userMessage.content
+        })
       });
 
-      const data = response.data;
-
-      if (data.success) {
-        const botMessage = {
-          id: Date.now() + 1,
-          role: 'bot',
-          content: data.response,
-          timestamp: data.timestamp,
-          isEmergency: data.isEmergency
-        };
-
-        setMessages(prev => [...prev, botMessage]);
-      } else {
-        throw new Error(data.message || 'Failed to get response');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
+
+      // Handle the Python Backend Response Format: { text: "...", type: "text" }
+      const botContent = data.text || data.response || "I apologize, but I'm having trouble connecting right now.";
+
+      const botMessage = {
+        id: Date.now() + 1,
+        role: 'bot',
+        content: botContent,
+        timestamp: new Date().toISOString(),
+        isEmergency: data.isEmergency || false
+      };
+
+      setMessages(prev => [...prev, botMessage]);
 
     } catch (error) {
       console.error('Chat error:', error);
-      
+
       const errorMessage = {
         id: Date.now() + 1,
         role: 'bot',
@@ -153,8 +155,8 @@ const Chatbot = () => {
                   >
                     Clear
                   </button>
-                  <button 
-                    onClick={() => setChatOpen(false)} 
+                  <button
+                    onClick={() => setChatOpen(false)}
                     className="hover:bg-white/10 p-1 rounded-lg transition-colors"
                   >
                     <X size={20} />
@@ -175,15 +177,14 @@ const Chatbot = () => {
                 >
                   <div className={`flex items-start gap-2 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
                     {/* Avatar */}
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      message.role === 'user' 
-                        ? 'bg-primary text-white' 
-                        : message.isEmergency 
-                          ? 'bg-red-500 text-white'
-                          : message.isError
-                            ? 'bg-orange-500 text-white'
-                            : 'bg-secondary text-white'
-                    }`}>
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${message.role === 'user'
+                      ? 'bg-primary text-white'
+                      : message.isEmergency
+                        ? 'bg-red-500 text-white'
+                        : message.isError
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-secondary text-white'
+                      }`}>
                       {message.role === 'user' ? (
                         <User size={14} />
                       ) : message.isEmergency ? (
@@ -194,23 +195,22 @@ const Chatbot = () => {
                     </div>
 
                     {/* Message Bubble */}
-                    <div className={`rounded-2xl px-4 py-3 text-sm ${
-                      message.role === 'user'
-                        ? 'bg-primary text-white rounded-tr-none'
-                        : message.isEmergency
-                          ? 'bg-red-50 text-red-800 border border-red-200 rounded-tl-none'
-                          : message.isError
-                            ? 'bg-orange-50 text-orange-800 border border-orange-200 rounded-tl-none'
-                            : 'bg-white text-primary shadow-sm border border-purple-100 rounded-tl-none'
-                    }`}>
+                    <div className={`rounded-2xl px-4 py-3 text-sm ${message.role === 'user'
+                      ? 'bg-primary text-white rounded-tr-none'
+                      : message.isEmergency
+                        ? 'bg-red-50 text-red-800 border border-red-200 rounded-tl-none'
+                        : message.isError
+                          ? 'bg-orange-50 text-orange-800 border border-orange-200 rounded-tl-none'
+                          : 'bg-white text-primary shadow-sm border border-purple-100 rounded-tl-none'
+                      }`}>
                       <p className="leading-relaxed whitespace-pre-wrap">
                         {message.content}
                       </p>
-                      
+
                       {/* Emergency contact info */}
                       {message.isEmergency && (
                         <div className="mt-3 pt-3 border-t border-red-200">
-                          <a 
+                          <a
                             href="tel:+919974631313"
                             className="inline-flex items-center gap-2 text-sm font-medium text-red-700 hover:text-red-800"
                           >
@@ -219,11 +219,11 @@ const Chatbot = () => {
                           </a>
                         </div>
                       )}
-                      
+
                       <p className="text-xs opacity-60 mt-2">
-                        {new Date(message.timestamp).toLocaleTimeString([], { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
+                        {new Date(message.timestamp).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit'
                         })}
                       </p>
                     </div>

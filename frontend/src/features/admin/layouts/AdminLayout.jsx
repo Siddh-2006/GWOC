@@ -15,12 +15,10 @@ import {
   Settings,
   Menu,
   X,
-  FileText,
-  Brain
+  FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useAuthStore from '../../../store/useAuthStore';
-import RAGUploadModal from '../../../components/admin/RAGUploadModal';
 
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -43,10 +41,7 @@ const AdminLayout = () => {
     { icon: <Heart size={20} />, label: 'UserReflections', path: '/admin/user-reflections' },
     { icon: <Settings size={20} />, label: 'Quiz Setup', path: '/admin/reflection' },
     { icon: <FileText size={20} />, label: 'Resources', path: '/resources' },
-    { icon: <Brain size={20} />, label: 'Feed Brain', onClick: () => setIsRagModalOpen(true), isAction: true },
   ];
-
-  const [isRagModalOpen, setIsRagModalOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -74,47 +69,28 @@ const AdminLayout = () => {
       {/* Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
         {menuItems.map((item) => (
-          item.isAction ? (
-            <button
-              key={item.label}
-              onClick={item.onClick}
-              className="w-full flex items-center gap-4 p-3 rounded-xl transition-all duration-300 group text-white/60 hover:text-white hover:bg-white/5"
-            >
-              <div className="flex-shrink-0">{item.icon}</div>
-              {isSidebarOpen && (
-                <motion.span
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="font-medium whitespace-nowrap"
-                >
-                  {item.label}
-                </motion.span>
-              )}
-            </button>
-          ) : (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.end}
-              className={({ isActive }) =>
-                `flex items-center gap-4 p-3 rounded-xl transition-all duration-300 group ${isActive
-                  ? 'bg-secondary text-white shadow-lg shadow-secondary/20'
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
-                }`
-              }
-            >
-              <div className="flex-shrink-0">{item.icon}</div>
-              {isSidebarOpen && (
-                <motion.span
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="font-medium whitespace-nowrap"
-                >
-                  {item.label}
-                </motion.span>
-              )}
-            </NavLink>
-          )
+          <NavLink
+            key={item.path}
+            to={item.path}
+            end={item.end}
+            className={({ isActive }) =>
+              `flex items-center gap-4 p-3 rounded-xl transition-all duration-300 group ${isActive
+                ? 'bg-secondary text-white shadow-lg shadow-secondary/20'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
+              }`
+            }
+          >
+            <div className="flex-shrink-0">{item.icon}</div>
+            {isSidebarOpen && (
+              <motion.span
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="font-medium whitespace-nowrap"
+              >
+                {item.label}
+              </motion.span>
+            )}
+          </NavLink>
         ))}
       </nav>
 
@@ -241,9 +217,8 @@ const AdminLayout = () => {
             </motion.div>
           </AnimatePresence>
         </main>
-        <RAGUploadModal isOpen={isRagModalOpen} onClose={() => setIsRagModalOpen(false)} />
       </div>
-    </div >
+    </div>
   );
 };
 

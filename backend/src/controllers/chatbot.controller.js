@@ -25,7 +25,7 @@ export const chat = async (req, res) => {
 
     // Safety check - CRITICAL: This runs before AI
     const safetyCheck = checkSafety(userMessage);
-    
+
     if (!safetyCheck.isSafe) {
       // Emergency detected - return crisis response immediately
       return res.json({
@@ -38,7 +38,7 @@ export const chat = async (req, res) => {
 
     // Generate AI response
     const aiResult = await geminiService.generateResponse(userMessage, chatHistory);
-    
+
     if (!aiResult.success) {
       // If it's a configuration error, provide a helpful fallback
       if (aiResult.error.includes('No Gemini API keys configured')) {
@@ -49,7 +49,7 @@ export const chat = async (req, res) => {
           fallbackMode: true
         });
       }
-      
+
       return res.status(500).json({
         success: false,
         message: 'Failed to generate response',
@@ -74,7 +74,7 @@ export const chat = async (req, res) => {
 
   } catch (error) {
     console.error('❌ Chat controller error:', error);
-    
+
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -104,7 +104,7 @@ export const healthCheck = async (req, res) => {
     }
 
     const health = await geminiService.healthCheck();
-    
+
     res.json({
       success: true,
       service: 'MindSettler Chatbot',
@@ -116,10 +116,10 @@ export const healthCheck = async (req, res) => {
         safetyLayer: 'active'
       }
     });
-    
+
   } catch (error) {
     console.error('❌ Health check error:', error);
-    
+
     res.status(500).json({
       success: false,
       service: 'MindSettler Chatbot',
