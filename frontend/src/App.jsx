@@ -112,8 +112,7 @@ function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/psycho-education" element={<PsychoEducationHub />} />
                 <Route path="/psycho-education/read/:slug" element={<ResourceReader />} />
-                <Route path="/psycho-education/library" element={<LibraryPage />} />
-                <Route path="/library" element={<LibraryPageRefined />} />
+                <Route path="/library" element={<LibraryPage />} />
                 <Route path="/psycho-education/oldlibrary" element={<PsychoEducation />} />
                 <Route path="/how-it-works" element={<Placeholder title="How It Works" />} />
                 <Route path="/resources" element={<Resources />} />

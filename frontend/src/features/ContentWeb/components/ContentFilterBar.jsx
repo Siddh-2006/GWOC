@@ -27,7 +27,7 @@ const ContentFilterBar = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const isLibrary = location.pathname.includes('/library');
   const navItems = isLibrary ? LIBRARY_TYPES : RESOURCE_TYPES;
-  const basePath = isLibrary ? '/psycho-education/library' : '/resources';
+  const basePath = isLibrary ? '/library' : '/resources';
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
 

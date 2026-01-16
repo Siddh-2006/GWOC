@@ -13,7 +13,7 @@ const LearningFormats = ({ fadeInUp }) => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
           {[
-            { label: "Library", icon: <Library />, desc: "Full mental health database", link: "/psycho-education/library" },
+            { label: "Library", icon: <Library />, desc: "Full mental health database", link: "/library" },
             { label: "Resources", icon: <Layout />, desc: "Access guides & tools", link: "/resources" }
           ].map((item, i) => (
             <motion.div

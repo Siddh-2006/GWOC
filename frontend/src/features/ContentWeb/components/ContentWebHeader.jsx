@@ -30,7 +30,7 @@ const ContentWebHeader = () => {
   const { isAuthenticated, user } = useAuthStore();
   const isLibrary = location.pathname.includes('/library');
   const navItems = isLibrary ? LIBRARY_TYPES : RESOURCE_TYPES;
-  const basePath = isLibrary ? '/psycho-education/library' : '/resources';
+  const basePath = isLibrary ? '/library' : '/resources';
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
 
@@ -113,7 +113,7 @@ const ContentWebHeader = () => {
               Resources
             </Link>
             <Link
-              to="/psycho-education/library"
+              to="/library"
               className={`font-semibold text-xs md:text-sm transition-colors ${isLibrary ? 'text-primary' : 'text-gray-500 hover:text-primary'}`}
             >
               Library

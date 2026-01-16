@@ -46,7 +46,7 @@ const Footer = () => {
             <ul className="space-y-2.5 md:space-y-3.5 text-purple-100 text-sm md:text-base">
               {[
                 { name: 'Psycho-Education', path: '/psycho-education' },
-                { name: 'Library', path: '/psycho-education/library' },
+                { name: 'Library', path: '/library' },
                 { name: 'Resources', path: '/resources' },
                 { name: 'FAQs', path: '/faqs' }
               ].map((link) => (
