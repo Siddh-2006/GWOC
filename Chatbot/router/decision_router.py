@@ -28,6 +28,8 @@ def route_request(intent, message, user_context):
         t1 = time.time()
         print(f"[TIMING] RAG Retrieval took: {t1 - t0:.2f}s")
         
+        from utils.llm_factory import get_chat_model
+        llm = get_chat_model()
         if llm:
             # RAG Prompt (Updated with User's Preferred Template + Process Detail)
             rag_prompt = f"""
