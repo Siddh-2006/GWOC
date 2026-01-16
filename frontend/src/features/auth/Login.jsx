@@ -128,6 +128,7 @@ const Login = () => {
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
+                    placeholder="your@email.com"
                     className="w-full bg-purple-50/50 border border-purple-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white focus:border-primary/50 transition-all font-medium"
                   />
                 </div>
@@ -148,6 +149,7 @@ const Login = () => {
                     type="password"
                     value={formData.password}
                     onChange={handleChange}
+                    placeholder="••••••••"
                     className="w-full bg-purple-50/50 border border-purple-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white focus:border-primary/50 transition-all font-medium"
                   />
                 </div>
