@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import {
     MessageCircle,
     X,
@@ -10,7 +11,7 @@ import {
     Phone,
     Loader2
 } from 'lucide-react';
-
+import { Link } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 
 const ChatWidget = () => {
@@ -80,7 +81,8 @@ const ChatWidget = () => {
                 role: 'bot',
                 content: data.response || "I didn't receive a response.",
                 timestamp: data.timestamp || new Date().toISOString(),
-                isEmergency: data.isEmergency || false
+                isEmergency: data.isEmergency || false,
+                actions: data.actions || []
             };
 
             setMessages(prev => [...prev, botMessage]);
@@ -233,6 +235,42 @@ const ChatWidget = () => {
                                                 className="text-sm leading-relaxed [&>b]:font-bold [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mt-2 [&>li]:mb-1 [&>p]:mb-2"
                                                 dangerouslySetInnerHTML={{ __html: message.content }}
                                             ></div>
+
+                                            {message.actions && message.actions.length > 0 && (
+                                                <div className="mt-4 flex flex-wrap gap-2">
+                                                    {message.actions.map((action, idx) => {
+                                                        const isExternal = action.path.startsWith('http');
+                                                        if (isExternal) {
+                                                            return (
+                                                                <a
+                                                                    key={idx}
+                                                                    href={action.path}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${action.primary
+                                                                        ? 'bg-primary text-white hover:bg-primary/90'
+                                                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
+                                                                        }`}
+                                                                >
+                                                                    {action.label}
+                                                                </a>
+                                                            );
+                                                        }
+                                                        return (
+                                                            <Link
+                                                                key={idx}
+                                                                to={action.path}
+                                                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${action.primary
+                                                                    ? 'bg-primary text-white hover:bg-primary/90'
+                                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
+                                                                    }`}
+                                                            >
+                                                                {action.label}
+                                                            </Link>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
 
                                             <p className="text-xs opacity-60 mt-2">
                                                 {new Date(message.timestamp).toLocaleTimeString([], {

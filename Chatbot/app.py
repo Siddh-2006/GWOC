@@ -107,8 +107,11 @@ def chat():
     # 2. Classify Intent
     intent = classify_intent(user_message)
 
-    # 3. Route & Execute Logic
-    response_data = route_request(intent, user_message, user_context)
+    # 3. Get Chat History
+    chat_history = data.get('chatHistory', [])
+
+    # 4. Route & Execute Logic
+    response_data = route_request(intent, user_message, user_context, chat_history)
     try:
         print(f"[DEBUG] app.py - response_data: {response_data}", flush=True)
     except:

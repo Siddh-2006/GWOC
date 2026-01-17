@@ -1,5 +1,9 @@
+import axios from 'axios';
 import geminiService from '../services/gemini.service.js';
 import { checkSafety, getGentleRedirection } from '../utils/safetyLayer.js';
+
+// Configuration
+const RAG_SERVICE_URL = process.env.VITE_CHATBOT_API_URL || 'https://gwoc-t7pn.onrender.com';
 
 // Chat with the bot
 export const chat = async (req, res) => {
@@ -36,12 +40,43 @@ export const chat = async (req, res) => {
       });
     }
 
-    // Generate AI response
+    // --- PRIMARY: TRY RAG MICROSERVICE ---
+    try {
+      console.log(`🤖 Attempting RAG request to: ${RAG_SERVICE_URL}/chat`);
+      const authHeader = req.headers.authorization;
+
+      const ragResponse = await axios.post(`${RAG_SERVICE_URL}/chat`, {
+        message: userMessage,
+        chatHistory: chatHistory
+      }, {
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json'
+        },
+        timeout: 10000 // 10s timeout
+      });
+
+      if (ragResponse.data && ragResponse.data.text) {
+        const data = ragResponse.data;
+        return res.json({
+          success: true,
+          response: data.text,
+          actions: data.actions || [],
+          isEmergency: data.isEmergency || false,
+          timestamp: new Date().toISOString(),
+          source: 'rag-microservice'
+        });
+      }
+    } catch (ragError) {
+      console.error('⚠️ RAG Service unavailable, falling back to local Gemini:', ragError.message);
+    }
+
+    // --- FALLBACK: USE LOCAL GEMINI SERVICE (The "Old Prompt") ---
     const aiResult = await geminiService.generateResponse(userMessage, chatHistory);
 
     if (!aiResult.success) {
       // If it's a configuration error, provide a helpful fallback
-      if (aiResult.error.includes('No Gemini API keys configured')) {
+      if (aiResult.error && aiResult.error.includes('No Gemini API keys configured')) {
         return res.json({
           success: true,
           response: "I apologize, but I'm currently experiencing technical difficulties with my AI system. However, I'm still here to help! For immediate assistance with booking sessions or questions about MindSettler, please call us at +91 99746 31313. Our team is ready to help you.",
@@ -69,6 +104,7 @@ export const chat = async (req, res) => {
       success: true,
       response: finalResponse,
       timestamp: new Date().toISOString(),
+      source: 'local-gemini',
       keyStats: aiResult.keyStats // For debugging (remove in production)
     });
 

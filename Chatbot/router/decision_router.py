@@ -5,7 +5,7 @@ import os
 import time
 from utils.llm_factory import get_chat_model
 
-def route_request(intent, message, user_context):
+def route_request(intent, message, user_context, chat_history=None):
     
     # 1. Handle Safety / Refusal
     if intent == "RESTRICTED_THERAPY_REQUEST":
@@ -14,13 +14,39 @@ def route_request(intent, message, user_context):
             with open(refusal_path, 'r') as f:
                 refusal_msg = f.read().strip()
         except:
-            refusal_msg = "I can’t provide therapeutic or mental health advice."
-        return {"type": "text", "content": refusal_msg}
+            refusal_msg = "<b>I am truly sorry you are in pain. Your safety is most important.</b> Please contact a local emergency helpline or visit the nearest hospital immediately."
+        return {"type": "text", "content": refusal_msg, "isEmergency": True}
 
     # 2. Handle Auth Required
     if intent == "AUTH_REQUIRED":
-         return {"type": "text", "content": "Please log in to your MindSettler account to view your profile."}
+         return {
+             "type": "text", 
+             "content": "Please log in to your MindSettler account to view your profile and manage your journey.",
+             "actions": [{"label": "Login Now", "path": "/login", "primary": True}]
+         }
 
+    # Format Chat History for Prompt
+    history_str = ""
+    if chat_history:
+        # Keep last 4 turns as requested
+        recent_history = chat_history[-8:] # 4 user + 4 bot interactions
+        for msg in recent_history:
+            role = "User" if msg.get("role") == "user" else "Assistant"
+            history_str += f"{role}: {msg.get('content')}\n"
+
+    # Persona Base Instruction
+    persona_instruction = """
+    You are a caring, human-like member of the MindSettler Care Team. 
+    Vibe: Warm, patient, and grounded—like a receptionist at a quiet studio.
+    
+    STRICT RULES:
+    1. AVOID robotic phrases like "As an AI." Just be helpful.
+    2. MAIN PURPOSE: Tell about MindSettler ONLY. 
+    3. OUT-OF-SCOPE: If asked about things like 'driving a car' or 'cooking', answer briefly and politely, then say: "However, I'm specialized in guiding you through mental well-being and MindSettler's services. How can I help you with your journey today?"
+    4. NO THERAPY: Never give diagnosis or medical advice. Validate emotions briefly, then pivot to MindSettler's support.
+    5. HTML ONLY: Use <b>bold</b>, <ul><li>lists</li></ul>, and <p>paragraphs</p>. NO MARKDOWN.
+    6. NO RAW PATHS: Do NOT include raw URLs or paths like "/booking" in your text response. Use only descriptive language. The system will provide buttons for navigation.
+    """
 
     # 3. Handle Website Info / Founder / Content / Booking Process / Availability
     if intent in ["WEBSITE_INFO", "CONTENT_DISCOVERY", "FOUNDER_QUERY", "BOOKING_PROCESS", "SESSION_AVAILABILITY"]:
@@ -35,76 +61,73 @@ def route_request(intent, message, user_context):
         if not llm:
             return {"type": "text", "content": "I'm experiencing high traffic. Please try again in a moment."}
 
-        # RAG Prompt (Updated with User's Preferred Template + Process Detail)
-        # RAG Prompt (Updated with User's Preferred Template + Process Detail)
-        rag_prompt = f"""
-        SYSTEM INSTRUCTION:
-        You are a caring, human-like member of the MindSettler Care Team. You are the definitive guide for users seeking support.
+        # Determine if we have enough context or should fall back
+        if not context or len(context) < 30:
+            print("[DEBUG] Insufficient context, falling back to LLM general knowledge.")
+            # Use general prompt with MindSettler knowledge
+            prompt = f"""
+            {persona_instruction}
+            
+            Recent History:
+            {history_str}
+            
+            User Question: {message}
+            
+            IMPORTANT: I don't have enough specific internal documents to answer this perfectly. 
+            Politely acknowledge that I don't have the exact details on hand, but answer based on your general knowledge of MindSettler (Mental Well-being platform, Surat based, Online/Offline sessions) while maintaining the persona rules.
+            """
+        else:
+            # RAG Prompt
+            prompt = f"""
+            {persona_instruction}
 
-        ### 1. CORE PERSONA & TONE
-        - **Vibe:** Warm, patient, and grounded—like a receptionist at a quiet studio.
-        - **Natural Language:** AVOID robotic phrases like "As an AI." Use phrases like "Our team," "We help you," and "I can guide you through..."
-        - **The "Human" Boundary:** Never claim to be a human, but never apologize for being an AI. Just be helpful.
+            USE THE CONTEXT BELOW to build your detailed answer. If the context doesn't fully answer the question, use your general caring persona to bridge the gap.
 
-        ### 2. RESPONSE STRUCTURE & FORMATTING (CRITICAL: HTML ONLY)
-        - **ABSOLUTELY NO MARKDOWN.** Do NOT use `**bold**`, `*italic*`, or `# headers`.
-        - **USE HTML TAGS ONLY:**
-            - Use `<b>text</b>` for bold text.
-            - Use `<ul><li>item</li></ul>` for lists.
-            - Use `<p>` for paragraphs.
-            - Use `<a href="/booking">Link Text</a>` for links.
-        - **CONVERT CONTEXT:** The context provided below contains Markdown. You MUST convert it to HTML in your response (e.g., change `**Slot**` to `<b>Slot</b>`).
+            Context: {context}
+            
+            Recent History:
+            {history_str}
 
-        ### 3. THE BOOKING JOURNEY (MANDATORY DETAIL)
-        1. <b>Select Slot</b>: Choose a Date and Time on the <a href="/booking">Booking Page</a>.
-        2. <b>Fill Details</b>: Enter Name, Contact, and choose Session Mode (Online/Offline).
-        3. <b>Payment</b>:
-            - <b>Online Sessions</b>: You MUST make the payment (UPI) to confirm the booking.
-            - <b>Offline Sessions</b>: You can pay Online or pay <b>Cash/UPI at the clinic</b>.
-        4. <b>Confirmation</b>: You will receive an email confirmation once the booking is verified.
-
-        ### 4. PLATFORM LOGISTICS
-        - <b>Login Rules:</b> Login is <b>ONLY</b> required for <b>Booking</b> and <b>Liking Content</b>. Viewing resources is free.
-        - <b>My Journey:</b> A visual timeline in the [Profile](/profile) (updated by the therapist).
-        - <b>Cancellations:</b> Contact Admin at +91 99746 31313. No auto-cancellations.
-
-        ### 5. SAFETY PROTOCOL
-        - If a user mentions suicide/harm, **STOP**. Reply ONLY with: *"I am truly sorry you are in pain. Your safety is most important. Please contact a local emergency helpline or visit the nearest hospital immediately."*
-
-        ### 6. CONTEXT USAGE
-        Use the context below from the knowledge base to build your detailed answer.
-
-        Context: {context}
-        
-        User Question: {message}
-        """
+            User Question: {message}
+            """
         
         try:
-            response = llm.invoke(rag_prompt)
-            try:
-                print(f"[DEBUG] LLM Response Content: {response.content}", flush=True)
-            except Exception:
-                pass
-            return {"type": "text", "content": str(response.content)}
+            response = llm.invoke(prompt)
+            content = str(response.content)
+            
+            # Map intents to buttons
+            actions = []
+            if intent == "SESSION_AVAILABILITY" or intent == "BOOKING_PROCESS":
+                actions.append({"label": "Book a Session", "path": "/booking", "primary": True})
+            elif intent == "CONTENT_DISCOVERY":
+                actions.append({"label": "Explore Library", "path": "/library", "primary": True})
+            elif intent == "FOUNDER_QUERY":
+                actions.append({"label": "About Founder", "path": "/about", "primary": False})
+            
+            # Add help button for most queries
+            actions.append({"label": "Contact Support", "path": "/contact", "primary": False})
+
+            return {"type": "text", "content": content, "actions": actions}
         except Exception as e:
-            try:
-                print(f"LLM RAG Error: {e}", flush=True)
-            except:
-                pass
+            print(f"LLM RAG Error: {e}")
             return {"type": "text", "content": "I'm having trouble thinking right now. Please try again."}
 
-    # 4. Handle Ambiguous / General Conversation (No RAG)
+    # 4. Handle Ambiguous / General Conversation
     print(f"[DEBUG] Handling Ambiguous/General Intent: {intent}")
     llm = get_chat_model()
     if not llm:
         return {"type": "text", "content": "I'm currently offline. Please check back later."}
         
     general_prompt = f"""
-    You are a friendly, helpful assistant for MindSettler.
+    {persona_instruction}
+
     The user said something that doesn't match our specific therapeutic topics or booking flow.
-    Just allow for natural conversation. be brief and polite.
+    Allow for natural conversation. Be brief and polite.
     If they ask about therapy, guide them to the booking page.
     
+    Recent History:
+    {history_str}
+
     User Message: {message}
     """
     try:
@@ -113,3 +136,4 @@ def route_request(intent, message, user_context):
     except Exception as e:
         print(f"LLM General Error: {e}")
         return {"type": "text", "content": "I didn't quite catch that. Could you rephrase?"}
+

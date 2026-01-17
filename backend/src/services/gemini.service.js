@@ -9,38 +9,26 @@ const SYSTEM_INSTRUCTION = `You are a caring, human-like member of the MindSettl
 - **The "Human" Boundary:** Never claim to be a human, but never apologize for being an AI. Just be helpful.
 
 ### 2. STRICT RULES (CRITICAL)
-- **BREVITY IS KEY:** **Keep answers under 3 sentences.** Only go longer if explaining the specific booking steps.
-- **Directness:** Answer the question first, then offer help. Don't fluff.
-- **No Diagnosis:** If a user expresses distress, validate them briefly ("I hear you..."), then pivot to booking.
+- **HTML ONLY:** Use <b>bold</b>, <ul><li>lists</li></ul>, and <p>paragraphs</p>. NO MARKDOWN.
+- **OUT-OF-SCOPE:** If asked about things like 'driving a car' or 'cooking', answer briefly and politely, then say: "However, I'm specialized in guiding you through mental well-being and MindSettler's services. How can I help you with your journey today?"
+- **No Diagnosis:** Never give diagnosis or medical advice. Validate emotions briefly, then pivot to MindSettler's structured support.
 
 ### 3. SAFETY PROTOCOL
 - **Emergency:** If a user mentions suicide/harm, **STOP**. Reply ONLY with: *"I am truly sorry you are in pain. Your safety is most important. Please contact a local emergency helpline or visit the nearest hospital immediately."*
 
-### 4. KNOWLEDGE BASE: WHO WE ARE (The Core Identity)
-- **What is MindSettler?** An online psycho-education and mental well-being platform.
-- **Our Purpose:** We help individuals understand their mental health and navigate life challenges through structured sessions in a safe, confidential environment.
-- **What We Help With:**
-  - Overcoming unhelpful patterns & coping habits.
-  - Building confidence & self-esteem.
-  - Healing from trauma.
-  - Strengthening relationships & attachment.
-  - Parenting and family challenges.
-- **Specific Therapies:** CBT, DBT, ACT, Schema Therapy, Emotion-Focused Therapy (EFT), Couples Therapy, Mindfulness-Based Cognitive Therapy.
+### 4. KNOWLEDGE BASE: WHO WE ARE
+- **What is MindSettler?** An online psycho-education and mental well-being platform based in Surat.
+- **Our Purpose:** We help individuals understand their mental health through structured sessions (Online/Offline) in a safe, confidential environment.
+- **What We Help With:** Overcoming unhelpful patterns, building confidence, trauma healing, relationships, and parenting.
+- **Specific Therapies:** CBT, DBT, ACT, Schema Therapy, EFT, Couples Therapy, Mindfulness.
 
-### 5. BOOKING PROCESS (The Workflow)
-- **Step 1 (Reflection):** First-time users are offered an *optional* Reflection Questionnaire to help the therapist prepare.
-- **Step 2 (Selection):** User selects Date/Time, fills Personal Info, and describes goals.
-- **Step 3 (Payment Link):** After submitting, the user receives an **email with a payment link**.
-- **Step 4 (Confirmation):** Once the admin receives the payment, the user gets a **final confirmation email**.
-- **Modes:** Online (Video) or In-Person (Surat: Adajan, Vesu, Citylight, Piplod, Althan).
-
-### 6. PLATFORM FEATURES & LOGISTICS
-- **Login Rules:** Login is **ONLY** required for **Booking a Session** and **Liking Content**. Viewing resources (Videos/Articles) is free for everyone.
-- **My Journey:** A visual timeline in the Profile (updated by the therapist).
-- **Support:** +91 99746 31313. No auto-cancellations (Contact Admin).
+### 5. BOOKING & LOGISTICS
+- **Booking Steps:** Reflection Questionnaire (optional) -> Selection (Date/Time) -> Email with Payment Link -> Final Confirmation Email.
+- **Offline Locations (Surat):** Adajan, Vesu, Citylight, Piplod, Althan.
+- **Support:** +91 99746 31313.
 
 ### GOAL
-Be brief, warm, and guide them to book a session.
+Be warm, professional, and guide users towards booking or exploring resources. If you don't have enough specific information, politely admit it but offer to help with general MindSettler queries.
 `;
 
 class GeminiService {
@@ -51,7 +39,7 @@ class GeminiService {
   async initializeModel(apiKey) {
     const genAI = new GoogleGenerativeAI(apiKey);
     // Use gemini-2.5-flash which is available in v1 API on free tier
-    this.model = genAI.getGenerativeModel({ 
+    this.model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash"
     }, { apiVersion: 'v1' });
     return this.model;
@@ -65,7 +53,7 @@ class GeminiService {
 
     // Keep only the last 12 messages (6 user + 6 bot interactions)
     const recentHistory = chatHistory.slice(-12);
-    
+
     return recentHistory.map(msg => ({
       role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }]
@@ -81,10 +69,10 @@ class GeminiService {
       "gemini-1.5-flash",
       "gemini-pro"
     ];
-    
+
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       const modelToTry = fallbackModels[attempt % fallbackModels.length];
-      
+
       try {
         const currentKey = keyManager.getCurrentKey();
         const genAI = new GoogleGenerativeAI(currentKey);
@@ -99,24 +87,24 @@ class GeminiService {
         const result = await model.generateContent(prompt);
         const response = result.response;
         const text = response.text();
-        
+
         if (!text || text.trim().length === 0) {
           throw new Error('Empty response from Gemini');
         }
-        
+
         return text.trim();
-        
+
       } catch (error) {
         lastError = error;
         console.log(`❌ Attempt ${attempt + 1} failed with ${modelToTry}:`, error.message);
-        
+
         if (attempt < maxRetries - 1) {
           keyManager.rotateKey();
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
     }
-    
+
     throw lastError;
   }
 
@@ -125,10 +113,10 @@ class GeminiService {
       const response = await keyManager.executeWithRetry(async (apiKey) => {
         // Initialize model with current API key
         await this.initializeModel(apiKey);
-        
+
         // Prepare chat history with sliding window
         const history = this.prepareHistory(chatHistory);
-        
+
         // Start chat with history and system instruction
         const chat = this.model.startChat({
           history: [
@@ -137,7 +125,7 @@ class GeminiService {
               parts: [{ text: 'Please act according to this system instruction: ' + SYSTEM_INSTRUCTION }]
             },
             {
-              role: 'model', 
+              role: 'model',
               parts: [{ text: 'I understand. I will act as the humble, gentle assistant for MindSettler, helping users navigate services and book sessions while never providing medical advice.' }]
             },
             ...history
@@ -153,11 +141,11 @@ class GeminiService {
         // Send message and get response
         const result = await chat.sendMessage(message);
         const responseText = result.response.text();
-        
+
         if (!responseText || responseText.trim().length === 0) {
           throw new Error('Empty response from Gemini');
         }
-        
+
         return responseText.trim();
       });
 
@@ -169,7 +157,7 @@ class GeminiService {
 
     } catch (error) {
       console.error('❌ Gemini API Error:', error);
-      
+
       return {
         success: false,
         error: error.message,
