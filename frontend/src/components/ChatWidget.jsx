@@ -11,9 +11,7 @@ import {
     Loader2
 } from 'lucide-react';
 
-// Configuration: API URL
-// Uses environment variable if set, otherwise defaults to the Vercel deployment
-const CHATBOT_API_URL = import.meta.env.VITE_CHATBOT_API_URL || "https://mindsettler-chatbot.vercel.app";
+import apiClient from '../api/apiClient';
 
 const ChatWidget = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -62,29 +60,27 @@ const ChatWidget = () => {
         setIsLoading(true);
 
         try {
-            // 🚀 Call the New Python Backend
-            const response = await fetch(`${CHATBOT_API_URL}/test-chatbot/chat`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: userMessage.content })
+            // 🚀 Call the Node.js Gemini Backend
+            // Map messages to history format expected by backend: { role: 'user' | 'bot', content: string }
+            const chatHistory = messages.slice(1).map(msg => ({
+                role: msg.role === 'user' ? 'user' : 'bot',
+                content: msg.content
+            }));
+
+            const response = await apiClient.post('/chatbot/chat', {
+                message: userMessage.content,
+                chatHistory: chatHistory
             });
 
-            const data = await response.json();
+            const data = response.data;
 
-            // Handle the Python Backend Response Format: { text: "...", type: "text" }
-            let botContent = data.text || "I didn't receive a response.";
-
-            // If there is extra data (e.g., booking slots or json), append it cleanly
-            if (data.data) {
-                botContent += "\n\n" + JSON.stringify(data.data, null, 2);
-            }
-
+            // Handle the Node.js Backend Response Format: { success: true, response: "...", isEmergency: boolean }
             const botMessage = {
                 id: Date.now() + 1,
                 role: 'bot',
-                content: botContent,
-                timestamp: new Date().toISOString(),
-                isEmergency: false // The new backend doesn't explicitly flag this yet, can be added later
+                content: data.response || "I didn't receive a response.",
+                timestamp: data.timestamp || new Date().toISOString(),
+                isEmergency: data.isEmergency || false
             };
 
             setMessages(prev => [...prev, botMessage]);

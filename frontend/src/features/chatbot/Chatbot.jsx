@@ -11,7 +11,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { useChatStore } from '../../store/useChatStore';
-const CHATBOT_API_URL = import.meta.env.VITE_CHATBOT_API_URL || "https://gwoc-t7pn.onrender.com";
+import apiClient from '../../api/apiClient';
 
 const Chatbot = () => {
   const { isOpen, setChatOpen } = useChatStore();
@@ -60,30 +60,26 @@ const Chatbot = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${CHATBOT_API_URL}/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          message: userMessage.content
-        })
+      // 🚀 Call the Node.js Gemini Backend
+      // Map messages to history format expected by backend: { role: 'user' | 'bot', content: string }
+      const chatHistory = messages.slice(1).map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'bot',
+        content: msg.content
+      }));
+
+      const response = await apiClient.post('/chatbot/chat', {
+        message: userMessage.content,
+        chatHistory: chatHistory
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const data = response.data;
 
-      const data = await response.json();
-
-      // Handle the Python Backend Response Format: { text: "...", type: "text" }
-      const botContent = data.text || data.response || "I apologize, but I'm having trouble connecting right now.";
-
+      // Handle the Node.js Backend Response Format: { success: true, response: "...", isEmergency: boolean }
       const botMessage = {
         id: Date.now() + 1,
         role: 'bot',
-        content: botContent,
-        timestamp: new Date().toISOString(),
+        content: data.response || "I didn't receive a response.",
+        timestamp: data.timestamp || new Date().toISOString(),
         isEmergency: data.isEmergency || false
       };
 
