@@ -31,16 +31,19 @@ def chat():
     data = request.json
     user_message = data.get('message', '')
     user_id = data.get('user_id', 'Guest')
+    user_context = data.get('user_context', '')
     
     if not user_message:
         return jsonify({"error": "Message is required"}), 400
 
     try:
-        # Prepend user_id context to the conversation
-        system_context = f"Current User ID: {user_id}"
+        # Construct system context with user info
+        system_content = f"Current User ID: {user_id}"
+        if user_context:
+            system_content += f"\n\nUser Profile & Data Context:\n{user_context}"
         
         messages = [
-            SystemMessage(content=system_context),
+            SystemMessage(content=system_content),
             HumanMessage(content=user_message)
         ]
         

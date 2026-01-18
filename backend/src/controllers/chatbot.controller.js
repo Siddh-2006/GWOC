@@ -1,9 +1,12 @@
 import axios from 'axios';
 import geminiService from '../services/gemini.service.js';
 import { checkSafety, getGentleRedirection } from '../utils/safetyLayer.js';
+import Auth from '../models/Auth.model.js';
+import { Booking } from '../models/Booking.model.js';
+import { Media } from '../models/Media.model.js';
 
 // Configuration
-const RAG_SERVICE_URL = process.env.VITE_CHATBOT_API_URL || 'https://gwoc-t7pn.onrender.com';
+const RAG_SERVICE_URL = process.env.CHATBOT_API_URL || 'https://mindsettler-chatbot-latest.onrender.com';
 
 // Chat with the bot
 export const chat = async (req, res) => {
@@ -40,6 +43,54 @@ export const chat = async (req, res) => {
       });
     }
 
+    // --- ENHANCEMENT: FETCH USER CONTEXT ---
+    let userContext = '';
+    let userIdValue = 'guest_user';
+
+    if (req.user) {
+      try {
+        const userId = req.user.userId;
+        userIdValue = userId.toString();
+
+        // 1. Fetch Profile Info
+        const userAuth = await Auth.findById(userId).select('firstName lastName email bio interests personality quote');
+
+        // 2. Fetch Recent Bookings
+        const userBookings = await Booking.find({ userId })
+          .populate('slotId')
+          .sort({ createdAt: -1 })
+          .limit(5);
+
+        // 3. Fetch Liked Media
+        const likedMedia = await Media.find({ likes: userId })
+          .select('title type')
+          .limit(5);
+
+        // Construct Context String
+        userContext = `User Profile:
+- Name: ${userAuth?.firstName || ''} ${userAuth?.lastName || ''}
+- Email: ${userAuth?.email || ''}
+- Bio: ${userAuth?.bio || 'No bio provided'}
+- Interests: ${userAuth?.interests || 'None listed'}
+- Personality: ${userAuth?.personality || 'Not specified'}
+- Theme Song/Quote: ${userAuth?.quote || 'None'}
+
+Recent Bookings/Sessions:
+${userBookings.length > 0
+            ? userBookings.map(b => `- ${b.sessionMode} session on ${b.slotId?.date ? new Date(b.slotId.date).toLocaleDateString() : 'TBD'} (${b.status})`).join('\n')
+            : '- No bookings found'}
+
+Recently Liked Content:
+${likedMedia.length > 0
+            ? likedMedia.map(m => `- "${m.title}" (${m.type})`).join('\n')
+            : '- No liked posts yet'}`;
+
+        console.log(`👤 Context fetched for: ${userAuth?.firstName}`);
+      } catch (contextError) {
+        console.error('Error fetching user context for chatbot:', contextError);
+      }
+    }
+
     // --- PRIMARY: TRY RAG MICROSERVICE ---
     try {
       console.log(`🤖 Attempting RAG request to: ${RAG_SERVICE_URL}/chat`);
@@ -47,7 +98,9 @@ export const chat = async (req, res) => {
 
       const ragResponse = await axios.post(`${RAG_SERVICE_URL}/chat`, {
         message: userMessage,
-        chatHistory: chatHistory
+        chatHistory: chatHistory,
+        user_id: userIdValue,
+        user_context: userContext
       }, {
         headers: {
           'Authorization': authHeader,

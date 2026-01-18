@@ -64,21 +64,30 @@ const Chatbot = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_CHATBOT_API_URL}/test-chatbot/chat`, {
+      const accessToken = useAuthStore.getState().accessToken;
+
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/chatbot/chat`, {
         message: userMessage.content,
-        user_id: user?.id || 'guest_user'
+        chatHistory: messages.map(msg => ({
+          role: msg.role === 'bot' ? 'assistant' : 'user',
+          content: msg.content
+        }))
+      }, {
+        headers: {
+          'Authorization': accessToken ? `Bearer ${accessToken}` : ''
+        }
       });
 
       const data = response.data;
 
-      // Handle the Python Backend Response Format: { text: "...", type: "text" }
+      // The Node.js controller returns { success: true, response: "...", actions: [...] }
       const botMessage = {
         id: Date.now() + 1,
         role: 'bot',
-        content: data.text || "I didn't receive a response.",
+        content: data.response || "I didn't receive a response.",
         timestamp: new Date().toISOString(),
-        isEmergency: false, // Python agent doesn't seem to return this yet, default to false
-        actions: [] // Python agent doesn't seem to return this yet
+        isEmergency: data.isEmergency || false,
+        actions: data.actions || []
       };
 
       setMessages(prev => [...prev, botMessage]);
@@ -175,13 +184,13 @@ const Chatbot = () => {
                       }`}>
                       <div
                         className={`
-                          whitespace-pre-line break-words
+                          whitespace-normal break-words
                           leading-relaxed 
                           [&>b]:font-bold 
-                          [&>ul]:!list-disc [&>ul]:!list-inside [&>ul]:!pl-2 [&>ul]:!mt-2 
-                          [&>ol]:!list-decimal [&>ol]:!list-inside [&>ol]:!pl-2 [&>ol]:!mt-2
-                          [&>li]:!mb-1 [&>li]:marker:text-[#Dd1764] 
-                          [&>p]:!mb-2 
+                          [&>ul]:!list-disc [&>ul]:!list-inside [&>ul]:!pl-2 [&>ul]:!mt-1 
+                          [&>ol]:!list-decimal [&>ol]:!list-inside [&>ol]:!pl-2 [&>ol]:!mt-1
+                          [&>li]:!mb-0.5 [&>li]:marker:text-[#Dd1764] 
+                          [&>p]:!mb-1.5 
                           [&_a]:!text-[#Dd1764] [&_a]:!underline [&_a]:!font-semibold [&_a]:hover:!text-[#b01250]
                         `}
                         dangerouslySetInnerHTML={{ __html: message.content }}
