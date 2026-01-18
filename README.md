@@ -126,13 +126,6 @@ cd ../frontend && npm install && npm run dev
 
 Proudly built for **GWOC**. We're a team of dreamers, builders, and mental health advocates.
 
-**Connect with the Architects:**
-- **Founder & Lead Developer**: [Parnika](https://github.com/Siddh-2006)
-- **Project Lead & Visionary**: [Siddh](https://github.com/Siddh-2006)
-- **Technical Excellence**: [Team BrightWeb]
-
----
-
 <div align="center">
   <img src="https://img.shields.io/badge/Status-Live%20&%20Vibing-success?style=for-the-badge" alt="Live Status" />
   <img src="https://img.shields.io/badge/Made%20with%20Love-❤️-pink?style=for-the-badge" alt="Created with Love" />
