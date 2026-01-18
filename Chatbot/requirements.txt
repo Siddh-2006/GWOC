@@ -11,3 +11,4 @@ requests
 langgraph
 pymongo
 gunicorn
+flask-limiter

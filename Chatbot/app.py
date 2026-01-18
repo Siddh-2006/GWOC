@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
 from agent import get_agent_graph
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -9,6 +11,14 @@ load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+# Initialize Limiter
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["100 per day", "30 per hour"],
+    storage_uri="memory://",
+)
 
 # Initialize Agent
 try:
@@ -24,6 +34,7 @@ def health():
 
 @app.route('/test-chatbot/chat', methods=['POST'])
 @app.route('/chat', methods=['POST'])
+@limiter.limit("15 per 15 minutes")
 def chat():
     if not agent_graph:
         return jsonify({"error": "Agent not initialized"}), 500
