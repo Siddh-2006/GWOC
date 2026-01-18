@@ -93,13 +93,6 @@ const TeamCard = ({ member }) => {
               <p className="text-base font-medium text-gray-800 leading-relaxed mb-6 italic line-clamp-6">
                 "{member.bio}"
               </p>
-              <div className="flex flex-wrap gap-2">
-                {member.tags.slice(0, 2).map(tag => (
-                  <span key={tag} className="px-2 py-0.5 rounded-full bg-pink-50 text-secondary text-[10px] font-bold uppercase tracking-wider">
-                    {tag}
-                  </span>
-                ))}
-              </div>
             </div>
 
             <div className="flex items-center justify-between pt-6 border-t border-gray-100">
@@ -140,7 +133,7 @@ const TeamSection = () => {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20 text-center">
-        <span className="text-secondary font-bold tracking-[0.2em] uppercase text-sm mb-4 block">Meet Our Experts</span>
+        <span className="text-secondary font-bold tracking-[0.2em] uppercase text-sm mb-4 block">Global Experts</span>
         <h2 className="text-4xl md:text-6xl font-bold text-primary mb-6">Guidance from <span className="text-secondary italic">Trustworthy</span> Minds</h2>
         <p className="text-gray-500 text-xl leading-relaxed max-w-2xl mx-auto">
           Our specialists are here to navigate the complexities of life with you, providing evidence-based, human-centric support.

@@ -1,17 +1,17 @@
 # Content Index
 
 ## Articles
-- Understanding Stress
-- Emotional Awareness Basics
+- [Understanding Stress](/psycho-education/stress)
+- [Emotional Awareness Basics](/psycho-education/emotional-awareness)
 
 ## Videos
-- Introduction to Psycho-Education
-- What a Session Looks Like
+- [Introduction to Psycho-Education](/psycho-education/intro)
+- [What a Session Looks Like](/psycho-education/session-preview)
 
 ## Quotes
-- On self-awareness
-- On reflection
+- [On self-awareness](/psycho-education/quotes)
+- [On reflection](/psycho-education/quotes)
 
 ## Exercises
-- Reflection prompts
-- Journaling guides
+- [Reflection prompts](/psycho-education/reflection)
+- [Journaling guides](/psycho-education/journaling)

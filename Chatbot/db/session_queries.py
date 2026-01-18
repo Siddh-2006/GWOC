@@ -4,7 +4,7 @@ from datetime import datetime
 
 def get_available_slots():
     db = get_db()
-    if not db:
+    if db is None:
         return []
     try:
         # Find slots where isAvailable is true and date >= now
@@ -32,7 +32,7 @@ def get_available_slots():
 
 def get_user_bookings(user_id):
     db = get_db()
-    if not db:
+    if db is None:
         return []
     try:
         bookings = list(db.bookings.find({"userId": ObjectId(user_id)}).sort("createdAt", -1))

@@ -1,17 +1,4 @@
-# Environments
 .env
-
-# Python
 __pycache__/
-*.py[cod]
-
-# Database (Local)
-chroma_db/
-# rag/chroma_db (Commented out for Vercel deployment)/
-
-# OS specific
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
+venv/
+*.pyc

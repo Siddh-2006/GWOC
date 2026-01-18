@@ -1,7 +1,7 @@
 # Booking and Payment Flow
 
 ## 1. Booking Process
-1.  **Select Slot**: Choose a Date and Time.
+1.  **Select Slot**: Choose a Date and Time on the [booking page](/booking).
 2.  **Fill Details**: Name, Contact, Session Mode (Online/Offline).
 3.  **Payment**:
     *   **Online Sessions**: You MUST make the payment (UPI) to confirm the booking.

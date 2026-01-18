@@ -1,15 +1,13 @@
-flask
-flask-cors
-pymongo
-python-dotenv
 langchain
 langchain-community
 langchain-core
 langchain-openai
 langchain-pinecone
-pydantic
+pinecone
+python-dotenv
+flask
+flask-cors
 requests
-PyJWT
-cryptography
+langgraph
+pymongo
 gunicorn
-# Removed: chromadb, sentence-transformers, langchain-huggingface (Too big for Vercel)

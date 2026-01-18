@@ -375,3 +375,18 @@
     transform: rotateX(0deg);
     opacity: 1;
 }
+
+.chatbot-message a,
+.chatbot-message a:visited {
+  color: #Dd1764 !important;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.chatbot-message a:hover {
+  color: rgba(221, 23, 100, 0.8) !important;
+}
+
+.chatbot-message a:active {
+  color: #Dd1764 !important;
+}

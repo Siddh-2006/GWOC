@@ -22,8 +22,8 @@ def init_db():
         # Assuming URI contains the DB name or we use a default
         db_name = uri.split("/")[-1].split("?")[0]
         if not db_name:
-             # Fallback or specific name if known
-             db_name = "mindsettler_db" # Example default
+             # Fallback to 'test' as it contains the actual slots (47 found)
+             db_name = "test"
         
         db = client[db_name]
         

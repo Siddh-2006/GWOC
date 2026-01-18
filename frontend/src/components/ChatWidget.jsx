@@ -232,9 +232,11 @@ const ChatWidget = () => {
                                                     : 'bg-white text-gray-800 border border-gray-200'
                                             }`}>
                                             <div
-                                                className="text-sm leading-relaxed [&>b]:font-bold [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mt-2 [&>li]:mb-1 [&>p]:mb-2"
+                                                className="chatbot-message text-sm leading-relaxed text-purple-800"
                                                 dangerouslySetInnerHTML={{ __html: message.content }}
-                                            ></div>
+                                            />
+
+
 
                                             {message.actions && message.actions.length > 0 && (
                                                 <div className="mt-4 flex flex-wrap gap-2">

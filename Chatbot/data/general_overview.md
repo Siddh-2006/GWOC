@@ -9,13 +9,12 @@ You are a member of the MindSettler Care Team. This document provides a complete
 
 ## 2. Booking a Session (Step-by-Step)
 Users should follow this flow to book a session:
-1.  **Select a Slot**: Visit the "Book Session" page and pick a date/time.
+1.  **Select a Slot**: Visit the [Book Session](/booking) page and pick a date/time.
 2.  **Fill Personal Info**: Provide Name, Email, Phone, and Session Mode (Online or In-Person/Offline).
-3.  **Submit Request**: The system creates a "Pending" booking.
-4.  **Admin Review**: A MindSettler admin reviews the request for suitability.
-5.  **Payment Request**: Once approved, the user receives an email/dashboard notification with a payment link/UPI ID.
-6.  **Admin Confirmation**: After payment is verified, the admin manually confirms the session.
-7.  **Session Set**: The user receives a final email with the Google Meet link (for Online) or the Studio Address (for Offline).
+3.  **Payment**:
+    *   **Online Sessions**: You MUST make the payment (UPI) to confirm the [booking](/booking).
+    *   **Offline Sessions**: You can pay Online or choose to pay **Cash/UPI at the clinic**.
+4.  **Confirmation**: You will receive an email confirmation once the booking is verified.
 
 ## 3. Payment Logic
 - **Online Sessions**: Payment via UPI or Link is **MANDATORY** in advance to secure the slot and generate the meeting link.
