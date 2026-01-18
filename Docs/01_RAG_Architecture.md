@@ -5,7 +5,7 @@ The Retrieval-Augmented Generation (RAG) system is the "Brain" of MindSettler. I
 ## 🏗️ Technical Stack
 
 - **Language**: Python 3.9+
-- **Framework**: FastAPI (Asynchronous API endpoints)
+- **Framework**: Flask (Web Framework)
 - **Vector DB**: **Pinecone** (Cloud-native vector database)
 - **Embeddings**: Google Gemini Embedding API
 - **Document Processing**: LangChain / Custom Markdown Parsers

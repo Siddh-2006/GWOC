@@ -6,7 +6,7 @@
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 **Breaking the clinical friction between seekers and support.**  
@@ -28,7 +28,7 @@ MindSettler is a premium, RAG-powered mental health ecosystem designed to bridge
 
 ### 🧠 1. The Intelligence Layer (RAG & AI)
 Our proprietary **Retrieval-Augmented Generation (RAG)** system ensures that our AI doesn't just "chat"—it provides grounded, factual clinical insights based on our curated knowledge base.
-- **Microservice Isolation**: Python/FastAPI service dedicated to high-dimensional semantic search.
+- **Microservice Isolation**: Python/Flask service dedicated to high-dimensional semantic search.
 - **Dynamic Brain Feeding**: Admins can upload `.md` or `.txt` files to instantly expand the "Brain's" knowledge.
 - **Multi-Key Rotation**: Intelligent backend that rotates Gemini API keys to ensure zero-downtime availability.
 
@@ -48,7 +48,7 @@ Safety is baked into our code, not just an afterthought.
 ## 🛠️ The Receipts (Tech Stack)
 
 <div align="left">
-  <img src="https://skillicons.dev/icons?i=react,nodejs,express,mongodb,fastapi,py,tailwind,vite,figma,github,vercel,postman" />
+  <img src="https://skillicons.dev/icons?i=react,nodejs,express,mongodb,flask,py,tailwind,vite,figma,github,vercel,postman" />
 </div>
 
 <br />
@@ -59,7 +59,7 @@ Safety is baked into our code, not just an afterthought.
 | **Motion** | GSAP, Framer Motion | ScrollTrigger & Micro-interactions | 🎬 Smooth |
 | **Backend** | Node.js, Express | API Gateway & Safety Filtering | 🚀 High-speed |
 | **Database** | MongoDB | Persistent User & Session Data | 🍃 Robust |
-| **Intelligence** | Python, FastAPI | Vector Embedding & RAG Pipeline | 🧠 Genius |
+| **Intelligence** | Python, Flask | Vector Embedding & RAG Pipeline | 🧠 Genius |
 | **Vector DB** | Pinecone | Cloud-native Vector Search | 📂 Scalable |
 
 ---

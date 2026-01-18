@@ -45,7 +45,7 @@ MindSettler represents a shift from **Reactive Care** to **Proactive Understandi
 | :--- | :--- | :--- |
 | **Frontend** | React, Vite, GSAP | Immersive UI & Storytelling |
 | **Backend** | Node.js, Express | API Gateway & Safety Layer |
-| **Intelligence** | Python, FastAPI, Gemini | RAG Microservice & Embeddings |
+| **Intelligence** | Python, Flask, Gemini | RAG Microservice & Embeddings |
 | **Database** | MongoDB, Pinecone | User Data & Vector Knowledge |
 | **DevOps** | Render, Vercel | Scalable Cloud Deployment |
 

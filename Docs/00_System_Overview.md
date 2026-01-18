@@ -20,7 +20,7 @@ MindSettler is built on a modern, decoupled architecture designed for high respo
     - **Safety Layer**: A critical middleware that sanitizes user input and ensures AI responses remain safe and supportive.
     - **Database**: MongoDB for user data, sessions, and transaction history.
 
-3.  **External RAG Microservice (Python & FastAPI)**:
+3.  **External RAG Microservice (Python & Flask)**:
     - **Intelligence**: An isolated service dedicated to Retrieval-Augmented Generation.
     - **Vector Storage**: Uses **Pinecone** for cloud-native, high-dimensional semantic search.
     - **Processing**: Python-based ingestion pipeline for .md and .txt knowledge files.
