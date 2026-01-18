@@ -4,10 +4,15 @@ import Journey from '../features/journey/Journey';
 import HowItWorks from '../components/HowItWorksNew';
 import TeamSection from '../components/TeamSection';
 import FootnoteCTA from '../components/FootnoteCTA';
+import SEO from '../components/SEO';
 
 const Home = () => {
   return (
     <div className="bg-linear-to-r from-pink-50 via-pink-20 to-white-100">
+      <SEO
+        title="Home"
+        description="Welcome to MindSettler. We provide compassionate mental health support, expert-led therapy sessions, and a wealth of resources for your healing journey."
+      />
       {/* Navbar handled by Layout */}
 
       {/* 1st CTA: Refined Light Hero Slider */}

@@ -13,6 +13,7 @@ import ImageWithFallback from '../../components/ImageWithFallback';
 import AddMediaModal from '../../components/admin/AddMediaModal';
 import EditMediaModal from '../../components/admin/EditMediaModal';
 import InlineVideoPlayer from '../../components/InlineVideoPlayer';
+import SEO from '../../components/SEO';
 
 const ResourcesPage = () => {
   const { user, isAuthenticated } = useAuthStore();
@@ -179,6 +180,10 @@ const ResourcesPage = () => {
 
   return (
     <ContentWebLayout>
+      <SEO
+        title="Mental Health Resources"
+        description="Explore our library of videos, vlogs, and articles designed to support your mental wellness and provides insights into self-care."
+      />
       <div className="max-w-7xl mx-auto px-6 md:px-12 pb-24">
         {/* ACTION BAR */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-8 pt-4 gap-6 sm:gap-0">

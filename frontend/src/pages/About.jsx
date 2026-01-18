@@ -5,6 +5,7 @@ import ScrollFloat from '../components/animations/ScrollFloat';
 import Stack from '../components/animations/Stack';
 import CardSwap, { Card } from '../components/animations/CardSwap';
 import MagicBento from '../components/MagicBento';
+import SEO from '../components/SEO';
 
 const About = () => {
   // Animation variants
@@ -91,6 +92,10 @@ const About = () => {
 
   return (
     <div className="min-h-screen bg-white selection:bg-primary/10 selection:text-primary overflow-x-hidden">
+      <SEO
+        title="About Us"
+        description="Learn about MindSettler's mission to replace silence with understanding. Meet our founder Parnika Bajaj and discover our core philosophy of care."
+      />
 
       {/* 1. CINEMATIC HERO */}
       <section className="relative bg-bg overflow-hidden py-16 md:py-20 lg:py-28 border-b border-gray-50">
