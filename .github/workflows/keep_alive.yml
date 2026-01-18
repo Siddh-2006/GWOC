@@ -18,4 +18,4 @@ jobs:
       - name: Ping Chatbot (Render)
         run: |
           # Replace with your actual Render URL
-          curl -I https://gwoc-t7pn.onrender.com/health || echo "Chatbot Ping Failed"
+          curl -I https://mindsettler-chatbot-latest.onrender.com/health || echo "Chatbot Ping Failed"

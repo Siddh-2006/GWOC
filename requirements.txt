@@ -12,4 +12,3 @@ requests
 PyJWT
 cryptography
 # gunicorn (Not needed for Vercel Python runtime usually, but harmless)
-# Removed: chromadb, sentence-transformers, langchain-huggingface (Too big for Vercel)

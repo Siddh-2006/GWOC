@@ -413,9 +413,8 @@ export const Journey = () => {
             return (
               <div
                 key={stage.id}
-                className={`absolute flex flex-col items-center pointer-events-auto ${
-                  isLastTwo ? 'justify-start' : 'justify-end'
-                }`}
+                className={`absolute flex flex-col items-center pointer-events-auto ${isLastTwo ? 'justify-start' : 'justify-end'
+                  }`}
                 style={{
                   left: `${pt.x}%`,
                   top: `${pt.y}%`,
