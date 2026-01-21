@@ -48,10 +48,8 @@ connectDB()
     dbConnected = true;
     console.log('✅ Database connection established');
 
-    // Start session reminder service only after DB is connected and in development
-    if (process.env.NODE_ENV !== 'production') {
-      sessionReminderService.start();
-    }
+    // Start session reminder service after DB is connected
+    sessionReminderService.start();
   })
   .catch((error) => {
     console.error('❌ Failed to connect to database:', error);
@@ -214,12 +212,11 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Only start the server if not in serverless environment
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-  });
-}
+// Start the server (Required for Render persistent services)
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📡 Ready to receive traffic on 0.0.0.0:${PORT}`);
+});
 // Note: In serverless/production, cron jobs should be handled by Vercel Cron Jobs
 // or external services like GitHub Actions, not by the application itself
 
