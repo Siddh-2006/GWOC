@@ -1,6 +1,7 @@
 {
   "version": 2,
   "name": "mindsettler-frontend",
+  "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
