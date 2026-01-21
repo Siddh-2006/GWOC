@@ -63,7 +63,10 @@ const connectDB = async () => {
             console.log('🔄 Development mode: Retrying MongoDB connection in 5 seconds...');
             setTimeout(connectDB, 5000);
         } else {
-            // In production (especially serverless), we don't want to hang
+            // In production (especially serverless), we log the error but don't want to crash 
+            // the whole process immediately if it's just one request, 
+            // however Mongoose will throw which Vercel will catch.
+            console.error('💥 Production MongoDB connection failure. The function may error out.');
             throw err;
         }
     }
