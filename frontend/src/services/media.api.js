@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://gwoc-lovat.vercel.app';
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
@@ -33,10 +33,10 @@ api.interceptors.response.use(
 
           if (refreshResponse.data.success) {
             const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data.data;
-            
+
             localStorage.setItem('accessToken', accessToken);
             localStorage.setItem('refreshToken', newRefreshToken);
-            
+
             // Retry the original request with new token
             originalRequest.headers.Authorization = `Bearer ${accessToken}`;
             return api(originalRequest);
@@ -48,7 +48,7 @@ api.interceptors.response.use(
         localStorage.removeItem('user');
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        
+
         // Let the auth store handle the logout and redirect
         if (window.useAuthStore) {
           window.useAuthStore.getState().logout();
@@ -75,19 +75,19 @@ export const mediaApi = {
   likeMedia: async (mediaId) => {
     let retries = 3;
     let lastError;
-    
+
     while (retries > 0) {
       try {
         const response = await api.post(`/media/${mediaId}/like`);
         return response.data;
       } catch (error) {
         lastError = error;
-        
+
         // Don't retry for client errors (4xx)
         if (error.response?.status >= 400 && error.response?.status < 500) {
           throw error;
         }
-        
+
         retries--;
         if (retries > 0) {
           // Wait before retry (exponential backoff)
@@ -95,7 +95,7 @@ export const mediaApi = {
         }
       }
     }
-    
+
     throw lastError;
   },
 

@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://gwoc-lovat.vercel.app';
 
 class ContactAPI {
   async submitContactForm(formData) {
@@ -29,7 +29,7 @@ class ContactAPI {
   async getContactMessages(params = {}) {
     try {
       const token = localStorage.getItem('accessToken');
-      
+
       if (!token) {
         throw new Error('Authentication required');
       }
@@ -147,7 +147,7 @@ class ContactAPI {
   async getContactStats() {
     try {
       const token = localStorage.getItem('accessToken');
-      
+
       if (!token) {
         throw new Error('Authentication required');
       }

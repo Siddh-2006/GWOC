@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://gwoc-lovat.vercel.app';
 
 // Create axios instance for corporate API calls
 const corporateApi = axios.create({

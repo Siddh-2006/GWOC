@@ -7,10 +7,10 @@ const getApiBaseUrl = () => {
     // Add /api to the base URL since our environment variables now contain just the domain
     return `${import.meta.env.VITE_API_URL}/api`;
   }
-  
+
   // Fallback logic based on environment
   if (import.meta.env.PROD) {
-    // Production build - use deployed backend
+    // Production build - use deployed Vercel backend
     return 'https://gwoc-lovat.vercel.app/api';
   } else {
     // Development - use local backend
@@ -47,14 +47,14 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     // If error is 401 and not already retrying and not a refresh token request or logout request
-    if (error.response?.status === 401 && 
-        !originalRequest._retry && 
-        !originalRequest.url?.includes('/refresh-token') &&
-        !originalRequest.url?.includes('/logout')) {
+    if (error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes('/refresh-token') &&
+      !originalRequest.url?.includes('/logout')) {
       originalRequest._retry = true;
-      
+
       try {
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) throw new Error('No refresh token available');
@@ -72,19 +72,19 @@ apiClient.interceptors.response.use(
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
-        
+
         // Only redirect to login if not already on auth pages
         const currentPath = window.location.pathname;
         const authPages = ['/login', '/signup', '/verify-email', '/forgot-password', '/reset-password'];
-        
+
         if (!authPages.includes(currentPath)) {
           window.location.href = '/login';
         }
-        
+
         return Promise.reject(refreshError);
       }
     }
-    
+
     return Promise.reject(error);
   }
 );
