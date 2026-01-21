@@ -17,15 +17,17 @@ const connectDB = async () => {
         const maskedUri = mongoUri.replace(/\/\/.*@/, '//****:****@');
         console.log(`📡 Attempting to connect to MongoDB: ${maskedUri}`);
 
-        // Enhanced connection options for better reliability in serverless
+        // Standard production connection options for Render (persistent)
         const connectionOptions = {
-            serverSelectionTimeoutMS: 20000, // 20 seconds for cold starts
+            serverSelectionTimeoutMS: 10000, // 10 seconds
             socketTimeoutMS: 45000,
-            connectTimeoutMS: 20000,
-            maxPoolSize: 1, // Recommended for serverless to avoid hitting limits
-            minPoolSize: 0,
-            maxIdleTimeMS: 10000,
-            bufferCommands: false, // Prevent operations from hanging if connection is lost
+            connectTimeoutMS: 10000,
+            maxPoolSize: 10,
+            minPoolSize: 1,
+            maxIdleTimeMS: 30000,
+            bufferCommands: false,
+            family: 4,
+            tls: true,
             retryWrites: true,
             retryReads: true
         };
@@ -54,7 +56,7 @@ const connectDB = async () => {
             console.log('🔄 Development mode: Retrying...');
             setTimeout(connectDB, 5000);
         } else {
-            console.error('💥 Production Connection Failed. This will cause a 5xx error on Vercel.');
+            console.error('💥 Production Connection Failed.');
             throw err;
         }
     }
