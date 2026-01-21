@@ -2,26 +2,15 @@ import axios from 'axios';
 
 // Environment-aware API base URL
 const getApiBaseUrl = () => {
-  // Check if we have environment variable
   const envUrl = import.meta.env.VITE_API_URL;
   if (envUrl) {
-    // Sanitize: Remove trailing slash and add /api/
-    return `${envUrl.replace(/\/$/, '')}/api/`;
+    const cleanUrl = envUrl.replace(/\/$/, '');
+    return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
   }
-
-  // Fallback logic based on environment
-  if (import.meta.env.PROD) {
-    // Production build - use deployed Vercel backend
-    return 'https://gwoc-lovat.vercel.app/api/';
-  } else {
-    // Development - use local backend
-    return 'http://localhost:3001/api/';
-  }
+  return '/api'; // Default for same-domain or relative hosting
 };
 
 const API_BASE = getApiBaseUrl();
-
-console.log('🔗 API Base URL:', API_BASE);
 
 const apiClient = axios.create({
   baseURL: API_BASE,
@@ -29,6 +18,14 @@ const apiClient = axios.create({
     'Content-Type': 'application/json'
   },
   timeout: 30000 // 30 second timeout
+});
+
+// Ensure request URLs don't break the path-prefix (baseURL) logic
+apiClient.interceptors.request.use((config) => {
+  if (config.url && config.url.startsWith('/')) {
+    config.url = config.url.substring(1);
+  }
+  return config;
 });
 
 // Request interceptor for adding auth token

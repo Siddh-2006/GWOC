@@ -1,14 +1,4 @@
-import axios from 'axios';
-
-const API_BASE = (import.meta.env.VITE_API_URL || 'https://gwoc-lovat.vercel.app').replace(/\/$/, '');
-
-// Create axios instance for corporate API calls
-const corporateApi = axios.create({
-  baseURL: `${API_BASE}/api/corporate/`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import apiClient from '../api/apiClient';
 
 export const corporateService = {
   /**
@@ -16,7 +6,7 @@ export const corporateService = {
    * Calm, human-centered submission process
    */
   submitInquiry: async (inquiryData) => {
-    const response = await corporateApi.post('/inquiry', inquiryData);
+    const response = await apiClient.post('/corporate/inquiry', inquiryData);
     return response.data;
   },
 
@@ -26,9 +16,7 @@ export const corporateService = {
   admin: {
     // Get all inquiries with filtering
     getInquiries: async (filters = {}) => {
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.get(`${API_BASE}/api/corporate/admin/inquiries`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await apiClient.get('/corporate/admin/inquiries', {
         params: filters
       });
       return response.data;
@@ -36,28 +24,19 @@ export const corporateService = {
 
     // Get single inquiry
     getInquiry: async (id) => {
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.get(`${API_BASE}/api/corporate/admin/inquiries/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await apiClient.get(`/corporate/admin/inquiries/${id}`);
       return response.data;
     },
 
     // Update inquiry
     updateInquiry: async (id, updateData) => {
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.patch(`${API_BASE}/api/corporate/admin/inquiries/${id}`, updateData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await apiClient.patch(`/corporate/admin/inquiries/${id}`, updateData);
       return response.data;
     },
 
     // Get statistics
     getStats: async () => {
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.get(`${API_BASE}/api/corporate/admin/inquiries/stats`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await apiClient.get('/corporate/admin/inquiries/stats');
       return response.data;
     }
   }

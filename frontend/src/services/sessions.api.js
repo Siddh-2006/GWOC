@@ -1,10 +1,6 @@
-import axios from 'axios';
+import apiClient from '../api/apiClient';
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://gwoc-lovat.vercel.app').replace(/\/$/, '');
-
-const api = axios.create({
-  baseURL: `${API_BASE_URL}/api/`,
-});
+const api = apiClient;
 
 // Add auth token to requests
 api.interceptors.request.use((config) => {

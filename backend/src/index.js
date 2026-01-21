@@ -104,38 +104,31 @@ app.use(cors({
     if (!origin) return callback(null, true);
 
     const allowedOrigins = [
-      'http://localhost:3000',
-      'https://gwoc-f8d2.vercel.app',
-      'https://gwoc-lovat.vercel.app',
       process.env.FRONTEND_URL,
-      process.env.CORS_ORIGIN
+      process.env.CORS_ORIGIN,
+      'http://localhost:3000',
+      'http://localhost:5173'
     ].filter(Boolean);
 
-    // Also handle comma-separated CORS_ORIGIN
-    if (process.env.CORS_ORIGIN) {
-      const corsOrigins = process.env.CORS_ORIGIN.split(',').map(o => o.trim());
-      allowedOrigins.push(...corsOrigins);
+    // Handle comma-separated list in CORS_ORIGIN
+    if (process.env.CORS_ORIGIN && process.env.CORS_ORIGIN.includes(',')) {
+      const extra = process.env.CORS_ORIGIN.split(',').map(o => o.trim());
+      allowedOrigins.push(...extra);
     }
 
-    // Remove duplicates
-    const uniqueOrigins = [...new Set(allowedOrigins)];
-
-    // Check if origin is in the whitelist or matches Vercel subdomains
-    const isAllowed = uniqueOrigins.includes(origin) ||
-      /\.vercel\.app$/.test(origin) ||
-      origin.startsWith('file://');
+    const isAllowed = allowedOrigins.includes(origin) ||
+      origin.endsWith('.vercel.app');
 
     if (isAllowed) {
       callback(null, true);
     } else {
       console.log(`❌ CORS blocked origin: ${origin}`);
-      console.log(`✅ Allowed origins list: ${uniqueOrigins.join(', ')} (Wildcard: *.vercel.app)`);
-      callback(new Error(`Not allowed by CORS at origin ${origin}`));
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 app.use(express.json({ limit: '10mb' }));
