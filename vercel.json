@@ -1,15 +1,30 @@
 {
     "version": 2,
+    "name": "mindsettler-ecosystem",
     "builds": [
         {
-            "src": "test-chatbot/api/index.py",
-            "use": "@vercel/python"
+            "src": "frontend/package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "dist"
+            }
+        },
+        {
+            "src": "backend/src/index.js",
+            "use": "@vercel/node"
         }
     ],
     "routes": [
         {
+            "src": "/api/(.*)",
+            "dest": "backend/src/index.js"
+        },
+        {
+            "handle": "filesystem"
+        },
+        {
             "src": "/(.*)",
-            "dest": "/test-chatbot/api/index.py"
+            "destination": "/index.html"
         }
     ]
 }
