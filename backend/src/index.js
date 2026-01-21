@@ -63,10 +63,12 @@ connectDB()
 // Middleware to check database connection
 const ensureDbConnection = (req, res, next) => {
   if (!dbConnected || mongoose.connection.readyState !== 1) {
-    console.error(`🚫 DB NOT READY: State=${mongoose.connection.readyState}, Flag=${dbConnected}`);
+    const errorMsg = `🚫 DB NOT READY: State=${mongoose.connection.readyState}, Flag=${dbConnected}`;
+    console.error(errorMsg);
     return res.status(503).json({
       success: false,
-      message: 'Service temporarily unavailable - database connecting or error',
+      message: 'MindSettler is warming up. Please refresh in a moment.',
+      debug: errorMsg,
       readyState: mongoose.connection.readyState
     });
   }

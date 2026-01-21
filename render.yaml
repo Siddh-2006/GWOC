@@ -17,5 +17,55 @@ services:
         value: mindsettler-rag
       - key: MONGODB_URI
         sync: false
+  - key: JWT_ACCESS_SECRET
+        sync: false
+
+  - type: web
+    name: mindsettler-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 20.x
+      - key: PORT
+        value: 3001
+      - key: MONGODB_URI
+        sync: false
       - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: EMAIL_SERVICE
+        value: gmail
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+      - key: GEMINI_KEYS
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false # Set to your Vercel URL
+      - key: CORS_ORIGIN
+        sync: false # Set to your Vercel URL
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALLBACK_URL
+        sync: false # Set to https://your-render-app.onrender.com/api/auth/google/callback
+      - key: CHATBOT_API_URL
+        sync: false # Set to your Render Chatbot URL
+      - key: SKIP_EMAIL
+        value: "false"
+      - key: CLOUDINARY_URL
         sync: false
