@@ -1,4 +1,5 @@
 import cron from 'node-cron';
+import mongoose from 'mongoose';
 import { sendBookingReminder } from './booking-email.service.js';
 import { Booking } from '../models/Booking.model.js';
 
@@ -35,6 +36,12 @@ class SessionReminderService {
    */
   async checkUpcomingSessions() {
     try {
+      // Check if database is connected
+      if (mongoose.connection.readyState !== 1) {
+        console.log('⚠️ Session reminder: Database not connected, skipping check');
+        return;
+      }
+
       const now = new Date();
       
       // Find confirmed bookings that haven't had reminders sent yet

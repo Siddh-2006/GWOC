@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import Auth from '../models/Auth.model.js';
 
 // Track recent requests to avoid spam logging

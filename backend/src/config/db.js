@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+// Set global mongoose options to prevent buffering issues
+mongoose.set('bufferCommands', false);
+
 const connectDB = async () => {
     try {
         const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
@@ -7,7 +10,7 @@ const connectDB = async () => {
         if (!mongoUri) {
             console.error('❌ Missing MONGODB_URI or MONGO_URI environment variable');
             console.error('Available env keys:', Object.keys(process.env).filter(k => k.includes('MONGO')));
-            return;
+            throw new Error('Missing MONGODB_URI or MONGO_URI environment variable');
         }
 
         // Log a masked version of the URI for verification in logs
@@ -16,17 +19,23 @@ const connectDB = async () => {
 
         // Enhanced connection options for better reliability
         const conn = await mongoose.connect(mongoUri, {
-            serverSelectionTimeoutMS: 5000, // 5 seconds (shorter for serverless)
+            serverSelectionTimeoutMS: 10000, // 10 seconds
             socketTimeoutMS: 45000,
             maxPoolSize: process.env.NODE_ENV === 'production' ? 10 : 5,
             minPoolSize: 1,
             maxIdleTimeMS: 30000,
-            bufferCommands: false,
+            // Remove bufferCommands and bufferMaxEntries to avoid the error
+            // These are set globally instead
             retryWrites: true,
             retryReads: true
         });
 
         console.log(`✅ Connected to MongoDB: ${conn.connection.host}/${conn.connection.name}`);
+
+        // Wait for the connection to be fully ready
+        if (mongoose.connection.readyState !== 1) {
+            throw new Error('Database connection not ready');
+        }
 
         // Handle connection events
         mongoose.connection.on('error', (err) => {
@@ -46,7 +55,7 @@ const connectDB = async () => {
         if (err.message.includes('IP address not whitelisted')) {
             console.error('👉 ACTION REQUIRED: Add 0.0.0.0/0 to your MongoDB Atlas Network Access whitelist.');
         } else if (err.message.includes('Authentication failed')) {
-            console.error('👉 ACTION REQUIRED: Check your MongoDB username and password in the connection string.');
+            console.error('� ACTION REQUIRED: Check your MongoDB username and password in the connection string.');
         }
 
         if (process.env.NODE_ENV !== 'production') {
