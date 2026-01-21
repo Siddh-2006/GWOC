@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import passport from 'passport';
 import { configurePassport } from './config/passport.js';
+import connectDB from './config/db.js';
 
 // Configure environment variables first
 // In serverless, environment variables are provided by the platform
@@ -38,48 +39,40 @@ const PORT = process.env.PORT || 3001;
 // Trust proxy for Vercel/serverless environments
 app.set('trust proxy', 1);
 
-// Database connection with environment-aware settings
-const mongoOptions = {
-  serverSelectionTimeoutMS: process.env.NODE_ENV === 'production' ? 5000 : 30000,
-  socketTimeoutMS: 45000,
-  connectTimeoutMS: 10000,
-  maxPoolSize: process.env.NODE_ENV === 'production' ? 10 : 5,
-  minPoolSize: 1,
-  maxIdleTimeMS: 30000,
-};
+// Initialize database connection
+let dbConnected = false;
 
-// Only add serverless-specific options in production
-if (process.env.NODE_ENV === 'production') {
-  mongoOptions.bufferMaxEntries = 0; // Correct camelCase
-  mongoOptions.bufferCommands = false;
-}
-
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mindsettler', mongoOptions)
+// Connect to database and set flag
+connectDB()
   .then(() => {
-    console.log('✅ Connected to MongoDB'); // Log in production too for Vercel logs
+    dbConnected = true;
+    console.log('✅ Database connection established');
+
+    // Start session reminder service after DB is connected
+    sessionReminderService.start();
   })
-  .catch(err => {
-    console.error('❌ MongoDB connection error:', err.message); // Log exact error
-    // In serverless, we generally don't exit, but we should log clearly
-    console.error('Check MONGODB_URI environment variable and IP Whitelist in Atlas.');
+  .catch((error) => {
+    console.error('❌ Failed to connect to database:', error);
+    // On Vercel/Serverless, we don't want to exit the process
+    // as it will crash the lambda instance.
   });
 
-// Handle connection events for better serverless performance
-mongoose.connection.on('connected', () => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('🔗 Mongoose connected to MongoDB');
+// Middleware to check database connection
+const ensureDbConnection = (req, res, next) => {
+  // State 1 = connected, State 2 = connecting
+  // We allow connecting state because Mongoose will buffer commands
+  if (mongoose.connection.readyState !== 1 && mongoose.connection.readyState !== 2) {
+    const errorMsg = `🚫 DB NOT READY: State=${mongoose.connection.readyState}`;
+    console.error(errorMsg);
+    return res.status(503).json({
+      success: false,
+      message: 'MindSettler is warming up. Please refresh in a moment.',
+      debug: errorMsg,
+      readyState: mongoose.connection.readyState
+    });
   }
-});
-
-mongoose.connection.on('error', (err) => {
-  console.error('❌ Mongoose connection error:', err);
-});
-
-mongoose.connection.on('disconnected', () => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('🔌 Mongoose disconnected from MongoDB');
-  }
-});
+  next();
+};
 
 // Graceful shutdown for serverless
 process.on('SIGINT', async () => {
@@ -111,33 +104,31 @@ app.use(cors({
     if (!origin) return callback(null, true);
 
     const allowedOrigins = [
-      'http://localhost:3000',
-      'https://gwoc-f8d2.vercel.app',
-      'https://gwoc-lovat.vercel.app',
       process.env.FRONTEND_URL,
-      process.env.CORS_ORIGIN
+      process.env.CORS_ORIGIN,
+      'http://localhost:3000',
+      'http://localhost:5173'
     ].filter(Boolean);
 
-    // Also handle comma-separated CORS_ORIGIN
-    if (process.env.CORS_ORIGIN) {
-      const corsOrigins = process.env.CORS_ORIGIN.split(',').map(o => o.trim());
-      allowedOrigins.push(...corsOrigins);
+    // Handle comma-separated list in CORS_ORIGIN
+    if (process.env.CORS_ORIGIN && process.env.CORS_ORIGIN.includes(',')) {
+      const extra = process.env.CORS_ORIGIN.split(',').map(o => o.trim());
+      allowedOrigins.push(...extra);
     }
 
-    // Remove duplicates
-    const uniqueOrigins = [...new Set(allowedOrigins)];
+    const isAllowed = allowedOrigins.includes(origin) ||
+      origin.endsWith('.vercel.app');
 
-    if (uniqueOrigins.includes(origin)) {
+    if (isAllowed) {
       callback(null, true);
     } else {
       console.log(`❌ CORS blocked origin: ${origin}`);
-      console.log(`✅ Allowed origins: ${uniqueOrigins.join(', ')}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 app.use(express.json({ limit: '10mb' }));
@@ -147,30 +138,32 @@ app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 configurePassport();
 
-// Routes
+// Routes - Apply database check middleware to routes that need DB
 app.get('/', (req, res) => {
   res.json({
     message: 'MindSettler API is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    database: dbConnected ? 'connected' : 'connecting'
   });
 });
 
-app.use('/api/auth', authRoutes);
-app.use('/api/otp', otpRoutes);
-app.use('/api/booking', bookingRoutes);
-app.use('/api/chatbot', chatbotRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/content', contentRoutes);
-app.use('/api/corporate', corporateRoutes);
-app.use('/api/contact', contactRoutes);
-app.use('/api/media', mediaRoutes);
-app.use('/api/psycho-education', psychoEducationRoutes);
-app.use('/api/reflection', reflectionRoutes);
-app.use('/api/sessions', sessionsRoutes);
-app.use('/api/tasks', taskRoutes);
-app.use('/api/journey', journeyRoutes);
-app.use('/api/upload', uploadRoutes);
+// Routes that require database connection
+app.use('/api/auth', ensureDbConnection, authRoutes);
+app.use('/api/otp', ensureDbConnection, otpRoutes);
+app.use('/api/booking', ensureDbConnection, bookingRoutes);
+app.use('/api/chatbot', ensureDbConnection, chatbotRoutes);
+app.use('/api/admin', ensureDbConnection, adminRoutes);
+app.use('/api/content', ensureDbConnection, contentRoutes);
+app.use('/api/corporate', ensureDbConnection, corporateRoutes);
+app.use('/api/contact', ensureDbConnection, contactRoutes);
+app.use('/api/media', ensureDbConnection, mediaRoutes);
+app.use('/api/psycho-education', ensureDbConnection, psychoEducationRoutes);
+app.use('/api/reflection', ensureDbConnection, reflectionRoutes);
+app.use('/api/sessions', ensureDbConnection, sessionsRoutes);
+app.use('/api/tasks', ensureDbConnection, taskRoutes);
+app.use('/api/journey', ensureDbConnection, journeyRoutes);
+app.use('/api/upload', ensureDbConnection, uploadRoutes);
 
 // Health check
 app.get('/health', async (req, res) => {
@@ -213,13 +206,12 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Only start the server if not in serverless environment
+// Start the server (Required for Render persistent services)
+// Only start the server if NOT in production (Vercel handles the export in production)
 if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);
-
-    // Start the session reminder service only in development
-    sessionReminderService.start();
+    console.log(`📡 Ready to receive traffic on 0.0.0.0:${PORT}`);
   });
 }
 // Note: In serverless/production, cron jobs should be handled by Vercel Cron Jobs

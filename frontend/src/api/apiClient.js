@@ -2,25 +2,15 @@ import axios from 'axios';
 
 // Environment-aware API base URL
 const getApiBaseUrl = () => {
-  // Check if we have environment variable
-  if (import.meta.env.VITE_API_URL) {
-    // Add /api to the base URL since our environment variables now contain just the domain
-    return `${import.meta.env.VITE_API_URL}/api`;
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) {
+    const cleanUrl = envUrl.replace(/\/$/, '');
+    return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
   }
-  
-  // Fallback logic based on environment
-  if (import.meta.env.PROD) {
-    // Production build - use deployed backend
-    return 'https://gwoc-lovat.vercel.app/api';
-  } else {
-    // Development - use local backend
-    return 'http://localhost:3001/api';
-  }
+  return '/api'; // Default for same-domain or relative hosting
 };
 
 const API_BASE = getApiBaseUrl();
-
-console.log('🔗 API Base URL:', API_BASE);
 
 const apiClient = axios.create({
   baseURL: API_BASE,
@@ -28,6 +18,14 @@ const apiClient = axios.create({
     'Content-Type': 'application/json'
   },
   timeout: 30000 // 30 second timeout
+});
+
+// Ensure request URLs don't break the path-prefix (baseURL) logic
+apiClient.interceptors.request.use((config) => {
+  if (config.url && config.url.startsWith('/')) {
+    config.url = config.url.substring(1);
+  }
+  return config;
 });
 
 // Request interceptor for adding auth token
@@ -47,14 +45,14 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     // If error is 401 and not already retrying and not a refresh token request or logout request
-    if (error.response?.status === 401 && 
-        !originalRequest._retry && 
-        !originalRequest.url?.includes('/refresh-token') &&
-        !originalRequest.url?.includes('/logout')) {
+    if (error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes('/refresh-token') &&
+      !originalRequest.url?.includes('/logout')) {
       originalRequest._retry = true;
-      
+
       try {
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) throw new Error('No refresh token available');
@@ -72,19 +70,19 @@ apiClient.interceptors.response.use(
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
-        
+
         // Only redirect to login if not already on auth pages
         const currentPath = window.location.pathname;
         const authPages = ['/login', '/signup', '/verify-email', '/forgot-password', '/reset-password'];
-        
+
         if (!authPages.includes(currentPath)) {
           window.location.href = '/login';
         }
-        
+
         return Promise.reject(refreshError);
       }
     }
-    
+
     return Promise.reject(error);
   }
 );

@@ -1,47 +1,62 @@
 import mongoose from 'mongoose';
 
+// Mongoose connection logic
 const connectDB = async () => {
     try {
-        const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+        const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
+
         if (!mongoUri) {
-            throw new Error('Missing MONGO_URI or MONGODB_URI environment variable');
+            console.error('❌ Missing MONGODB_URI or MONGO_URI environment variable');
+            console.error('Available env keys:', Object.keys(process.env).filter(k => k.includes('MONGO')));
+            throw new Error('Missing MONGODB_URI or MONGO_URI environment variable');
         }
-        
-        // Enhanced connection options for better reliability
-        const conn = await mongoose.connect(mongoUri, {
+
+        // Log a masked version of the URI for verification in logs
+        const maskedUri = mongoUri.replace(/\/\/.*@/, '//****:****@');
+        console.log(`📡 Attempting to connect to MongoDB: ${maskedUri}`);
+
+        // Standard production connection options for Render (persistent)
+        const connectionOptions = {
             serverSelectionTimeoutMS: 10000, // 10 seconds
-            socketTimeoutMS: 45000, // 45 seconds
+            socketTimeoutMS: 45000,
+            connectTimeoutMS: 10000,
             maxPoolSize: 10,
-            minPoolSize: 5,
+            minPoolSize: 1,
             maxIdleTimeMS: 30000,
-            bufferCommands: false,
-            bufferMaxEntries: 0,
+            bufferCommands: true,
+            family: 4,
+            tls: true,
             retryWrites: true,
             retryReads: true
-        });
-        
-        console.log(`✅ Connected to MongoDB: ${conn.connection.host}`);
-        
-        // Handle connection events
-        mongoose.connection.on('error', (err) => {
-            console.error('❌ MongoDB connection error:', err);
-        });
-        
-        mongoose.connection.on('disconnected', () => {
-            console.log('⚠️ MongoDB disconnected');
-        });
-        
-        mongoose.connection.on('reconnected', () => {
-            console.log('✅ MongoDB reconnected');
-        });
-        
+        };
+
+        const conn = await mongoose.connect(mongoUri, connectionOptions);
+
+        console.log(`✅ MongoDB Connected: ${conn.connection.host}/${conn.connection.name}`);
+        console.log(`📡 Connection State: ${mongoose.connection.readyState} (1 = connected)`);
+
+        return conn;
     } catch (err) {
-        console.error(`❌ MongoDB connection error: ${err.message}`);
-        // Don't exit process immediately, allow for retries
-        setTimeout(() => {
-            console.log('🔄 Retrying MongoDB connection...');
-            connectDB();
-        }, 5000);
+        // deep diagnostic logging
+        console.error('❌ MONGODB ERROR DIAGNOSTICS:');
+        console.error(`- Name: ${err.name}`);
+        console.error(`- Message: ${err.message}`);
+
+        if (err.reason) {
+            console.error('- Reason:', JSON.stringify(err.reason, null, 2));
+        }
+
+        if (err.message.includes('IP address not whitelisted')) {
+            console.error('👉 ACTION REQUIRED: Ensure 0.0.0.0/0 is whitelisted in Atlas.');
+        }
+
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('🔄 Development mode: Retrying...');
+            setTimeout(connectDB, 5000);
+        } else {
+            console.error('💥 Production Connection Failed.');
+            throw err;
+        }
     }
 };
 
