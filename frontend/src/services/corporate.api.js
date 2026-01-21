@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://gwoc-lovat.vercel.app';
+const API_BASE = (import.meta.env.VITE_API_URL || 'https://gwoc-lovat.vercel.app').replace(/\/$/, '');
 
 // Create axios instance for corporate API calls
 const corporateApi = axios.create({
-  baseURL: `${API_BASE}/api/corporate`,
+  baseURL: `${API_BASE}/api/corporate/`,
   headers: {
     'Content-Type': 'application/json',
   },

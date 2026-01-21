@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://gwoc-lovat.vercel.app';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://gwoc-lovat.vercel.app').replace(/\/$/, '');
 
 class ContactAPI {
   async submitContactForm(formData) {

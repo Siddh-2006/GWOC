@@ -213,10 +213,13 @@ app.get('/health', async (req, res) => {
 });
 
 // Start the server (Required for Render persistent services)
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📡 Ready to receive traffic on 0.0.0.0:${PORT}`);
-});
+// Only start the server if NOT in production (Vercel handles the export in production)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📡 Ready to receive traffic on 0.0.0.0:${PORT}`);
+  });
+}
 // Note: In serverless/production, cron jobs should be handled by Vercel Cron Jobs
 // or external services like GitHub Actions, not by the application itself
 

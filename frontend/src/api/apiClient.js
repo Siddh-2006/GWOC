@@ -3,18 +3,19 @@ import axios from 'axios';
 // Environment-aware API base URL
 const getApiBaseUrl = () => {
   // Check if we have environment variable
-  if (import.meta.env.VITE_API_URL) {
-    // Add /api to the base URL since our environment variables now contain just the domain
-    return `${import.meta.env.VITE_API_URL}/api`;
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) {
+    // Sanitize: Remove trailing slash and add /api/
+    return `${envUrl.replace(/\/$/, '')}/api/`;
   }
 
   // Fallback logic based on environment
   if (import.meta.env.PROD) {
     // Production build - use deployed Vercel backend
-    return 'https://gwoc-lovat.vercel.app/api';
+    return 'https://gwoc-lovat.vercel.app/api/';
   } else {
     // Development - use local backend
-    return 'http://localhost:3001/api';
+    return 'http://localhost:3001/api/';
   }
 };
 
