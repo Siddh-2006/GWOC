@@ -53,15 +53,16 @@ connectDB()
   })
   .catch((error) => {
     console.error('❌ Failed to connect to database:', error);
-    if (process.env.NODE_ENV === 'production') {
-      process.exit(1);
-    }
+    // On Vercel/Serverless, we don't want to exit the process
+    // as it will crash the lambda instance.
   });
 
 // Middleware to check database connection
 const ensureDbConnection = (req, res, next) => {
-  if (!dbConnected || mongoose.connection.readyState !== 1) {
-    const errorMsg = `🚫 DB NOT READY: State=${mongoose.connection.readyState}, Flag=${dbConnected}`;
+  // State 1 = connected, State 2 = connecting
+  // We allow connecting state because Mongoose will buffer commands
+  if (mongoose.connection.readyState !== 1 && mongoose.connection.readyState !== 2) {
+    const errorMsg = `🚫 DB NOT READY: State=${mongoose.connection.readyState}`;
     console.error(errorMsg);
     return res.status(503).json({
       success: false,

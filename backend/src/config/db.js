@@ -1,8 +1,6 @@
 import mongoose from 'mongoose';
 
-// Set global mongoose options to prevent buffering issues
-mongoose.set('bufferCommands', false);
-
+// Mongoose connection logic
 const connectDB = async () => {
     try {
         const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
@@ -25,7 +23,7 @@ const connectDB = async () => {
             maxPoolSize: 10,
             minPoolSize: 1,
             maxIdleTimeMS: 30000,
-            bufferCommands: false,
+            bufferCommands: true,
             family: 4,
             tls: true,
             retryWrites: true,
