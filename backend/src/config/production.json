@@ -1,4 +1,4 @@
 {
-    "MONGODB_URI": "mongodb+srv://mindsettler:zovotfSQfFEvnml8@mindsettler.791pbco.mongodb.net/?appName=MindSettler",
+    "MONGODB_URI": "mongodb+srv://mindsettler:zovotfSQfFEvnml8@mindsettler.791pbco.mongodb.net/MindSettler?appName=MindSettler",
     "PORT": 3001
 }

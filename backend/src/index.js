@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import passport from 'passport';
 import { configurePassport } from './config/passport.js';
+import connectDB from './config/db.js';
 
 // Configure environment variables first
 // In serverless, environment variables are provided by the platform
@@ -38,48 +39,8 @@ const PORT = process.env.PORT || 3001;
 // Trust proxy for Vercel/serverless environments
 app.set('trust proxy', 1);
 
-// Database connection with environment-aware settings
-const mongoOptions = {
-  serverSelectionTimeoutMS: process.env.NODE_ENV === 'production' ? 5000 : 30000,
-  socketTimeoutMS: 45000,
-  connectTimeoutMS: 10000,
-  maxPoolSize: process.env.NODE_ENV === 'production' ? 10 : 5,
-  minPoolSize: 1,
-  maxIdleTimeMS: 30000,
-};
-
-// Only add serverless-specific options in production
-if (process.env.NODE_ENV === 'production') {
-  mongoOptions.bufferMaxEntries = 0; // Correct camelCase
-  mongoOptions.bufferCommands = false;
-}
-
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mindsettler', mongoOptions)
-  .then(() => {
-    console.log('✅ Connected to MongoDB'); // Log in production too for Vercel logs
-  })
-  .catch(err => {
-    console.error('❌ MongoDB connection error:', err.message); // Log exact error
-    // In serverless, we generally don't exit, but we should log clearly
-    console.error('Check MONGODB_URI environment variable and IP Whitelist in Atlas.');
-  });
-
-// Handle connection events for better serverless performance
-mongoose.connection.on('connected', () => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('🔗 Mongoose connected to MongoDB');
-  }
-});
-
-mongoose.connection.on('error', (err) => {
-  console.error('❌ Mongoose connection error:', err);
-});
-
-mongoose.connection.on('disconnected', () => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('🔌 Mongoose disconnected from MongoDB');
-  }
-});
+// Database connection
+connectDB();
 
 // Graceful shutdown for serverless
 process.on('SIGINT', async () => {
