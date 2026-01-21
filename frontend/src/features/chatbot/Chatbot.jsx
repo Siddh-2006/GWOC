@@ -10,7 +10,7 @@ import {
   Phone,
   Loader2
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { data, Link } from 'react-router-dom';
 import { useChatStore } from '../../store/useChatStore';
 import axios from 'axios'; // Import axios directly
 import useAuthStore from '../../store/useAuthStore';
@@ -66,7 +66,7 @@ const Chatbot = () => {
     try {
       const accessToken = useAuthStore.getState().accessToken;
 
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/chatbot/chat`, {
+      const response = await axios.post(`https://mindsettler-chatbot-latest.onrender.com/chat`, {
         message: userMessage.content,
         chatHistory: messages.map(msg => ({
           role: msg.role === 'bot' ? 'assistant' : 'user',
@@ -84,7 +84,7 @@ const Chatbot = () => {
       const botMessage = {
         id: Date.now() + 1,
         role: 'bot',
-        content: data.response || "I didn't receive a response.",
+        content: data.response || data.text || "I didn't receive a response.",
         timestamp: new Date().toISOString(),
         isEmergency: data.isEmergency || false,
         actions: data.actions || []

@@ -93,10 +93,15 @@ ${likedMedia.length > 0
 
     // --- PRIMARY: TRY RAG MICROSERVICE ---
     try {
-      console.log(`🤖 Attempting RAG request to: ${RAG_SERVICE_URL}/chat`);
+      const cleanBaseUrl = RAG_SERVICE_URL.replace(/\/$/, '');
+      const fullUrl = `${cleanBaseUrl}/chat`;
+
+      console.log(`🤖 Attempting RAG request to: ${fullUrl}`);
+      console.log(`Payload summary: message length ${userMessage.length}, history size ${chatHistory.length}`);
+
       const authHeader = req.headers.authorization;
 
-      const ragResponse = await axios.post(`${RAG_SERVICE_URL}/chat`, {
+      const ragResponse = await axios.post(fullUrl, {
         message: userMessage,
         chatHistory: chatHistory,
         user_id: userIdValue,
@@ -106,7 +111,7 @@ ${likedMedia.length > 0
           'Authorization': authHeader,
           'Content-Type': 'application/json'
         },
-        timeout: 10000 // 10s timeout
+        timeout: 60000 // 60s timeout (increased for Render extreme cold start)
       });
 
       if (ragResponse.data && ragResponse.data.text) {
@@ -121,7 +126,11 @@ ${likedMedia.length > 0
         });
       }
     } catch (ragError) {
-      console.error('⚠️ RAG Service unavailable, falling back to local Gemini:', ragError.message);
+      console.error('⚠️ RAG Service unavailable or timed out at:', RAG_SERVICE_URL);
+      console.error('Error details:', ragError.message);
+      if (ragError.code === 'ECONNABORTED') {
+        console.error('Request timed out after 60s. Render service might be cold-starting or overwhelmed.');
+      }
     }
 
     // --- FALLBACK: USE LOCAL GEMINI SERVICE (The "Old Prompt") ---
