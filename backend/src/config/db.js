@@ -17,56 +17,44 @@ const connectDB = async () => {
         const maskedUri = mongoUri.replace(/\/\/.*@/, '//****:****@');
         console.log(`📡 Attempting to connect to MongoDB: ${maskedUri}`);
 
-        // Enhanced connection options for better reliability
-        const conn = await mongoose.connect(mongoUri, {
-            serverSelectionTimeoutMS: 10000, // 10 seconds
+        // Enhanced connection options for better reliability in serverless
+        const connectionOptions = {
+            serverSelectionTimeoutMS: 20000, // 20 seconds for cold starts
             socketTimeoutMS: 45000,
-            maxPoolSize: process.env.NODE_ENV === 'production' ? 10 : 5,
-            minPoolSize: 1,
-            maxIdleTimeMS: 30000,
-            // Remove bufferCommands and bufferMaxEntries to avoid the error
-            // These are set globally instead
+            connectTimeoutMS: 20000,
+            maxPoolSize: 1, // Recommended for serverless to avoid hitting limits
+            minPoolSize: 0,
+            maxIdleTimeMS: 10000,
+            bufferCommands: false, // Prevent operations from hanging if connection is lost
             retryWrites: true,
             retryReads: true
-        });
+        };
 
-        console.log(`✅ Connected to MongoDB: ${conn.connection.host}/${conn.connection.name}`);
+        const conn = await mongoose.connect(mongoUri, connectionOptions);
 
-        // Wait for the connection to be fully ready
-        if (mongoose.connection.readyState !== 1) {
-            throw new Error('Database connection not ready');
-        }
-
-        // Handle connection events
-        mongoose.connection.on('error', (err) => {
-            console.error('❌ MongoDB connection error event:', err);
-        });
-
-        mongoose.connection.on('disconnected', () => {
-            if (process.env.NODE_ENV !== 'production') {
-                console.log('⚠️ MongoDB disconnected');
-            }
-        });
+        console.log(`✅ MongoDB Connected: ${conn.connection.host}/${conn.connection.name}`);
+        console.log(`📡 Connection State: ${mongoose.connection.readyState} (1 = connected)`);
 
         return conn;
     } catch (err) {
-        console.error(`❌ MongoDB connection error: ${err.message}`);
+        // deep diagnostic logging
+        console.error('❌ MONGODB ERROR DIAGNOSTICS:');
+        console.error(`- Name: ${err.name}`);
+        console.error(`- Message: ${err.message}`);
+
+        if (err.reason) {
+            console.error('- Reason:', JSON.stringify(err.reason, null, 2));
+        }
 
         if (err.message.includes('IP address not whitelisted')) {
-            console.error('👉 ACTION REQUIRED: Add 0.0.0.0/0 to your MongoDB Atlas Network Access whitelist.');
-        } else if (err.message.includes('Authentication failed')) {
-            console.error('� ACTION REQUIRED: Check your MongoDB username and password in the connection string.');
+            console.error('👉 ACTION REQUIRED: Ensure 0.0.0.0/0 is whitelisted in Atlas.');
         }
 
         if (process.env.NODE_ENV !== 'production') {
-            // In development, we might want to retry
-            console.log('🔄 Development mode: Retrying MongoDB connection in 5 seconds...');
+            console.log('🔄 Development mode: Retrying...');
             setTimeout(connectDB, 5000);
         } else {
-            // In production (especially serverless), we log the error but don't want to crash 
-            // the whole process immediately if it's just one request, 
-            // however Mongoose will throw which Vercel will catch.
-            console.error('💥 Production MongoDB connection failure. The function may error out.');
+            console.error('💥 Production Connection Failed. This will cause a 5xx error on Vercel.');
             throw err;
         }
     }

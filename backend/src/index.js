@@ -63,9 +63,11 @@ connectDB()
 // Middleware to check database connection
 const ensureDbConnection = (req, res, next) => {
   if (!dbConnected || mongoose.connection.readyState !== 1) {
+    console.error(`🚫 DB NOT READY: State=${mongoose.connection.readyState}, Flag=${dbConnected}`);
     return res.status(503).json({
       success: false,
-      message: 'Service temporarily unavailable - database not ready'
+      message: 'Service temporarily unavailable - database connecting or error',
+      readyState: mongoose.connection.readyState
     });
   }
   next();
@@ -117,12 +119,17 @@ app.use(cors({
     // Remove duplicates
     const uniqueOrigins = [...new Set(allowedOrigins)];
 
-    if (uniqueOrigins.includes(origin)) {
+    // Check if origin is in the whitelist or matches Vercel subdomains
+    const isAllowed = uniqueOrigins.includes(origin) ||
+      /\.vercel\.app$/.test(origin) ||
+      origin.startsWith('file://');
+
+    if (isAllowed) {
       callback(null, true);
     } else {
       console.log(`❌ CORS blocked origin: ${origin}`);
-      console.log(`✅ Allowed origins: ${uniqueOrigins.join(', ')}`);
-      callback(new Error('Not allowed by CORS'));
+      console.log(`✅ Allowed origins list: ${uniqueOrigins.join(', ')} (Wildcard: *.vercel.app)`);
+      callback(new Error(`Not allowed by CORS at origin ${origin}`));
     }
   },
   credentials: true,
