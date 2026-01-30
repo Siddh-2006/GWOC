@@ -1,0 +1,53 @@
+name: Keep Backend Alive
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  ping-backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Ping Backend Health Endpoint
+      run: |
+        echo "🏓 Pinging backend to keep it alive..."
+        
+        # Ping the main backend
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://gwoc-lovat.vercel.app/health)
+        
+        if [ $response -eq 200 ]; then
+          echo "✅ Backend is alive! (HTTP $response)"
+        else
+          echo "❌ Backend returned HTTP $response"
+          exit 1
+        fi
+        
+        # Also ping the root endpoint
+        root_response=$(curl -s -o /dev/null -w "%{http_code}" https://gwoc-lovat.vercel.app/)
+        
+        if [ $root_response -eq 200 ]; then
+          echo "✅ Root endpoint is alive! (HTTP $root_response)"
+        else
+          echo "⚠️ Root endpoint returned HTTP $root_response"
+        fi
+        
+        echo "🎉 Keep-alive ping completed successfully!"
+
+    - name: Ping Keep-Alive Service (if deployed)
+      run: |
+        echo "🔄 Checking if keep-alive service is deployed..."
+        
+        # Try to ping the keep-alive service dashboard
+        # Replace YOUR_KEEPALIVE_URL with actual URL when deployed
+        # keepalive_response=$(curl -s -o /dev/null -w "%{http_code}" https://YOUR_KEEPALIVE_URL.render.com/ || echo "404")
+        
+        # if [ $keepalive_response -eq 200 ]; then
+        #   echo "✅ Keep-alive service is also running!"
+        # else
+        #   echo "ℹ️ Keep-alive service not found or not deployed yet"
+        # fi
+        
+        echo "ℹ️ Update this workflow with your keep-alive service URL when deployed"

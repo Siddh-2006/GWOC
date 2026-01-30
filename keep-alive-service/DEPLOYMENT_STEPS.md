@@ -15,10 +15,28 @@ npm install -g vercel
 
 ## Step 2: Deploy Keep-Alive Service
 
+### Option A: Deploy to Render (Recommended - Free with full cron support)
+
+1. Go to https://render.com
+2. Sign up/login with GitHub
+3. Click **New** → **Web Service**
+4. Connect your repository: `Siddh-2006/GWOC_Duplicate`
+5. Settings:
+   - **Name**: `mindsettler-keep-alive`
+   - **Root Directory**: `keep-alive-service`
+   - **Environment**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Instance Type**: `Free`
+
+### Option B: Deploy to Vercel (Limited - Daily cron only)
+
 ```bash
 cd GWOC/keep-alive-service
 vercel --prod
 ```
+
+**Note**: Vercel free tier only allows daily cron jobs, so this will ping once per day instead of every 5 minutes.
 
 **During deployment, Vercel will ask:**
 - Project name: `mindsettler-keep-alive` (or any name you prefer)

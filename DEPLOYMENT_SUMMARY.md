@@ -43,31 +43,39 @@
 
 ## 🎯 Next Steps
 
-### Immediate Actions:
+### ⚠️ Important: Vercel Limitation Discovered
+**Vercel free tier only allows daily cron jobs, not every 5 minutes!**
 
-1. **Install Vercel CLI** (if not already installed):
-   ```bash
-   npm install -g vercel
-   ```
+### Recommended Solution: Deploy to Render
 
-2. **Deploy Keep-Alive Service**:
-   ```bash
-   cd GWOC/keep-alive-service
-   vercel --prod
-   ```
+1. **Deploy Keep-Alive Service to Render** (Free, supports frequent cron):
+   - Go to https://render.com
+   - Connect GitHub repository: `Siddh-2006/GWOC_Duplicate`
+   - Create Web Service from `keep-alive-service` folder
+   - Set environment variables:
+     - `BACKEND_URL=https://gwoc-lovat.vercel.app`
+     - `PING_INTERVAL=*/5 * * * *`
 
-3. **Set Environment Variables in Vercel Dashboard**:
-   - `BACKEND_URL=https://gwoc-lovat.vercel.app`
-   - `PING_INTERVAL=*/5 * * * *`
+2. **Keep Main Backend on Vercel** (no changes needed)
 
-4. **Redeploy Main Backend** (to wake up database):
-   - Go to Vercel dashboard
-   - Find backend project
-   - Click "Redeploy"
+3. **Monitor Dashboard**: Visit your Render URL + `/dashboard`
 
-5. **Monitor Dashboard**:
-   - Visit `https://your-keepalive-url.vercel.app/dashboard`
-   - Check success rate and response times
+### Alternative Solutions:
+
+#### Option A: GitHub Actions (Backup)
+- ✅ Already created: `.github/workflows/keep-alive.yml`
+- ✅ Pings every 5 minutes via GitHub Actions
+- ✅ Free with GitHub
+
+#### Option B: Vercel with Daily Ping (Limited)
+- ⚠️ Only pings once per day
+- ⚠️ Less effective but better than nothing
+
+### Architecture:
+```
+Render (Keep-Alive) → Vercel (Backend) → MongoDB (Database)
+     24/7 Pings         Serverless        Cloud DB
+```
 
 ### GitHub Repository:
 
