@@ -2,6 +2,7 @@ import express from 'express';
 import cron from 'node-cron';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 
 // Load environment variables
 dotenv.config();
@@ -11,9 +12,13 @@ const PORT = process.env.PORT || 3000;
 
 // Configuration
 const BACKEND_URL = process.env.BACKEND_URL || 'https://gwoc-lovat.vercel.app';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://mindsettler:zovotfSQfFEvnml8@mindsettler.791pbco.mongodb.net/?appName=MindSettler';
 const PING_INTERVAL = process.env.PING_INTERVAL || '*/5 * * * *'; // Every 5 minutes
 const HEALTH_CHECK_TIMEOUT = 30000; // 30 seconds
 const MAX_RETRIES = 3;
+
+// Database connection for direct MongoDB pings
+let dbConnection = null;
 
 // Statistics tracking
 let stats = {
@@ -24,7 +29,15 @@ let stats = {
   lastPingStatus: null,
   lastPingDuration: null,
   uptime: Date.now(),
-  errors: []
+  errors: [],
+  database: {
+    totalPings: 0,
+    successfulPings: 0,
+    failedPings: 0,
+    lastPingTime: null,
+    lastPingStatus: null,
+    connectionStatus: 'disconnected'
+  }
 };
 
 // Middleware
@@ -36,6 +49,93 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   next();
 });
+
+/**
+ * Connect to MongoDB database
+ */
+async function connectToDatabase() {
+  try {
+    if (dbConnection && mongoose.connection.readyState === 1) {
+      console.log('📊 Database already connected');
+      return dbConnection;
+    }
+
+    console.log('🔌 Connecting to MongoDB...');
+    
+    const options = {
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 10000,
+      maxPoolSize: 5,
+      minPoolSize: 1,
+      maxIdleTimeMS: 30000,
+      bufferCommands: false,
+      bufferMaxEntries: 0
+    };
+
+    dbConnection = await mongoose.connect(MONGODB_URI, options);
+    
+    stats.database.connectionStatus = 'connected';
+    console.log('✅ Connected to MongoDB successfully');
+    
+    return dbConnection;
+  } catch (error) {
+    stats.database.connectionStatus = 'failed';
+    console.error('❌ Failed to connect to MongoDB:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Ping MongoDB database directly
+ */
+async function pingDatabase() {
+  const startTime = Date.now();
+  
+  try {
+    // Ensure connection exists
+    if (!dbConnection || mongoose.connection.readyState !== 1) {
+      await connectToDatabase();
+    }
+
+    // Ping the database
+    await mongoose.connection.db.admin().ping();
+    
+    const duration = Date.now() - startTime;
+    
+    // Update database statistics
+    stats.database.totalPings++;
+    stats.database.successfulPings++;
+    stats.database.lastPingTime = new Date().toISOString();
+    stats.database.lastPingStatus = 'success';
+    stats.database.connectionStatus = 'connected';
+    
+    console.log(`✅ Database ping successful! Response time: ${duration}ms`);
+    
+    return {
+      success: true,
+      duration,
+      status: 'connected'
+    };
+    
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    
+    stats.database.totalPings++;
+    stats.database.failedPings++;
+    stats.database.lastPingTime = new Date().toISOString();
+    stats.database.lastPingStatus = 'failed';
+    stats.database.connectionStatus = 'failed';
+    
+    console.error(`❌ Database ping failed: ${error.message}`);
+    
+    return {
+      success: false,
+      duration,
+      error: error.message
+    };
+  }
+}
 
 /**
  * Ping the backend to keep it warm
@@ -68,6 +168,16 @@ async function pingBackend() {
       console.log(`✅ Backend is alive! Response time: ${duration}ms`);
       console.log(`📊 Database status: ${response.data.database?.status || 'unknown'}`);
       
+      // Also ping database directly to keep it warm
+      console.log('🔄 Pinging database directly...');
+      const dbResult = await pingDatabase();
+      
+      if (dbResult.success) {
+        console.log(`✅ Direct database ping successful! Response time: ${dbResult.duration}ms`);
+      } else {
+        console.log(`⚠️ Direct database ping failed: ${dbResult.error}`);
+      }
+      
       // Keep only last 10 errors
       if (stats.errors.length > 10) {
         stats.errors = stats.errors.slice(-10);
@@ -76,7 +186,8 @@ async function pingBackend() {
       return {
         success: true,
         duration,
-        data: response.data
+        data: response.data,
+        database: dbResult
       };
       
     } catch (error) {
@@ -199,6 +310,12 @@ app.get('/ping', async (req, res) => {
   res.json(result);
 });
 
+app.get('/ping-db', async (req, res) => {
+  console.log('🔄 Manual database ping requested...');
+  const result = await pingDatabase();
+  res.json(result);
+});
+
 app.get('/health-check', async (req, res) => {
   const results = await comprehensiveHealthCheck();
   res.json({
@@ -255,7 +372,7 @@ app.get('/dashboard', (req, res) => {
             </div>
             <div class="stat-card">
                 <div class="stat-value">${stats.totalPings}</div>
-                <div class="stat-label">Total Pings</div>
+                <div class="stat-label">Backend Pings</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">${successRate}%</div>
@@ -265,6 +382,14 @@ app.get('/dashboard', (req, res) => {
                 <div class="stat-value">${stats.lastPingDuration || 0}ms</div>
                 <div class="stat-label">Last Response Time</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-value">${stats.database.totalPings}</div>
+                <div class="stat-label">DB Pings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${stats.database.connectionStatus}</div>
+                <div class="stat-label">DB Status</div>
+            </div>
         </div>
         
         <div class="status ${stats.lastPingStatus === 'success' ? 'success' : 'error'}">
@@ -272,7 +397,8 @@ app.get('/dashboard', (req, res) => {
         </div>
         
         <div style="text-align: center;">
-            <button class="button" onclick="pingNow()">Ping Now</button>
+            <button class="button" onclick="pingNow()">Ping Backend</button>
+            <button class="button" onclick="pingDatabase()">Ping Database</button>
             <button class="button" onclick="healthCheck()">Health Check</button>
             <button class="button" onclick="location.reload()">Refresh</button>
         </div>
@@ -293,7 +419,14 @@ app.get('/dashboard', (req, res) => {
         async function pingNow() {
             const response = await fetch('/ping');
             const result = await response.json();
-            alert(result.success ? 'Ping successful!' : 'Ping failed: ' + result.error);
+            alert(result.success ? 'Backend ping successful!' : 'Backend ping failed: ' + result.error);
+            location.reload();
+        }
+        
+        async function pingDatabase() {
+            const response = await fetch('/ping-db');
+            const result = await response.json();
+            alert(result.success ? 'Database ping successful!' : 'Database ping failed: ' + result.error);
             location.reload();
         }
         
@@ -333,6 +466,13 @@ app.listen(PORT, () => {
   console.log(`🌐 Keep-alive service running on port ${PORT}`);
   console.log(`📊 Dashboard: http://localhost:${PORT}/dashboard`);
   console.log(`📈 Stats: http://localhost:${PORT}/stats`);
+  
+  // Initialize database connection
+  console.log('🔌 Initializing database connection...');
+  connectToDatabase().catch(err => {
+    console.error('⚠️ Initial database connection failed:', err.message);
+    console.log('🔄 Will retry on first ping...');
+  });
 });
 
 // Graceful shutdown
