@@ -12,9 +12,14 @@ const PORT = process.env.PORT || 3000;
 // Configuration
 const BACKEND_URL = process.env.BACKEND_URL || 'https://gwoc-lovat.vercel.app';
 const KEEPALIVE_SERVICE_1_URL = process.env.KEEPALIVE_SERVICE_1_URL || 'https://gwoc-duplicate.onrender.com';
-const PING_INTERVAL = process.env.PING_INTERVAL || '*/7 * * * *'; // Every 7 minutes (offset from first service)
+const PING_INTERVAL = process.env.PING_INTERVAL || '2-59/7 * * * *'; // Every 7 minutes, offset by 2 minutes
 const HEALTH_CHECK_TIMEOUT = 30000; // 30 seconds
 const MAX_RETRIES = 3;
+
+// Circuit breaker configuration
+let consecutiveFailures = 0;
+const MAX_CONSECUTIVE_FAILURES = 5;
+const CIRCUIT_BREAKER_COOLDOWN = 120000; // 2 minutes
 
 // Statistics tracking
 let stats = {
@@ -50,9 +55,65 @@ app.use((req, res, next) => {
 });
 
 /**
+ * Circuit breaker check
+ */
+async function checkCircuitBreaker() {
+  if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+    console.log(`🔄 Circuit breaker activated! Consecutive failures: ${consecutiveFailures}`);
+    console.log(`⏰ Cooling down for ${CIRCUIT_BREAKER_COOLDOWN / 1000} seconds...`);
+    await new Promise(resolve => setTimeout(resolve, CIRCUIT_BREAKER_COOLDOWN));
+    consecutiveFailures = 0;
+    console.log('✅ Circuit breaker reset - resuming operations');
+  }
+}
+
+/**
+ * Smart ping with health check first
+ */
+async function smartPing(url, target = 'unknown') {
+  try {
+    // Quick health check first (but skip for keep-alive service as it might not have /health)
+    if (target === 'backend') {
+      console.log(`🔍 Pre-flight health check for ${target}...`);
+      const healthResponse = await axios.get(url + '/health', {
+        timeout: 10000,
+        headers: { 'User-Agent': 'MindSettler-KeepAlive-2-HealthCheck/1.0' }
+      });
+      
+      if (healthResponse.status !== 200) {
+        console.log(`⚠️ ${target} health check failed: ${healthResponse.status}`);
+        return { success: false, reason: 'health_check_failed', status: healthResponse.status };
+      }
+      
+      console.log(`✅ ${target} health check passed - proceeding with ping`);
+    }
+    
+    return { success: true };
+    
+  } catch (error) {
+    console.log(`❌ ${target} health check failed: ${error.message}`);
+    return { success: false, reason: 'health_check_error', error: error.message };
+  }
+}
+
+/**
  * Ping the backend to keep it warm and check database status
  */
 async function pingBackend() {
+  // Check circuit breaker
+  await checkCircuitBreaker();
+  
+  // Smart health check first
+  const healthCheck = await smartPing(BACKEND_URL, 'backend');
+  if (!healthCheck.success) {
+    consecutiveFailures++;
+    return {
+      success: false,
+      error: `Health check failed: ${healthCheck.reason}`,
+      skipReason: 'pre_flight_failed'
+    };
+  }
+  
   const startTime = Date.now();
   let attempt = 0;
   
@@ -97,6 +158,9 @@ async function pingBackend() {
       console.log(`✅ Backend is alive! Response time: ${duration}ms`);
       console.log(`📊 Database status: ${dbStatus} (test: ${dbTest})`);
       
+      // Reset failure counter on success
+      consecutiveFailures = 0;
+      
       // Keep only last 10 errors
       if (stats.errors.length > 10) {
         stats.errors = stats.errors.slice(-10);
@@ -132,6 +196,9 @@ async function pingBackend() {
         stats.database.lastPingTime = new Date().toISOString();
         stats.database.lastPingStatus = 'failed';
         stats.database.connectionStatus = 'failed';
+        
+        // Increment consecutive failures
+        consecutiveFailures++;
         
         // Log error
         const errorInfo = {
