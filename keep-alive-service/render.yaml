@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: mindsettler-keep-alive
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BACKEND_URL
+        value: https://gwoc-lovat.vercel.app
+      - key: PING_INTERVAL
+        value: "*/5 * * * *"
+    healthCheckPath: /
+    autoDeploy: true

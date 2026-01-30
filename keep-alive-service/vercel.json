@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "name": "mindsettler-keep-alive",
+  "builds": [
+    {
+      "src": "index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.js"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/ping",
+      "schedule": "*/5 * * * *"
+    }
+  ],
+  "env": {
+    "BACKEND_URL": "https://gwoc-lovat.vercel.app",
+    "PING_INTERVAL": "*/5 * * * *"
+  }
+}
