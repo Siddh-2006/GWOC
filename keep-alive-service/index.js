@@ -510,8 +510,9 @@ app.get('/dashboard', (req, res) => {
 
 // Start the cron job
 console.log(`🚀 Starting keep-alive service for ${BACKEND_URL}`);
+console.log(`🎯 Secondary target: ${KEEPALIVE_SERVICE_2_URL}`);
 console.log(`⏰ Ping interval: ${PING_INTERVAL}`);
-console.log(`📋 Approach: HTTP-based database monitoring`);
+console.log(`📋 Approach: Mutual keep-alive system (Backend + Service #2)`);
 
 cron.schedule(PING_INTERVAL, async () => {
   await performCombinedPing();
