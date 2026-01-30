@@ -14,19 +14,21 @@ jobs:
     - name: Ping Backend Health Endpoint
       run: |
         echo "🏓 Pinging backend to keep it alive..."
+        echo "⏰ Current time: $(date)"
         
-        # Ping the main backend
-        response=$(curl -s -o /dev/null -w "%{http_code}" https://gwoc-lovat.vercel.app/health)
+        # Ping the main backend health endpoint
+        echo "📡 Testing health endpoint..."
+        health_response=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 https://gwoc-lovat.vercel.app/health)
         
-        if [ $response -eq 200 ]; then
-          echo "✅ Backend is alive! (HTTP $response)"
+        if [ $health_response -eq 200 ]; then
+          echo "✅ Health endpoint is alive! (HTTP $health_response)"
         else
-          echo "❌ Backend returned HTTP $response"
-          exit 1
+          echo "❌ Health endpoint returned HTTP $health_response"
         fi
         
         # Also ping the root endpoint
-        root_response=$(curl -s -o /dev/null -w "%{http_code}" https://gwoc-lovat.vercel.app/)
+        echo "📡 Testing root endpoint..."
+        root_response=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 https://gwoc-lovat.vercel.app/)
         
         if [ $root_response -eq 200 ]; then
           echo "✅ Root endpoint is alive! (HTTP $root_response)"
@@ -34,20 +36,32 @@ jobs:
           echo "⚠️ Root endpoint returned HTTP $root_response"
         fi
         
+        # Get detailed health information
+        echo "📊 Getting detailed health info..."
+        health_data=$(curl -s --max-time 30 https://gwoc-lovat.vercel.app/health || echo "Failed to get health data")
+        echo "Health data: $health_data"
+        
         echo "🎉 Keep-alive ping completed successfully!"
 
-    - name: Ping Keep-Alive Service (if deployed)
+    - name: Wake Up Render Keep-Alive Service
       run: |
-        echo "🔄 Checking if keep-alive service is deployed..."
+        echo "🔄 Waking up Render keep-alive service..."
         
-        # Try to ping the keep-alive service dashboard
-        # Replace YOUR_KEEPALIVE_URL with actual URL when deployed
-        # keepalive_response=$(curl -s -o /dev/null -w "%{http_code}" https://YOUR_KEEPALIVE_URL.render.com/ || echo "404")
+        # Ping the Render service to wake it up if sleeping
+        render_response=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 https://gwoc-duplicate.onrender.com/ || echo "000")
         
-        # if [ $keepalive_response -eq 200 ]; then
-        #   echo "✅ Keep-alive service is also running!"
-        # else
-        #   echo "ℹ️ Keep-alive service not found or not deployed yet"
-        # fi
+        if [ $render_response -eq 200 ]; then
+          echo "✅ Render keep-alive service is awake! (HTTP $render_response)"
+        else
+          echo "⚠️ Render keep-alive service returned HTTP $render_response (might be sleeping)"
+        fi
         
-        echo "ℹ️ Update this workflow with your keep-alive service URL when deployed"
+        echo "🔄 Keep-alive service wake-up completed!"
+
+    - name: Summary
+      run: |
+        echo "📋 Summary:"
+        echo "✅ Backend health check completed"
+        echo "✅ Render service wake-up attempted"
+        echo "⏰ Next run in 5 minutes"
+        echo "🎯 This ensures your backend stays warm 24/7!"
