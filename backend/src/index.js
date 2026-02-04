@@ -208,7 +208,10 @@ app.get('/health', async (req, res) => {
 
 // Start the server (Required for Render persistent services)
 // Only start the server if NOT in production (Vercel handles the export in production)
-if (process.env.NODE_ENV !== 'production') {
+// Start the server (Required for Render persistent services)
+// We want to start the server if we are NOT on Vercel (or if we are explicitly on Render)
+// Vercel exports the app, Render runs this script
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📡 Ready to receive traffic on 0.0.0.0:${PORT}`);
