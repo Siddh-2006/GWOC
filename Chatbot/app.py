@@ -34,7 +34,7 @@ def health():
 
 @app.route('/test-chatbot/chat', methods=['POST'])
 @app.route('/chat', methods=['POST'])
-@limiter.limit("15 per 15 minutes")
+@limiter.limit("30 per 15 minutes")
 def chat():
     if not agent_graph:
         return jsonify({"error": "Agent not initialized"}), 500
